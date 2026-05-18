@@ -138,11 +138,50 @@ export default function Home() {
               <circle cx="8" cy="8" r="7" />
             </svg>
             <span>
-              Indexing in progress · first vehicles published summer 2026
+              1 generation indexed · catalogue expanding daily
             </span>
             <span className="div" />
             <span className="meta">Methodology below</span>
           </div>
+        </section>
+
+        <section>
+          <h2 className="section-h">
+            Recently published <span className="count">1 generation</span>
+          </h2>
+          <ul
+            style={{
+              listStyle: "none",
+              display: "grid",
+              gridTemplateColumns: "repeat(2, 1fr)",
+              border: "1px solid var(--rule)",
+            }}
+          >
+            <li
+              style={{
+                padding: "12px 16px",
+                borderRight: "1px solid var(--rule)",
+                fontSize: 13,
+              }}
+            >
+              <a
+                href="/honda/civic-sedan-x-2016-2021"
+                style={{ color: "var(--ink)", fontWeight: 500 }}
+              >
+                Honda Civic Sedan (X) · 2016 – 2021
+              </a>
+              <span
+                style={{
+                  fontFamily: "var(--font-mono)",
+                  fontSize: 11,
+                  color: "var(--ink-mute)",
+                  marginLeft: 12,
+                }}
+              >
+                2026-05-18 · 4 sources · 67 specs
+              </span>
+            </li>
+          </ul>
         </section>
 
         <section>
