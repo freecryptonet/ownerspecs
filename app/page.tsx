@@ -1,3 +1,41 @@
+import { query } from "@/lib/db";
+
+type RecentRow = {
+  brand: string;
+  generation: string;
+  display_name: string;
+  make_name: string;
+  start_year: number;
+  end_year: number | null;
+  updated: string;
+  source_count: number;
+  spec_count: number;
+};
+
+async function getRecent() {
+  return query<RecentRow>(
+    `SELECT mk.slug AS brand, g.slug AS generation, g.display_name,
+            mk.name AS make_name, g.start_year, g.end_year, g.updated_at AS updated,
+            (SELECT COUNT(DISTINCT ss.source_id) FROM spec_sources ss
+             WHERE ss.spec_id IN (SELECT id FROM fluid_specs WHERE generation_id=g.id)
+                OR ss.spec_id IN (SELECT id FROM torque_specs WHERE generation_id=g.id)
+            ) AS source_count,
+            ((SELECT COUNT(*) FROM fluid_specs WHERE generation_id=g.id)
+            + (SELECT COUNT(*) FROM torque_specs WHERE generation_id=g.id)
+            + (SELECT COUNT(*) FROM bulbs WHERE generation_id=g.id)
+            + (SELECT COUNT(*) FROM fuses WHERE generation_id=g.id)
+            + (SELECT COUNT(*) FROM service_intervals WHERE generation_id=g.id)
+            + (SELECT COUNT(*) FROM tire_pressures WHERE generation_id=g.id)
+            ) AS spec_count
+     FROM generations g
+     JOIN models m ON m.id = g.model_id
+     JOIN makes mk ON mk.id = m.make_id
+     WHERE g.is_active = 1
+     ORDER BY g.updated_at DESC
+     LIMIT 8`,
+  );
+}
+
 const dataCategories = [
   {
     name: "Fluids & lubricants",
@@ -68,7 +106,8 @@ const dataCategories = [
   },
 ];
 
-export default function Home() {
+export default async function Home() {
+  const recent = await getRecent();
   return (
     <>
       <header className="site-header">
@@ -138,7 +177,7 @@ export default function Home() {
               <circle cx="8" cy="8" r="7" />
             </svg>
             <span>
-              1 generation indexed · catalogue expanding daily
+              {recent.length} {recent.length === 1 ? "generation" : "generations"} indexed · catalogue expanding daily
             </span>
             <span className="div" />
             <span className="meta">Methodology below</span>
@@ -147,7 +186,7 @@ export default function Home() {
 
         <section>
           <h2 className="section-h">
-            Recently published <span className="count">1 generation</span>
+            Recently published <span className="count">{recent.length} {recent.length === 1 ? "generation" : "generations"}</span>
           </h2>
           <ul
             style={{
@@ -157,30 +196,34 @@ export default function Home() {
               border: "1px solid var(--rule)",
             }}
           >
-            <li
-              style={{
-                padding: "12px 16px",
-                borderRight: "1px solid var(--rule)",
-                fontSize: 13,
-              }}
-            >
-              <a
-                href="/honda/civic-sedan-x-2016-2021"
-                style={{ color: "var(--ink)", fontWeight: 500 }}
-              >
-                Honda Civic Sedan (X) · 2016 – 2021
-              </a>
-              <span
+            {recent.map((r) => (
+              <li
+                key={`${r.brand}-${r.generation}`}
                 style={{
-                  fontFamily: "var(--font-mono)",
-                  fontSize: 11,
-                  color: "var(--ink-mute)",
-                  marginLeft: 12,
+                  padding: "12px 16px",
+                  borderRight: "1px solid var(--rule)",
+                  borderBottom: "1px solid var(--rule)",
+                  fontSize: 13,
                 }}
               >
-                2026-05-18 · 4 sources · 67 specs
-              </span>
-            </li>
+                <a
+                  href={`/${r.brand}/${r.generation}`}
+                  style={{ color: "var(--ink)", fontWeight: 500 }}
+                >
+                  {r.make_name} {r.display_name} · {r.start_year} – {r.end_year ?? "present"}
+                </a>
+                <span
+                  style={{
+                    fontFamily: "var(--font-mono)",
+                    fontSize: 11,
+                    color: "var(--ink-mute)",
+                    marginLeft: 12,
+                  }}
+                >
+                  {new Date(r.updated).toISOString().slice(0, 10)} · {r.source_count} sources · {r.spec_count} specs
+                </span>
+              </li>
+            ))}
           </ul>
         </section>
 
