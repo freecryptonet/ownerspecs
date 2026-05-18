@@ -23,6 +23,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
        WHERE g.is_active = 1`,
     );
 
+    const topics = ["oil-capacity", "maintenance-schedule", "torque"];
+
     for (const g of generations) {
       pages.push({
         url: `${BASE}/${g.brand}/${g.generation}`,
@@ -30,6 +32,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         changeFrequency: "monthly",
         priority: 0.8,
       });
+      for (const topic of topics) {
+        pages.push({
+          url: `${BASE}/${g.brand}/${g.generation}/${topic}`,
+          lastModified: new Date(g.updated),
+          changeFrequency: "monthly",
+          priority: 0.7,
+        });
+      }
     }
   } catch (e) {
     // DB unavailable during build → fall back to homepage-only sitemap

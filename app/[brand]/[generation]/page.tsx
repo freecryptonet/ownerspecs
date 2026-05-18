@@ -611,7 +611,7 @@ export default async function Page({ params }: { params: Promise<Params> }) {
         <section>
           <h2 className="section-h">Owner-manual data <span className="count">{fluids.length + torques.length + bulbCount + fuseCount + partCount + serviceIntervals.length + 1} entries · cross-verified</span></h2>
           <div className="moat-list">
-            <a className="moat-row" href="#">
+            <a className="moat-row" href={`/${make.slug}/${gen.slug}/oil-capacity`}>
               <svg className="icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5">
                 <path d="M10 2v5m0 0c-2.5 1.5-4 4-4 6.5a4 4 0 0 0 8 0c0-2.5-1.5-5-4-6.5z" />
               </svg>
@@ -621,7 +621,7 @@ export default async function Page({ params }: { params: Promise<Params> }) {
               </span>
               <span className="arrow">→</span>
             </a>
-            <a className="moat-row" href="#">
+            <a className="moat-row" href={`/${make.slug}/${gen.slug}/maintenance-schedule`}>
               <svg className="icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="10" cy="10" r="7" /><path d="M10 6v4l3 2" /></svg>
               <span>
                 <span className="name">Maintenance schedule</span>
@@ -637,7 +637,7 @@ export default async function Page({ params }: { params: Promise<Params> }) {
               </span>
               <span className="arrow">→</span>
             </a>
-            <a className="moat-row" href="#">
+            <a className="moat-row" href={`/${make.slug}/${gen.slug}/torque`}>
               <svg className="icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="10" cy="10" r="2.5" /><path d="M10 2v3M10 15v3M2 10h3M15 10h3" /></svg>
               <span>
                 <span className="name">Torque specifications</span>
