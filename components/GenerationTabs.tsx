@@ -26,7 +26,7 @@ export function GenerationTabs({
     { key: "maintenance", label: "Maintenance", href: `${base}/maintenance-schedule` },
     { key: "fluids", label: "Fluids", href: `${base}/oil-capacity` },
     { key: "torque", label: "Torque", href: `${base}/torque` },
-    { key: "electrical", label: "Electrical", href: `${base}#electrical` },
+    { key: "electrical", label: "Electrical", href: `${base}/electrical` },
     { key: "procedures", label: "Procedures", href: `${base}#procedures` },
     { key: "compare", label: "Compare", href: "#" },
   ];

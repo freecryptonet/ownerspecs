@@ -629,7 +629,7 @@ export default async function Page({ params }: { params: Promise<Params> }) {
               </span>
               <span className="arrow">→</span>
             </a>
-            <a className="moat-row" href="#">
+            <a className="moat-row" href={`/${make.slug}/${gen.slug}/electrical`}>
               <svg className="icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="7" width="14" height="8" /><path d="M6 7V5m8 2V5m-4 5v2" /></svg>
               <span>
                 <span className="name">Battery &amp; electrical</span>
@@ -645,7 +645,7 @@ export default async function Page({ params }: { params: Promise<Params> }) {
               </span>
               <span className="arrow">→</span>
             </a>
-            <a className="moat-row" href="#">
+            <a className="moat-row" href={`/${make.slug}/${gen.slug}/tires`}>
               <svg className="icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="10" cy="10" r="7" /><circle cx="10" cy="10" r="3" /></svg>
               <span>
                 <span className="name">Tires &amp; wheels</span>

@@ -23,7 +23,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
        WHERE g.is_active = 1`,
     );
 
-    const topics = ["oil-capacity", "maintenance-schedule", "torque"];
+    const topics = [
+      "oil-capacity",
+      "maintenance-schedule",
+      "torque",
+      "electrical",
+      "tires",
+    ];
 
     for (const g of generations) {
       pages.push({
