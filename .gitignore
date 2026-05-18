@@ -17,6 +17,9 @@
 /.next/
 /out/
 
+# scraper one-off JSON dumps
+/scrapers/output/
+
 # production
 /build
 
