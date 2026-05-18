@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="en" data-accent="blue">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ownerspecs — Vehicle specification and owner-manual reference</title>
+<meta name="description" content="Cross-verified vehicle specifications, fluid capacities, torque values, maintenance schedules, fuse maps and electrical data for every car, every generation, every market.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="site-header-inner">
+    <a href="index.html" class="wordmark">ownerspecs</a>
+    <nav class="nav-primary">
+      <a href="#" class="active">Catalogue</a>
+      <a href="#">Maintenance</a>
+      <a href="#">Fluids</a>
+      <a href="compare.html">Compare</a>
+      <a href="#">Methodology</a>
+    </nav>
+    <div class="search-bar">
+      <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="7" cy="7" r="5"/><path d="m11 11 3 3"/></svg>
+      <input placeholder="Make, model, VIN or part number">
+      <span class="kbd">⌘ K</span>
+    </div>
+    <div class="accent-toggle" aria-label="Accent color">
+      <button class="bl" data-on="true" onclick="document.documentElement.dataset.accent='blue';this.dataset.on='true';this.nextElementSibling.dataset.on='false'" title="Steel blue"></button>
+      <button class="ox" data-on="false" onclick="document.documentElement.dataset.accent='oxblood';this.dataset.on='true';this.previousElementSibling.dataset.on='false'" title="Oxblood"></button>
+    </div>
+  </div>
+</header>
+
+<main class="shell">
+
+  <section class="hp-head">
+    <h1>Vehicle specification and owner-manual reference.</h1>
+    <p class="lede">
+      Cross-verified data on every car sold globally since 1990 — engine and performance specs from manufacturer sources, plus the fluid capacities, torque values, maintenance schedules, fuse layouts and procedures most reference sites omit. Every value is cited and dated.
+    </p>
+
+    <div class="hp-search">
+      <input placeholder='e.g. "2018 Honda Civic 1.5T oil capacity" or "BMW G20 lug nut torque"'>
+      <button>Search</button>
+    </div>
+    <div class="hp-search-modes">
+      <span class="on">Natural language</span>
+      <span>VIN</span>
+      <span>Licence plate</span>
+      <span>Browse catalogue</span>
+    </div>
+
+    <div class="hp-stats">
+      <div class="hp-stat">
+        <div class="n">4,820</div>
+        <div class="l">Generations indexed</div>
+      </div>
+      <div class="hp-stat">
+        <div class="n">68</div>
+        <div class="l">Brands · 6 markets</div>
+      </div>
+      <div class="hp-stat">
+        <div class="n">2.4×</div>
+        <div class="l">Sources per spec, average</div>
+      </div>
+      <div class="hp-stat">
+        <div class="n">192,840</div>
+        <div class="l">Data points verified</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="section-h">Browse by manufacturer <span class="count">68 brands</span></h2>
+    <div class="brand-grid">
+      <a class="brand-cell" href="#">Audi<span class="count">186</span></a>
+      <a class="brand-cell" href="#">BMW<span class="count">214</span></a>
+      <a class="brand-cell" href="#">Chevrolet<span class="count">168</span></a>
+      <a class="brand-cell" href="#">Citroën<span class="count">124</span></a>
+      <a class="brand-cell" href="#">Dodge<span class="count">98</span></a>
+      <a class="brand-cell" href="#">Fiat<span class="count">112</span></a>
+      <a class="brand-cell" href="#">Ford<span class="count">240</span></a>
+      <a class="brand-cell" href="#">Honda<span class="count">156</span></a>
+      <a class="brand-cell" href="#">Hyundai<span class="count">142</span></a>
+      <a class="brand-cell" href="#">Jaguar<span class="count">68</span></a>
+      <a class="brand-cell" href="#">Jeep<span class="count">76</span></a>
+      <a class="brand-cell" href="#">Kia<span class="count">128</span></a>
+      <a class="brand-cell" href="#">Land Rover<span class="count">64</span></a>
+      <a class="brand-cell" href="#">Lexus<span class="count">88</span></a>
+      <a class="brand-cell" href="#">Mazda<span class="count">112</span></a>
+      <a class="brand-cell" href="#">Mercedes-Benz<span class="count">198</span></a>
+      <a class="brand-cell" href="#">Mini<span class="count">42</span></a>
+      <a class="brand-cell" href="#">Mitsubishi<span class="count">96</span></a>
+      <a class="brand-cell" href="#">Nissan<span class="count">182</span></a>
+      <a class="brand-cell" href="#">Opel<span class="count">118</span></a>
+      <a class="brand-cell" href="#">Peugeot<span class="count">134</span></a>
+      <a class="brand-cell" href="#">Porsche<span class="count">86</span></a>
+      <a class="brand-cell" href="#">Renault<span class="count">128</span></a>
+      <a class="brand-cell" href="#">Seat<span class="count">62</span></a>
+      <a class="brand-cell" href="#">Škoda<span class="count">72</span></a>
+      <a class="brand-cell" href="#">Subaru<span class="count">98</span></a>
+      <a class="brand-cell" href="#">Suzuki<span class="count">82</span></a>
+      <a class="brand-cell" href="#">Tesla<span class="count">14</span></a>
+      <a class="brand-cell" href="#">Toyota<span class="count">232</span></a>
+      <a class="brand-cell" href="#">Volkswagen<span class="count">204</span></a>
+      <a class="brand-cell" href="#">Volvo<span class="count">94</span></a>
+      <a class="brand-cell" href="#">View all<span class="count">+37</span></a>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="section-h">Owner-manual data <span class="count">8 categories</span></h2>
+    <div class="moat-list">
+      <a class="moat-row" href="oil-capacity.html">
+        <svg class="icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 2v5m0 0c-2.5 1.5-4 4-4 6.5a4 4 0 0 0 8 0c0-2.5-1.5-5-4-6.5z"/></svg>
+        <span><span class="name">Fluids &amp; lubricants</span><span class="peek">Engine oil · transmission · coolant · brake · A/C · 10 entries</span></span>
+        <span class="arrow">→</span>
+      </a>
+      <a class="moat-row" href="maintenance.html">
+        <svg class="icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="10" cy="10" r="7"/><path d="M10 6v4l3 2"/></svg>
+        <span><span class="name">Maintenance schedule</span><span class="peek">By mileage · normal &amp; severe duty · time-based intervals</span></span>
+        <span class="arrow">→</span>
+      </a>
+      <a class="moat-row" href="#">
+        <svg class="icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="7" width="14" height="8"/><path d="M6 7V5m8 2V5m-4 5v2"/></svg>
+        <span><span class="name">Battery &amp; electrical</span><span class="peek">Group size · CCA · alternator amperage · alt. compatibility</span></span>
+        <span class="arrow">→</span>
+      </a>
+      <a class="moat-row" href="#">
+        <svg class="icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="10" cy="10" r="2.5"/><path d="M10 2v3M10 15v3M2 10h3M15 10h3"/></svg>
+        <span><span class="name">Torque specifications</span><span class="peek">Lug · plug · drain · hub · caliper · suspension fasteners</span></span>
+        <span class="arrow">→</span>
+      </a>
+      <a class="moat-row" href="#">
+        <svg class="icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="10" cy="10" r="7"/><circle cx="10" cy="10" r="3"/></svg>
+        <span><span class="name">Tires &amp; wheels</span><span class="peek">Placard PSI · OE size · rim offset · bolt pattern</span></span>
+        <span class="arrow">→</span>
+      </a>
+      <a class="moat-row" href="#">
+        <svg class="icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="14" height="14"/><path d="M3 10h14M10 3v14"/></svg>
+        <span><span class="name">Fuse box layout</span><span class="peek">Under-hood · cabin · amperage · circuit assignment</span></span>
+        <span class="arrow">→</span>
+      </a>
+      <a class="moat-row" href="#">
+        <svg class="icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 5h14M3 10h14M3 15h9"/></svg>
+        <span><span class="name">Service procedures</span><span class="peek">Reset · jump-start · flat-tow · battery disconnect</span></span>
+        <span class="arrow">→</span>
+      </a>
+      <a class="moat-row" href="#">
+        <svg class="icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 7 10 3l7 4M3 7v7l7 4 7-4V7"/></svg>
+        <span><span class="name">Towing &amp; load</span><span class="peek">Braked &amp; unbraked · payload · roof · trailer wiring</span></span>
+        <span class="arrow">→</span>
+      </a>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="section-h">Recently published <span class="count">last 7 days</span></h2>
+    <ul class="hp-recent">
+      <li>
+        <a class="name plain" href="generation.html">Honda Civic Sedan (X) · 2016 – 2021</a>
+        <span class="meta">2026-05-18 · 41 specs</span>
+      </li>
+      <li>
+        <a class="name plain" href="#">BMW 3 Series (G20) · 2019 – present</a>
+        <span class="meta">2026-05-17 · 47 specs</span>
+      </li>
+      <li>
+        <a class="name plain" href="#">Toyota Camry (XV70) · 2017 – 2024</a>
+        <span class="meta">2026-05-17 · 39 specs</span>
+      </li>
+      <li>
+        <a class="name plain" href="#">Volkswagen Golf Mk8 · 2019 – present</a>
+        <span class="meta">2026-05-16 · 44 specs</span>
+      </li>
+      <li>
+        <a class="name plain" href="#">Tesla Model 3 · 2017 – present</a>
+        <span class="meta">2026-05-15 · 28 specs</span>
+      </li>
+      <li>
+        <a class="name plain" href="#">Ford Focus Mk4 · 2018 – present</a>
+        <span class="meta">2026-05-15 · 36 specs</span>
+      </li>
+    </ul>
+  </section>
+
+  <section>
+    <h2 class="section-h">Methodology</h2>
+    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--s-6); font-size: 13px; color: var(--ink-soft); line-height: 1.55;">
+      <div>
+        <h3 style="color: var(--ink); margin-bottom: var(--s-2);">Multi-source verification</h3>
+        Every published value is corroborated against at least two independent sources — manufacturer service literature, factory-authorised workshop databases, OEM service bulletins. Discrepancies above ±5&nbsp;% are flagged for human review before publication.
+      </div>
+      <div>
+        <h3 style="color: var(--ink); margin-bottom: var(--s-2);">Date-stamped</h3>
+        Every record carries a retrieval date and source attribution. When manufacturers revise a specification — typically via service bulletin — the prior value is preserved and the change date recorded.
+      </div>
+      <div>
+        <h3 style="color: var(--ink); margin-bottom: var(--s-2);">Market-aware</h3>
+        Specifications often differ between US, EU, JDM and other markets for the same nameplate. Where a difference exists, the page surfaces all variants rather than presenting a single global figure.
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="shell">
+    <div class="foot-grid">
+      <div>
+        <a href="index.html" class="wordmark">ownerspecs</a>
+        <p>Cross-verified vehicle specifications and owner-manual data for every car, every generation, every market.</p>
+        <div style="margin-top: var(--s-3);"><span class="market-pill">Global · multi-market</span></div>
+      </div>
+      <div>
+        <h4>Catalogue</h4>
+        <ul>
+          <li><a href="#">By manufacturer</a></li>
+          <li><a href="#">By body type</a></li>
+          <li><a href="#">By fuel</a></li>
+          <li><a href="#">By market</a></li>
+          <li><a href="compare.html">Compare</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Data</h4>
+        <ul>
+          <li><a href="oil-capacity.html">Fluids</a></li>
+          <li><a href="maintenance.html">Maintenance</a></li>
+          <li><a href="#">Torque</a></li>
+          <li><a href="#">Electrical</a></li>
+          <li><a href="#">Procedures</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Sister sites</h4>
+        <ul>
+          <li><a href="#">vindecoder.site</a></li>
+          <li><a href="#">autodtcs.com</a></li>
+          <li><a href="#">servicereset.net</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>About</h4>
+        <ul>
+          <li><a href="#">Methodology</a></li>
+          <li><a href="#">Sources</a></li>
+          <li><a href="#">Contact</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <span>© 2026 ownerspecs · v0.1</span>
+      <span>Last updated · 2026-05-18</span>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
