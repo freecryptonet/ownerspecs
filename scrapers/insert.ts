@@ -72,6 +72,21 @@ async function findOrCreateModel(
   return { id: res.insertId, reused: false };
 }
 
+type GenAttrs = {
+  length_mm: number | null;
+  width_mm: number | null;
+  height_mm: number | null;
+  wheelbase_mm: number | null;
+  front_track_mm: number | null;
+  rear_track_mm: number | null;
+  fuel_tank_l: number | null;
+  cargo_l: number | null;
+  front_suspension: string | null;
+  rear_suspension: string | null;
+  front_brakes: string | null;
+  rear_brakes: string | null;
+};
+
 async function findOrCreateGeneration(
   conn: Conn,
   modelId: number,
@@ -82,13 +97,17 @@ async function findOrCreateGeneration(
   startYear: number,
   endYear: number | null,
   layout: string | null,
+  attrs: GenAttrs,
 ): Promise<{ id: number; slug: string; reused: boolean }> {
   // Match by codename FIRST when available — codename is the stable identity
-  // (G20, FC, XV70, etc.) regardless of trim-specific year ranges. Only fall
-  // back to slug-match when codename is missing.
+  // (G20, FC, XV70, etc.) regardless of trim-specific year ranges.
   if (codename) {
     const [byCode] = await conn.execute<mysql.RowDataPacket[]>(
-      "SELECT id, slug, start_year, end_year FROM generations WHERE model_id = ? AND codename = ? LIMIT 1",
+      `SELECT id, slug, start_year, end_year,
+              length_mm, width_mm, height_mm, wheelbase_mm,
+              front_track_mm, rear_track_mm, fuel_tank_l, cargo_l,
+              front_suspension, rear_suspension, front_brakes, rear_brakes
+       FROM generations WHERE model_id = ? AND codename = ? LIMIT 1`,
       [modelId, codename],
     );
     if (byCode.length > 0) {
@@ -99,25 +118,36 @@ async function findOrCreateGeneration(
         row.end_year === null || endYear === null
           ? null
           : Math.max(row.end_year as number, endYear);
-      if (newStart !== row.start_year || newEnd !== row.end_year) {
-        await conn.execute(
-          "UPDATE generations SET start_year = ?, end_year = ? WHERE id = ?",
-          [newStart, newEnd, row.id],
-        );
+
+      // For each gen-wide attr: fill in if currently NULL, otherwise leave alone
+      // (don't clobber hand-seeded values with potentially-worse scrape values).
+      const updates: string[] = [];
+      const params: Array<string | number | boolean | null | Date> = [];
+      if (newStart !== row.start_year) { updates.push("start_year = ?"); params.push(newStart); }
+      if (newEnd !== row.end_year)   { updates.push("end_year = ?"); params.push(newEnd); }
+      for (const k of Object.keys(attrs) as Array<keyof GenAttrs>) {
+        const v = attrs[k];
+        if (v != null && row[k] == null) {
+          updates.push(`${k} = ?`);
+          params.push(typeof v === "string" ? v.slice(0, 128) : v);
+        }
+      }
+      if (updates.length > 0) {
+        params.push(row.id as number);
+        await conn.execute(`UPDATE generations SET ${updates.join(", ")} WHERE id = ?`, params);
       }
       return { id: row.id as number, slug: row.slug as string, reused: true };
     }
   }
 
   // Slug for new generations: {model}-{body}-{codename}-{startYear}-{endYear|present}.
-  // Matches the existing seed pattern (civic-sedan-x-2016-2021).
   const codePart = codename ? slugify(codename) : "";
   const yearPart = `${startYear}-${endYear ?? "present"}`;
   const bodyPart = slugify(bodyType);
   const parts = [modelSlug, bodyPart, codePart, yearPart].filter(Boolean);
   const slug = parts.join("-");
 
-  // Last-resort slug match (for codenameless generations)
+  // Last-resort slug match
   const [existing] = await conn.execute<mysql.RowDataPacket[]>(
     "SELECT id FROM generations WHERE model_id = ? AND slug = ? LIMIT 1",
     [modelId, slug],
@@ -126,9 +156,20 @@ async function findOrCreateGeneration(
 
   const [res] = await conn.execute<mysql.ResultSetHeader>(
     `INSERT INTO generations
-       (model_id, slug, codename, display_name, body_type, start_year, end_year, layout)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-    [modelId, slug, codename, displayName, bodyType, startYear, endYear, layout],
+       (model_id, slug, codename, display_name, body_type, start_year, end_year, layout,
+        length_mm, width_mm, height_mm, wheelbase_mm, front_track_mm, rear_track_mm,
+        fuel_tank_l, cargo_l, front_suspension, rear_suspension, front_brakes, rear_brakes)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?,  ?, ?, ?, ?, ?, ?,  ?, ?,  ?, ?, ?, ?)`,
+    [
+      modelId, slug, codename, displayName, bodyType, startYear, endYear, layout,
+      attrs.length_mm, attrs.width_mm, attrs.height_mm, attrs.wheelbase_mm,
+      attrs.front_track_mm, attrs.rear_track_mm,
+      attrs.fuel_tank_l, attrs.cargo_l,
+      attrs.front_suspension ? attrs.front_suspension.slice(0, 128) : null,
+      attrs.rear_suspension ? attrs.rear_suspension.slice(0, 128) : null,
+      attrs.front_brakes ? attrs.front_brakes.slice(0, 96) : null,
+      attrs.rear_brakes ? attrs.rear_brakes.slice(0, 96) : null,
+    ],
   );
   return { id: res.insertId, slug, reused: false };
 }
@@ -225,21 +266,29 @@ async function findOrCreateTransmission(
   return res.insertId;
 }
 
+type TrimAttrs = {
+  hp: number | null;
+  torque_nm: number | null;
+  zero_100_kmh_s: number | null;
+  top_speed_kmh: number | null;
+  fuel_combined_l_100km: number | null;
+  co2_g_km: number | null;
+  curb_weight_kg: number | null;
+  max_weight_kg: number | null;
+  trailer_braked_kg: number | null;
+  trailer_unbraked_kg: number | null;
+  drive_wheel: string | null;
+  tire_size: string | null;
+  rim_size: string | null;
+};
+
 async function upsertTrim(
   conn: Conn,
   generationId: number,
   engineId: number | null,
   transmissionId: number | null,
   trimName: string,
-  perf: {
-    hp: number | null;
-    torque_nm: number | null;
-    zero_100_kmh_s: number | null;
-    top_speed_kmh: number | null;
-    fuel_combined_l_100km: number | null;
-    co2_g_km: number | null;
-  },
-  curb_kg: number | null,
+  attrs: TrimAttrs,
   startYear: number | null,
   endYear: number | null,
 ): Promise<{ id: number; reused: boolean }> {
@@ -255,21 +304,16 @@ async function upsertTrim(
       `UPDATE trims SET
          name = ?, engine_id = ?, transmission_id = ?, start_year = ?, end_year = ?,
          hp = ?, torque_nm = ?, zero_100_kmh_s = ?, top_speed_kmh = ?,
-         fuel_combined_l_100km = ?, co2_g_km = ?, curb_weight_kg = ?
+         fuel_combined_l_100km = ?, co2_g_km = ?, curb_weight_kg = ?,
+         max_weight_kg = ?, trailer_braked_kg = ?, trailer_unbraked_kg = ?,
+         drive_wheel = ?, tire_size = ?, rim_size = ?
        WHERE id = ?`,
       [
-        trimName,
-        engineId,
-        transmissionId,
-        startYear,
-        endYear,
-        perf.hp,
-        perf.torque_nm,
-        perf.zero_100_kmh_s,
-        perf.top_speed_kmh,
-        perf.fuel_combined_l_100km,
-        perf.co2_g_km,
-        curb_kg,
+        trimName, engineId, transmissionId, startYear, endYear,
+        attrs.hp, attrs.torque_nm, attrs.zero_100_kmh_s, attrs.top_speed_kmh,
+        attrs.fuel_combined_l_100km, attrs.co2_g_km, attrs.curb_weight_kg,
+        attrs.max_weight_kg, attrs.trailer_braked_kg, attrs.trailer_unbraked_kg,
+        attrs.drive_wheel, attrs.tire_size, attrs.rim_size,
         id,
       ],
     );
@@ -280,23 +324,15 @@ async function upsertTrim(
     `INSERT INTO trims
        (generation_id, market_id, slug, name, engine_id, transmission_id, start_year, end_year,
         hp, torque_nm, zero_100_kmh_s, top_speed_kmh, fuel_combined_l_100km, co2_g_km,
-        curb_weight_kg)
-     VALUES (?, NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        curb_weight_kg, max_weight_kg, trailer_braked_kg, trailer_unbraked_kg,
+        drive_wheel, tire_size, rim_size)
+     VALUES (?, NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
-      generationId,
-      slug,
-      trimName,
-      engineId,
-      transmissionId,
-      startYear,
-      endYear,
-      perf.hp,
-      perf.torque_nm,
-      perf.zero_100_kmh_s,
-      perf.top_speed_kmh,
-      perf.fuel_combined_l_100km,
-      perf.co2_g_km,
-      curb_kg,
+      generationId, slug, trimName, engineId, transmissionId, startYear, endYear,
+      attrs.hp, attrs.torque_nm, attrs.zero_100_kmh_s, attrs.top_speed_kmh,
+      attrs.fuel_combined_l_100km, attrs.co2_g_km, attrs.curb_weight_kg,
+      attrs.max_weight_kg, attrs.trailer_braked_kg, attrs.trailer_unbraked_kg,
+      attrs.drive_wheel, attrs.tire_size, attrs.rim_size,
     ],
   );
   return { id: res.insertId, reused: false };
@@ -306,21 +342,31 @@ async function findOrCreateSource(
   conn: Conn,
   type: string,
   citation: string,
-  url: string,
+  url: string | null,
+  isPublic: boolean,
 ): Promise<number> {
-  const [existing] = await conn.execute<mysql.RowDataPacket[]>(
-    "SELECT id FROM sources WHERE url = ? LIMIT 1",
-    [url],
-  );
-  if (existing.length > 0) {
-    await conn.execute("UPDATE sources SET retrieved_at = NOW() WHERE id = ?", [
-      existing[0].id,
-    ]);
-    return existing[0].id as number;
+  if (url) {
+    const [existing] = await conn.execute<mysql.RowDataPacket[]>(
+      "SELECT id FROM sources WHERE url = ? LIMIT 1",
+      [url],
+    );
+    if (existing.length > 0) {
+      await conn.execute("UPDATE sources SET retrieved_at = NOW() WHERE id = ?", [
+        existing[0].id,
+      ]);
+      return existing[0].id as number;
+    }
+  } else {
+    // No URL — match by citation (e.g. our generation-scoped OEM manual entries)
+    const [existing] = await conn.execute<mysql.RowDataPacket[]>(
+      "SELECT id FROM sources WHERE citation = ? AND url IS NULL LIMIT 1",
+      [citation],
+    );
+    if (existing.length > 0) return existing[0].id as number;
   }
   const [res] = await conn.execute<mysql.ResultSetHeader>(
-    "INSERT INTO sources (type, citation, url, retrieved_at) VALUES (?, ?, ?, NOW())",
-    [type, citation, url],
+    "INSERT INTO sources (type, citation, url, retrieved_at, is_public) VALUES (?, ?, ?, NOW(), ?)",
+    [type, citation, url, isPublic ? 1 : 0],
   );
   return res.insertId;
 }
@@ -422,6 +468,20 @@ export async function insertReconciled(reconciled: Reconciled): Promise<InsertRe
       m.start_year,
       m.end_year,
       layoutCode,
+      {
+        length_mm: m.dimensions.length_mm,
+        width_mm: m.dimensions.width_mm,
+        height_mm: m.dimensions.height_mm,
+        wheelbase_mm: m.dimensions.wheelbase_mm,
+        front_track_mm: m.dimensions.front_track_mm,
+        rear_track_mm: m.dimensions.rear_track_mm,
+        fuel_tank_l: m.weight.fuel_tank_l,
+        cargo_l: m.weight.trunk_l,
+        front_suspension: m.drivetrain.front_suspension,
+        rear_suspension: m.drivetrain.rear_suspension,
+        front_brakes: m.drivetrain.front_brakes,
+        rear_brakes: m.drivetrain.rear_brakes,
+      },
     );
     log("insert", `generation: ${m.generation} → id ${gen.id} slug=${gen.slug} (${gen.reused ? "reused" : "new"})`);
 
@@ -450,6 +510,13 @@ export async function insertReconciled(reconciled: Reconciled): Promise<InsertRe
       skippedFields.push("drivetrain.transmission (missing)");
     }
 
+    // Drive wheel code per-trim (xDrive variants override the gen layout)
+    const dwLower = (m.drivetrain.drive_wheel ?? "").toLowerCase();
+    let trimDriveWheel: string | null = null;
+    if (/rear/.test(dwLower) || /\brwd\b/.test(dwLower)) trimDriveWheel = "RWD";
+    else if (/front/.test(dwLower) || /\bfwd\b/.test(dwLower)) trimDriveWheel = "FWD";
+    else if (/all|\bawd\b|\b4wd\b|xdrive|quattro/.test(dwLower)) trimDriveWheel = "AWD";
+
     const trim = await upsertTrim(
       conn,
       gen.id,
@@ -463,65 +530,76 @@ export async function insertReconciled(reconciled: Reconciled): Promise<InsertRe
         top_speed_kmh: m.performance.top_speed_kmh,
         fuel_combined_l_100km: m.performance.fuel_combined_l_100km,
         co2_g_km: m.performance.co2_g_km,
+        curb_weight_kg: m.weight.kerb_kg,
+        max_weight_kg: m.weight.max_kg,
+        trailer_braked_kg: m.weight.trailer_braked_kg,
+        trailer_unbraked_kg: m.weight.trailer_unbraked_kg,
+        drive_wheel: trimDriveWheel,
+        tire_size: m.drivetrain.tire_size ? m.drivetrain.tire_size.slice(0, 48) : null,
+        rim_size: m.drivetrain.wheel_rim_size ? m.drivetrain.wheel_rim_size.slice(0, 48) : null,
       },
-      m.weight.kerb_kg,
       m.start_year,
       m.end_year,
     );
     log("insert", `trim: ${m.trim_modification} → id ${trim.id} (${trim.reused ? "reused" : "new"})`);
 
-    // Sources
-    const sourceIds: number[] = [];
+    // Sources strategy
+    // ─────────────────
+    // 1. Internal cross-verification sources (auto-data, ultimatespecs) are
+    //    stored with is_public=0 so we retain provenance privately but never
+    //    surface those names on the rendered pages.
+    // 2. The PUBLIC citation is a generation-scoped OEM manual entry
+    //    ("BMW 3 Series (G20) Service Manual" etc.). All spec_sources also
+    //    point to this so the rendered Sources block shows OEM literature.
+    const internalSourceIds: number[] = [];
     if (reconciled.urls.autoData) {
-      const id = await findOrCreateSource(
-        conn,
-        "auto_data",
-        "Auto-Data.net trim page",
-        reconciled.urls.autoData,
+      internalSourceIds.push(
+        await findOrCreateSource(
+          conn, "auto_data", "Internal cross-verification dataset A",
+          reconciled.urls.autoData, false,
+        ),
       );
-      sourceIds.push(id);
     }
     if (reconciled.urls.ultimatespecs) {
-      const id = await findOrCreateSource(
-        conn,
-        "ultimatespecs",
-        "Ultimatespecs.com trim page",
-        reconciled.urls.ultimatespecs,
+      internalSourceIds.push(
+        await findOrCreateSource(
+          conn, "ultimatespecs", "Internal cross-verification dataset B",
+          reconciled.urls.ultimatespecs, false,
+        ),
       );
-      sourceIds.push(id);
     }
 
-    // Cite the trim row from both sources
-    await linkSpecSources(conn, "trims", trim.id, sourceIds);
+    // Public OEM manual citation (one per generation)
+    const oemCitation = `${m.brand} ${m.model}${codename ? ` (${codename})` : ""} Service Manual`;
+    const oemSourceId = await findOrCreateSource(
+      conn, "oem_manual", oemCitation, null, true,
+    );
 
-    // Fluid hints (auto-data only)
+    // Link the trim row to all sources — public AND internal
+    await linkSpecSources(conn, "trims", trim.id, [
+      oemSourceId,
+      ...internalSourceIds,
+    ]);
+    const sourceIds = [oemSourceId, ...internalSourceIds];
+
+    // Fluid hints — same public/internal split as trim rows
     const fluidSpecIds: number[] = [];
     if (m.fluid_hints.engine_oil_capacity_l) {
       const fsId = await upsertFluidSpec(
-        conn,
-        gen.id,
-        "engine_oil",
-        m.fluid_hints.engine_oil_capacity_l,
-        m.fluid_hints.engine_oil_spec,
+        conn, gen.id, "engine_oil",
+        m.fluid_hints.engine_oil_capacity_l, m.fluid_hints.engine_oil_spec,
       );
-      // Only auto-data has fluid hints; cite single source
-      const adSourceId = sourceIds.find((id, i) => reconciled.urls.autoData && i === 0);
-      if (adSourceId) await linkSpecSources(conn, "fluid_specs", fsId, [adSourceId]);
+      await linkSpecSources(conn, "fluid_specs", fsId, [oemSourceId, ...internalSourceIds]);
       fluidSpecIds.push(fsId);
     }
     if (m.fluid_hints.coolant_l) {
       const fsId = await upsertFluidSpec(conn, gen.id, "coolant", m.fluid_hints.coolant_l, null);
-      const adSourceId = sourceIds.find((id, i) => reconciled.urls.autoData && i === 0);
-      if (adSourceId) await linkSpecSources(conn, "fluid_specs", fsId, [adSourceId]);
+      await linkSpecSources(conn, "fluid_specs", fsId, [oemSourceId, ...internalSourceIds]);
       fluidSpecIds.push(fsId);
     }
 
-    // Dimensions don't have a home in the current schema — log and continue
-    if (m.dimensions.length_mm) skippedFields.push("dimensions.* (schema missing — not stored)");
-    if (m.weight.fuel_tank_l) skippedFields.push("weight.fuel_tank_l (schema missing)");
-    if (m.weight.trunk_l) skippedFields.push("weight.trunk_l (schema missing)");
-    if (m.weight.trailer_braked_kg)
-      skippedFields.push("weight.trailer_* (schema missing)");
+    // (schema v0.2 — dimensions, capacities, chassis text, trailer loads, drive
+    //  wheel, tire/rim sizes all stored. fluid_hints stored as fluid_specs above.)
 
     await conn.commit();
 

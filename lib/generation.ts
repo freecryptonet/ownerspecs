@@ -26,6 +26,19 @@ export type Generation = {
   end_year: number | null;
   layout: string | null;
   platform: string | null;
+  // Schema v0.2 — gen-wide dimensions + chassis text
+  length_mm: number | null;
+  width_mm: number | null;
+  height_mm: number | null;
+  wheelbase_mm: number | null;
+  front_track_mm: number | null;
+  rear_track_mm: number | null;
+  fuel_tank_l: string | null; // decimal returned as string by mysql2
+  cargo_l: number | null;
+  front_suspension: string | null;
+  rear_suspension: string | null;
+  front_brakes: string | null;
+  rear_brakes: string | null;
 };
 
 export type Market = { id: number; code: string; name: string };
@@ -59,7 +72,10 @@ export async function getGenerationBase(
 
   const gen = await queryOne<Generation>(
     `SELECT g.id, g.model_id, g.slug, g.ordinal, g.codename, g.display_name,
-            g.body_type, g.start_year, g.end_year, g.layout, g.platform
+            g.body_type, g.start_year, g.end_year, g.layout, g.platform,
+            g.length_mm, g.width_mm, g.height_mm, g.wheelbase_mm,
+            g.front_track_mm, g.rear_track_mm, g.fuel_tank_l, g.cargo_l,
+            g.front_suspension, g.rear_suspension, g.front_brakes, g.rear_brakes
      FROM generations g
      JOIN models m ON m.id = g.model_id
      WHERE g.slug = ? AND m.make_id = ?
@@ -86,7 +102,9 @@ export async function getGenerationBase(
   return { make, model, gen, markets };
 }
 
-/** Sources that back any spec belonging to this generation, across all spec tables. */
+/** Sources that back any spec belonging to this generation, across all spec
+ *  tables. PUBLIC-VISIBLE only — internal cross-verification sources (auto_data,
+ *  ultimatespecs, haynespro) have `is_public = 0` and are filtered out. */
 export async function getGenerationSources(
   generationId: number,
 ): Promise<SourceRow[]> {
@@ -94,33 +112,29 @@ export async function getGenerationSources(
     `SELECT DISTINCT s.id, s.type, s.citation, s.url, s.retrieved_at, s.notes
      FROM sources s
      JOIN spec_sources ss ON ss.source_id = s.id
-     WHERE ss.spec_table IN ('fluid_specs','torque_specs','electrical_specs','bulbs',
-                              'fuses','parts','service_intervals','tire_pressures')
+     WHERE s.is_public = 1
+       AND ss.spec_table IN ('trims','fluid_specs','torque_specs','electrical_specs',
+                              'bulbs','fuses','parts','service_intervals','tire_pressures')
        AND ss.spec_id IN (
-         SELECT id FROM fluid_specs       WHERE generation_id = ?
-         UNION ALL SELECT id FROM torque_specs     WHERE generation_id = ?
-         UNION ALL SELECT id FROM electrical_specs WHERE generation_id = ?
-         UNION ALL SELECT id FROM bulbs            WHERE generation_id = ?
-         UNION ALL SELECT id FROM fuses            WHERE generation_id = ?
-         UNION ALL SELECT id FROM parts            WHERE generation_id = ?
+         SELECT id FROM trims              WHERE generation_id = ?
+         UNION ALL SELECT id FROM fluid_specs       WHERE generation_id = ?
+         UNION ALL SELECT id FROM torque_specs      WHERE generation_id = ?
+         UNION ALL SELECT id FROM electrical_specs  WHERE generation_id = ?
+         UNION ALL SELECT id FROM bulbs             WHERE generation_id = ?
+         UNION ALL SELECT id FROM fuses             WHERE generation_id = ?
+         UNION ALL SELECT id FROM parts             WHERE generation_id = ?
          UNION ALL SELECT id FROM service_intervals WHERE generation_id = ?
-         UNION ALL SELECT id FROM tire_pressures   WHERE generation_id = ?
+         UNION ALL SELECT id FROM tire_pressures    WHERE generation_id = ?
        )
      ORDER BY s.id`,
     [
-      generationId,
-      generationId,
-      generationId,
-      generationId,
-      generationId,
-      generationId,
-      generationId,
-      generationId,
+      generationId, generationId, generationId, generationId, generationId,
+      generationId, generationId, generationId, generationId,
     ],
   );
 }
 
-/** Sources that back rows in a single spec table for this generation. */
+/** Sources that back rows in a single spec table for this generation. PUBLIC-VISIBLE. */
 export async function getSourcesFor(
   generationId: number,
   specTable: string,
@@ -129,7 +143,8 @@ export async function getSourcesFor(
     `SELECT DISTINCT s.id, s.type, s.citation, s.url, s.retrieved_at, s.notes
      FROM sources s
      JOIN spec_sources ss ON ss.source_id = s.id
-     WHERE ss.spec_table = ?
+     WHERE s.is_public = 1
+       AND ss.spec_table = ?
        AND ss.spec_id IN (SELECT id FROM ${specTable} WHERE generation_id = ?)
      ORDER BY s.id`,
     [specTable, generationId],
