@@ -104,7 +104,11 @@ export async function getGenerationBase(
 
 /** Sources that back any spec belonging to this generation, across all spec
  *  tables. PUBLIC-VISIBLE only — internal cross-verification sources (auto_data,
- *  ultimatespecs, haynespro) have `is_public = 0` and are filtered out. */
+ *  ultimatespecs, haynespro) have `is_public = 0` and are filtered out.
+ *
+ *  Each (spec_table, spec_id) pair must match the right table — IDs are not
+ *  unique across spec tables, so a single IN list over a UNION of all tables
+ *  cross-pollinates sources between generations. */
 export async function getGenerationSources(
   generationId: number,
 ): Promise<SourceRow[]> {
@@ -112,20 +116,17 @@ export async function getGenerationSources(
     `SELECT DISTINCT s.id, s.type, s.citation, s.url, s.retrieved_at, s.notes
      FROM sources s
      JOIN spec_sources ss ON ss.source_id = s.id
-     WHERE s.is_public = 1
-       AND ss.spec_table IN ('trims','fluid_specs','torque_specs','electrical_specs',
-                              'bulbs','fuses','parts','service_intervals','tire_pressures')
-       AND ss.spec_id IN (
-         SELECT id FROM trims              WHERE generation_id = ?
-         UNION ALL SELECT id FROM fluid_specs       WHERE generation_id = ?
-         UNION ALL SELECT id FROM torque_specs      WHERE generation_id = ?
-         UNION ALL SELECT id FROM electrical_specs  WHERE generation_id = ?
-         UNION ALL SELECT id FROM bulbs             WHERE generation_id = ?
-         UNION ALL SELECT id FROM fuses             WHERE generation_id = ?
-         UNION ALL SELECT id FROM parts             WHERE generation_id = ?
-         UNION ALL SELECT id FROM service_intervals WHERE generation_id = ?
-         UNION ALL SELECT id FROM tire_pressures    WHERE generation_id = ?
-       )
+     WHERE s.is_public = 1 AND (
+        (ss.spec_table = 'trims'             AND ss.spec_id IN (SELECT id FROM trims              WHERE generation_id = ?)) OR
+        (ss.spec_table = 'fluid_specs'       AND ss.spec_id IN (SELECT id FROM fluid_specs        WHERE generation_id = ?)) OR
+        (ss.spec_table = 'torque_specs'      AND ss.spec_id IN (SELECT id FROM torque_specs       WHERE generation_id = ?)) OR
+        (ss.spec_table = 'electrical_specs'  AND ss.spec_id IN (SELECT id FROM electrical_specs   WHERE generation_id = ?)) OR
+        (ss.spec_table = 'bulbs'             AND ss.spec_id IN (SELECT id FROM bulbs              WHERE generation_id = ?)) OR
+        (ss.spec_table = 'fuses'             AND ss.spec_id IN (SELECT id FROM fuses              WHERE generation_id = ?)) OR
+        (ss.spec_table = 'parts'             AND ss.spec_id IN (SELECT id FROM parts              WHERE generation_id = ?)) OR
+        (ss.spec_table = 'service_intervals' AND ss.spec_id IN (SELECT id FROM service_intervals  WHERE generation_id = ?)) OR
+        (ss.spec_table = 'tire_pressures'    AND ss.spec_id IN (SELECT id FROM tire_pressures     WHERE generation_id = ?))
+     )
      ORDER BY s.id`,
     [
       generationId, generationId, generationId, generationId, generationId,

@@ -34,12 +34,12 @@ type OilRow = {
   engine_display: string | null;
 };
 
-const engineLabel: Record<string, string> = {
-  engine_oil: "1.5 T (L15B7) — Sport · EX-T · Touring",
-  engine_oil_2_0: "2.0 NA (K20C2) — LX · EX",
-  engine_oil_1_0t: "1.0 T (L10B1) — EU / UK only",
-  engine_oil_diesel: "1.6 diesel (N16A1) — EU / UK only",
-};
+function rowLabel(o: { engine_display: string | null; trim_name: string | null; fluid_type: string }): string {
+  if (o.engine_display && o.trim_name) return `${o.engine_display} — ${o.trim_name}`;
+  if (o.engine_display) return o.engine_display;
+  if (o.trim_name) return o.trim_name;
+  return "All engines · generation-wide";
+}
 
 export async function generateStaticParams(): Promise<Params[]> {
   return getAllGenerationParams();
@@ -146,9 +146,7 @@ export default async function Page({ params }: { params: Promise<Params> }) {
       <main className="shell">
         {/* ANSWER CARD — primary engine variant */}
         <section style={{ paddingTop: "var(--s-5)" }}>
-          <h2 className="section-h">
-            {engineLabel[primary.fluid_type] ?? primary.engine_display ?? "Primary trim"}
-          </h2>
+          <h2 className="section-h">{rowLabel(primary)}</h2>
           <div className="answer-card">
             <div>
               <div className="a-label">Capacity with new filter</div>
@@ -159,10 +157,14 @@ export default async function Page({ params }: { params: Promise<Params> }) {
                 </span>
               </div>
               <div className="a-sub">
-                {primary.viscosity} full-synthetic
+                {primary.viscosity}
                 {primary.spec_standard && ` · ${primary.spec_standard}`}
                 {primary.notes && primary.notes.length < 80 && ` · ${primary.notes}`}
-                <sup className="cite">[1][2]</sup>
+                {sources.length > 0 && (
+                  <sup className="cite">
+                    {sources.map((_, i) => `[${i + 1}]`).join("")}
+                  </sup>
+                )}
               </div>
             </div>
             <table className="ib-table" style={{ border: 0 }}>
@@ -246,9 +248,7 @@ export default async function Page({ params }: { params: Promise<Params> }) {
               {oils.map((o) => (
                 <tr key={o.id}>
                   <th>
-                    <strong style={{ color: "var(--ink)" }}>
-                      {engineLabel[o.fluid_type] ?? o.engine_display ?? o.fluid_type}
-                    </strong>
+                    <strong style={{ color: "var(--ink)" }}>{rowLabel(o)}</strong>
                   </th>
                   <td>{o.market_code ?? "global"}</td>
                   <td>

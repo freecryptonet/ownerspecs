@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { query, queryOne } from "@/lib/db";
+import { getGenerationSources } from "@/lib/generation";
 
 type Params = { brand: string; generation: string };
 
@@ -302,27 +303,7 @@ async function getGenerationData(brand: string, generation: string) {
   // PUBLIC SOURCES ONLY — internal cross-verification sources (auto_data,
   // ultimatespecs, haynespro) are kept in the DB for provenance but filtered
   // out of the rendered Sources block. See sources.is_public.
-  const sources = await query<SourceRow>(
-    `SELECT DISTINCT s.id, s.type, s.citation, s.url, s.retrieved_at, s.notes
-     FROM sources s
-     JOIN spec_sources ss ON ss.source_id = s.id
-     WHERE s.is_public = 1
-       AND ss.spec_table IN ('trims','fluid_specs','torque_specs','electrical_specs',
-                              'bulbs','fuses','parts','service_intervals','tire_pressures')
-       AND ss.spec_id IN (
-         SELECT id FROM trims              WHERE generation_id = ?
-         UNION ALL SELECT id FROM fluid_specs       WHERE generation_id = ?
-         UNION ALL SELECT id FROM torque_specs      WHERE generation_id = ?
-         UNION ALL SELECT id FROM electrical_specs  WHERE generation_id = ?
-         UNION ALL SELECT id FROM bulbs             WHERE generation_id = ?
-         UNION ALL SELECT id FROM fuses             WHERE generation_id = ?
-         UNION ALL SELECT id FROM parts             WHERE generation_id = ?
-         UNION ALL SELECT id FROM service_intervals WHERE generation_id = ?
-         UNION ALL SELECT id FROM tire_pressures    WHERE generation_id = ?
-       )
-     ORDER BY s.id`,
-    [gen.id, gen.id, gen.id, gen.id, gen.id, gen.id, gen.id, gen.id, gen.id],
-  );
+  const sources = await getGenerationSources(gen.id);
 
   return {
     make,

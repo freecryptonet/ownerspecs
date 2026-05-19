@@ -221,7 +221,11 @@ export default async function Page({ params }: { params: Promise<Params> }) {
                     }}
                   >
                     {row!.notes ?? note}
-                    <sup className="cite">[1][2]</sup>
+                    {sources.length > 0 && (
+                      <sup className="cite">
+                        {sources.map((_, i) => `[${i + 1}]`).join("")}
+                      </sup>
+                    )}
                   </div>
                 </div>
               ))}
