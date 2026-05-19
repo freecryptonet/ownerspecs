@@ -576,6 +576,7 @@ export default async function Page({ params }: { params: Promise<Params> }) {
         {/* TRIM PERFORMANCE TABLE */}
         <section>
           <h2 className="section-h">Trims &amp; performance <span className="count">{trims.length} trims</span></h2>
+          <div className="table-scroll">
           <table className="spec-table">
             <thead style={{ background: "var(--bg-alt)" }}>
               <tr>
@@ -608,6 +609,7 @@ export default async function Page({ params }: { params: Promise<Params> }) {
               ))}
             </tbody>
           </table>
+          </div>
         </section>
 
         {/* FLUIDS */}

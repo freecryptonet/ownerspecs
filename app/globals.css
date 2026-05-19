@@ -185,9 +185,36 @@ section { padding: var(--s-7) 0; }
   font-size: 13px;
   color: var(--ink-soft);
 }
-.nav-primary a { color: var(--ink-soft); }
+.nav-primary a {
+  color: var(--ink-soft);
+  /* Mobile-safe tap target: 44px minimum touch height */
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+}
 .nav-primary a:hover { color: var(--accent); text-decoration: none; }
 .nav-primary a.active { color: var(--ink); font-weight: 500; }
+
+/* Wraps wide tables (e.g. trim performance) so they scroll
+   horizontally on mobile instead of pushing the entire page
+   past the viewport edge. */
+.table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}
+
+/* MOBILE RESPONSIVE: at narrow widths, collapse the header
+   nav + search. Wordmark stays. (Hamburger menu is a TODO.) */
+@media (max-width: 720px) {
+  .nav-primary,
+  .search-bar {
+    display: none;
+  }
+  .site-header-inner {
+    justify-content: flex-start;
+  }
+}
 
 .search-bar {
   flex: 1;
