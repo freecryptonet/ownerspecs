@@ -98,6 +98,46 @@ ssh -i ~/.ssh/autodtcs_key root@72.62.154.119 'sudo -u deploy pm2 restart os'
 - **Numbers**: store both metric and imperial where the OEM publishes both (e.g. `torque_nm` + `torque_ftlb`). Don't compute one from the other — capture what the manual says.
 - **Provenance for images**: every row in `images` must have `source`, `license`, `attribution`, `original_url`, `download_date`. Render attribution in the page footer.
 
+## Shared helpers (use these, don't reinline)
+
+- `lib/seo.ts` — `pageMetadata({title, description, path, heroPath})` returns full Metadata (canonical + OG + Twitter + robots:max-image-preview:large). `breadcrumbsJsonLd`, `vehicleJsonLd`, `techArticleJsonLd` build JSON-LD payloads.
+- `lib/labels.ts` — every DB enum → display-label map (fluid / torque / service / bulb / fuse / tire / part). Falls back to `humanize()`. When a migration adds a new enum value, add the label here in the same change.
+- `lib/generation.ts` — `getGenerationBase(brand, gen)` + `getGenerationHero(genId)` + `getGenerationSources(genId)` + `getSourcesFor(genId, table)`. Topic-page `generateMetadata` should pass `heroPath: await getGenerationHero(base.gen.id)` so share images match the gen.
+
+## Schema column widths that bite during seeding
+
+`electrical_specs.battery_group` 24, `bulbs.bulb_code` 24, `tire_pressures.tire_size` 48, `generations.layout` 16, `generations.front_suspension` / `rear_suspension` 128, `generations.front_brakes` / `rear_brakes` 96. ERROR 1406 (22001) aborts the migration mid-way — anything inserted AFTER the failing row (often `service_intervals` + `tire_pressures`) will be missing on the post-build pages. Re-insert manually with shorter strings if it happens.
+
+## Recurring data-quality patterns
+
+- **Per-row `source_count` must filter `s.is_public = 1`.** Internal cross-verification sources (auto_data, ultimatespecs, haynespro) are stored for audit but never rendered. Counting them inflates `[1][2]...[N]` citation badges. Subqueries on `fluid_specs` / `torque_specs` must `JOIN sources s ON s.id = ss.source_id WHERE s.is_public = 1` and `COUNT(DISTINCT ss.source_id)`.
+- **Thin scraper-leftover fluid rows.** The scraper auto-creates `engine_oil` + `coolant` rows from auto-data's `fluid_hints` (capacity_l only, NULL viscosity / spec_standard / filter_part_no). Hand-seeded moat migrations add rich rows for the same fluid_type without deduping → 2 rows per `engine_oil` / `coolant`. After each new moat migration, sweep:
+  ```sql
+  DELETE fs FROM fluid_specs fs
+  WHERE fs.fluid_type IN ('engine_oil','coolant')
+    AND fs.viscosity IS NULL AND fs.spec_standard IS NULL
+    AND EXISTS (SELECT 1 FROM fluid_specs fr WHERE fr.generation_id=fs.generation_id AND fr.fluid_type=fs.fluid_type AND fr.id != fs.id AND fr.spec_standard IS NOT NULL);
+  ```
+  oil-capacity page also `ORDER BY (viscosity IS NULL) ASC, (spec_standard IS NULL) ASC` to prefer rich rows for the answer card.
+- **slug-year vs `start_year` invariant.** Slug-year wins for SEO canonical. If they diverge (auto-data picks an earlier EU year while the slug uses a US start year), `UPDATE generations SET start_year = <slug-year>` rather than changing the slug.
+
+## Mobile
+
+- Wide tables MUST be wrapped: `<div className="table-scroll">…<table>…</table></div>`. The 10-column trim performance table is the recurring offender.
+- `@media (max-width: 720px)` hides `.nav-primary` + `.search-bar` in the site header (no hamburger yet). Don't try to un-hide — needs a proper hamburger build.
+- Test mobile via Playwright `browser_resize 375 812` + a horizontal-overflow probe: `document.documentElement.scrollWidth > innerWidth`.
+
+## Deploy after a code change (canonical incantation)
+
+```bash
+scp -i ~/.ssh/autodtcs_key <local-file> root@72.62.154.119:/tmp/<x>
+ssh -i ~/.ssh/autodtcs_key root@72.62.154.119 \
+  'sudo -u deploy install -m 644 /tmp/<x> /home/deploy/ownerspecs/<path>
+   sudo -u deploy bash -c "cd /home/deploy/ownerspecs && set -a && source .env.local && set +a && npm run build 2>&1 | grep -E error\\|Compiled | tail -3 && pm2 restart os --update-env 2>&1 | tail -1"'
+```
+
+`--update-env` on `pm2 restart` picks up new `.env.local` values.
+
 ## Don'ts
 
 - Never publish verbatim text from any owner manual or FSM. Facts only; procedures restated in our own words.
