@@ -13,6 +13,7 @@ import { SiteFooter } from "@/components/SiteFooter";
 import { GenerationTabs } from "@/components/GenerationTabs";
 import { VerifyBadge } from "@/components/VerifyBadge";
 import { SourcesBlock } from "@/components/SourcesBlock";
+import { torqueLabel as fastenerLabel } from "@/lib/labels";
 
 type Params = { brand: string; generation: string };
 
@@ -24,26 +25,6 @@ type TorqueRow = {
   thread_lock: string | null;
   notes: string | null;
 };
-
-const fastenerLabels: Record<string, string> = {
-  lug_nut: "Wheel lug nut",
-  spark_plug: "Spark plug",
-  oil_drain: "Engine oil drain plug",
-  wheel_hub_nut: "Wheel hub nut",
-  caliper_bolt: "Brake caliper slide bolt",
-  caliper_bracket_bolt: "Brake caliper bracket bolt",
-  control_arm_bolt: "Front control arm bolt",
-  sway_bar_link: "Sway bar end link",
-  cv_axle_nut: "CV axle nut",
-  cylinder_head_bolt: "Cylinder head bolt",
-  intake_manifold: "Intake manifold bolt",
-  exhaust_manifold: "Exhaust manifold bolt",
-  flywheel_bolt: "Flywheel bolt",
-};
-
-function fastenerLabel(f: string): string {
-  return fastenerLabels[f] ?? f.replace(/_/g, " ");
-}
 
 export async function generateStaticParams(): Promise<Params[]> {
   return getAllGenerationParams();

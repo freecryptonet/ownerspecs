@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { query, queryOne } from "@/lib/db";
 import { getGenerationSources } from "@/lib/generation";
+import { fluidLabel, torqueLabel, serviceLabel } from "@/lib/labels";
 
 type Params = { brand: string; generation: string };
 
@@ -121,93 +122,11 @@ type HeroImage = {
 };
 
 // ---------- helpers ----------
-const fluidLabels: Record<string, string> = {
-  engine_oil: "Engine oil",
-  engine_oil_2_0: "Engine oil (2.0)",
-  engine_oil_1_0t: "Engine oil (1.0T)",
-  engine_oil_diesel: "Engine oil (diesel)",
-  transmission_at: "Transmission (auto)",
-  transmission_cvt: "Transmission (CVT)",
-  transmission_mt: "Transmission (manual)",
-  transmission_dsg: "Transmission (DSG)",
-  transmission_pdk: "Transmission (PDK)",
-  gearbox: "Reducer / gearbox",
-  transfer_case: "Transfer case",
-  front_differential: "Front differential",
-  rear_differential: "Rear differential",
-  coolant: "Coolant",
-  brake: "Brake fluid",
-  ps: "Power steering",
-  ac_refrigerant: "A/C refrigerant",
-  washer: "Washer fluid",
-};
-
-const torqueLabels: Record<string, string> = {
-  lug_nut: "Wheel lug nut",
-  spark_plug: "Spark plug",
-  oil_drain: "Oil drain plug",
-  wheel_hub_nut: "Wheel hub nut",
-  caliper_bolt: "Brake caliper slide bolt",
-  caliper_bracket_bolt: "Caliper carrier bolt",
-  control_arm: "Control arm bolt",
-  transfer_case_drain: "Transfer case drain",
-  diff_fill_plug: "Differential fill plug",
-  rear_diff_fill_plug: "Rear diff fill plug",
-  gearbox_drain: "Gearbox drain",
-  gearbox_fill: "Gearbox fill",
-  pdk_drain: "PDK drain",
-  cvt_drain: "CVT drain",
-  service_disconnect: "HV service disconnect",
-  "half-shaft_nut": "Half-shaft / hub nut",
-};
-
-const serviceLabels: Record<string, string> = {
-  engine_oil_and_filter: "Engine oil & filter",
-  tire_rotation: "Tire rotation",
-  brake_inspection: "Brake inspection",
-  engine_air_filter: "Engine air filter",
-  cabin_air_filter: "Cabin air filter",
-  transmission_at_fluid: "Auto transmission fluid",
-  transmission_cvt_fluid: "CVT fluid",
-  transmission_dsg_fluid: "DSG fluid",
-  transmission_pdk_fluid: "PDK fluid",
-  transmission_mt_fluid: "Manual gear oil",
-  transfer_case_fluid: "Transfer case fluid",
-  front_differential_fluid: "Front diff fluid",
-  rear_differential_fluid: "Rear diff fluid",
-  brake_fluid_flush: "Brake fluid flush",
-  spark_plugs: "Spark plugs",
-  coolant_flush: "Coolant flush",
-  valve_clearance: "Valve clearance",
-  drive_belt_inspection: "Drive belt inspection",
-  drive_belt_replacement: "Drive belt replacement",
-  timing_belt_replacement: "Timing belt replacement",
-  tpms_sensor_battery: "TPMS sensor battery",
-  power_steering_fluid: "Power steering fluid",
-  reducer_fluid: "Reducer fluid",
-  gearbox_fluid: "Gearbox fluid",
-  lubricate_caliper: "Caliper lubrication",
-  wiper_blades: "Wiper blades",
-  ac_desiccant: "A/C desiccant",
-  hv_battery_inspection: "HV battery inspection",
-  pdk_clutch_inspection: "PDK clutch inspection",
-};
-
 function yearRange(start: number, end: number | null): string {
   return end ? `${start} – ${end}` : `${start} – present`;
 }
 
-function fluidLabel(fluidType: string): string {
-  return fluidLabels[fluidType] ?? fluidType.replace(/_/g, " ");
-}
-
-function torqueLabel(fastener: string): string {
-  return torqueLabels[fastener] ?? fastener.replace(/_/g, " ");
-}
-
-function serviceLabel(service: string): string {
-  return serviceLabels[service] ?? service.replace(/_/g, " ");
-}
+// fluidLabel, torqueLabel, serviceLabel are imported from @/lib/labels
 
 // ---------- data ----------
 async function getGenerationData(brand: string, generation: string) {

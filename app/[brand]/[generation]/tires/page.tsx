@@ -27,17 +27,13 @@ type TireRow = {
   trim_name: string | null;
 };
 
-const positionLabels: Record<string, string> = {
-  front: "Front",
-  rear: "Rear",
-  spare: "Spare",
-};
-
-const conditionLabels: Record<string, string> = {
-  normal: "Normal load",
-  max_load: "Maximum load",
-  winter: "Winter / cold weather",
-};
+// positionLabels and conditionLabels imported from @/lib/labels.
+// The local maps were missing "loaded" condition (used by F-150 +
+// Silverado), so those rows fell through to the raw "loaded" string.
+import {
+  tirePositionLabels as positionLabels,
+  tireConditionLabels as conditionLabels,
+} from "@/lib/labels";
 
 export async function generateStaticParams(): Promise<Params[]> {
   return getAllGenerationParams();

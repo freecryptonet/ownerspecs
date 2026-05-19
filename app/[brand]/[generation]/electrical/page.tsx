@@ -14,6 +14,7 @@ import { SiteFooter } from "@/components/SiteFooter";
 import { GenerationTabs } from "@/components/GenerationTabs";
 import { VerifyBadge } from "@/components/VerifyBadge";
 import { SourcesBlock } from "@/components/SourcesBlock";
+import { bulbLabel, fuseLocationLabel } from "@/lib/labels";
 
 type Params = { brand: string; generation: string };
 
@@ -39,26 +40,8 @@ type Fuse = {
   is_relay: number;
 };
 
-const bulbLabels: Record<string, string> = {
-  headlight_low: "Headlight · low beam",
-  headlight_high: "Headlight · high beam",
-  fog_front: "Fog · front",
-  fog_rear: "Fog · rear",
-  brake_tail: "Brake / tail",
-  reverse: "Reverse",
-  license_plate: "Licence plate",
-  interior_dome: "Interior · dome",
-  interior_map: "Interior · map lights",
-  glove_box: "Glove box",
-  trunk: "Trunk / cargo",
-  turn_front: "Turn signal · front",
-  turn_rear: "Turn signal · rear",
-  side_marker: "Side marker",
-};
-
-function bulbLabel(p: string): string {
-  return bulbLabels[p] ?? p.replace(/_/g, " ");
-}
+// bulbLabel imported from @/lib/labels — covers drl / frunk / cargo /
+// cargo_bed which were missing from the previous hand-maintained map.
 
 export async function generateStaticParams(): Promise<Params[]> {
   return getAllGenerationParams();

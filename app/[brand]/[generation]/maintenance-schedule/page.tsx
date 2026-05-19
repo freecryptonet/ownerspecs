@@ -13,6 +13,7 @@ import { SiteFooter } from "@/components/SiteFooter";
 import { GenerationTabs } from "@/components/GenerationTabs";
 import { VerifyBadge } from "@/components/VerifyBadge";
 import { SourcesBlock } from "@/components/SourcesBlock";
+import { serviceLabel } from "@/lib/labels";
 
 type Params = { brand: string; generation: string };
 
@@ -27,31 +28,7 @@ type ServiceRow = {
   notes: string | null;
 };
 
-const serviceLabels: Record<string, string> = {
-  engine_oil_and_filter: "Engine oil & filter",
-  tire_rotation: "Tire rotation",
-  brake_inspection: "Brake inspection",
-  engine_air_filter: "Engine air filter",
-  cabin_air_filter: "Cabin air filter",
-  transmission_cvt_fluid: "CVT fluid",
-  transmission_at_fluid: "ATF flush",
-  transmission_mt_fluid: "Manual gear oil",
-  brake_fluid_flush: "Brake fluid flush",
-  spark_plugs: "Spark plugs",
-  coolant_flush: "Coolant flush",
-  valve_clearance: "Valve clearance inspect & adjust",
-  drive_belt_inspection: "Drive belt inspection",
-  drive_belt_replacement: "Drive belt replacement",
-  timing_belt_replacement: "Timing belt replacement",
-  tpms_sensor_battery: "TPMS sensor battery",
-  rear_differential_fluid: "Rear differential fluid",
-  transfer_case_fluid: "Transfer case fluid",
-  power_steering_fluid: "Power steering fluid",
-};
-
-function serviceLabel(s: string): string {
-  return serviceLabels[s] ?? s.replace(/_/g, " ");
-}
+// serviceLabel imported from @/lib/labels
 
 export async function generateStaticParams(): Promise<Params[]> {
   return getAllGenerationParams();
