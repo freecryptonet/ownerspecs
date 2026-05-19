@@ -464,6 +464,11 @@ export async function insertReconciled(reconciled: Reconciled): Promise<InsertRe
     if (!m.model) throw new Error("merged.model is required (auto-data should provide it)");
     if (!m.generation) throw new Error("merged.generation is required");
     if (!m.body_type) throw new Error("merged.body_type is required");
+    // Auto-data sometimes tags a body type with an extra qualifier (e.g.
+    // "SUV / TT") which slugifies into ugly "-suv-tt-" paths and forks the
+    // generation when most other trims of the same gen use the bare term.
+    // Normalize to the leading token.
+    m.body_type = m.body_type.split(/\s*[\/]\s*/)[0].trim();
     if (!m.trim_modification) throw new Error("merged.trim_modification is required");
     if (m.start_year == null) throw new Error("merged.start_year is required");
 
