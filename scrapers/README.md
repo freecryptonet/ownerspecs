@@ -36,11 +36,11 @@ ownerspecs-bot/0.1 (+https://ownerspecs.com — research crawler · contact timg
 ```
 Do not change to mimic a browser. If they 403/429 us, we want to know.
 
-## Verified extraction (2026-05-18)
+## Verified extraction
 
-Test target: BMW 3 Series Sedan (G20) 330i Steptronic, auto-data.net.
+Test target: **BMW 3 Series Sedan (G20) 330i Steptronic** across both sources.
 
-**31 of 35 fields populated correctly** on first end-to-end run:
+**auto-data.net** — 31 of 35 fields populated (2026-05-18):
 - identity: brand, model, generation, trim_modification, body, doors, seats, years ✓
 - engine: code, displacement, cylinders, bore, stroke, compression, aspiration, fuel, layout ✓
 - performance: hp, torque, 0-100, top speed, fuel urban + combined, CO2, emission ✓
@@ -58,11 +58,31 @@ Known gaps to address in v2 of the parser:
 - `engine.engine_oil_spec` is login-gated on auto-data — we correctly skip the
   lock-icon placeholder; this field will come from HaynesPro / OEM manuals instead
 
+**ultimatespecs.com** — 32 of 35 fields populated (2026-05-19):
+- All ✓ from auto-data, plus: `engine.valvetrain` (16 Valves), `performance.kw` (190),
+  `dimensions.rear_track_mm` (1604), `weight.trailer_braked_kg` (1600)
+- Missing relative to auto-data: `model` (only carried in URL + title, not as a
+  cell), `start_year` / `end_year` (the page doesn't publish production years
+  as cells), `weight.trailer_unbraked_kg`, `weight.max_kg`, `emission_standard`,
+  no fluid hints (engine_oil_capacity / coolant — auto-data has these)
+
+Together the two sources are **complementary**: every field except the three
+URL-only ones (model + production years on ultimatespecs) is covered by at
+least one source. Reconciliation will fill in the gaps.
+
+**Cross-source comparison on this target — 1 real disagreement:**
+- `weight.kerb_kg`: auto-data 1470 vs ultimatespecs 1558 (88 kg, 6%). This is
+  a real measurement discrepancy — auto-data uses EU/DIN kerb weight (without
+  driver, fuel ~90%), ultimatespecs likely includes the 75 kg driver allowance.
+  Both are correct under their respective standards. Reconciliation will flag
+  this and prefer the source that better matches OEM service-manual data when
+  we cross-reference HaynesPro.
+
 ## Next steps (incremental)
 
 1. ✅ auto-data.net trim parser — 89% field-extraction on one real target
 2. ✅ CLI for one-shot scrapes with output to JSON
-3. ⏳ ultimatespecs.com parser (similar structure, parallel implementation)
+3. ✅ ultimatespecs.com parser — 91% field-extraction, complementary coverage to auto-data
 4. ⏳ Reconciliation: take auto-data + ultimatespecs outputs for the same trim,
    compare every numeric field, flag any disagreement >5%, write a merged
    record with both sources tracked
