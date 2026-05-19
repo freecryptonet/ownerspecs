@@ -29,7 +29,7 @@ type ManifestEntry = {
   trim_label: string;
   auto_data_url: string;
   ultimatespecs_url: string | null;
-  status: "ok" | "ok_reused" | "error" | "skipped_no_pair";
+  status: "ok" | "ok_reused" | "ok_auto_data_only" | "error" | "skipped_no_pair";
   trim_id?: number;
   warnings?: number;
   warning_fields?: string[];
@@ -77,28 +77,21 @@ async function main() {
     const us = pair.ultimatespecs;
     log("batch", `[${processed}/${Math.min(limit, pairs.length)}] ${ad.label}`);
 
-    if (!us) {
-      manifest.push({
-        trim_label: ad.label,
-        auto_data_url: ad.url,
-        ultimatespecs_url: null,
-        status: "skipped_no_pair",
-      });
-      continue;
-    }
-
     try {
-      const [adSpec, usSpec] = await Promise.all([
-        scrapeAutoDataTrim(ad.url),
-        scrapeUltimateSpecsTrim(us.url),
-      ]);
+      // When no ultimatespecs pair is found, fall back to auto-data only.
+      // reconcile() with the same spec on both arms produces a clean record
+      // identical to the input (every field will "agree" trivially).
+      const adSpec = await scrapeAutoDataTrim(ad.url);
+      const usSpec = us
+        ? await scrapeUltimateSpecsTrim(us.url)
+        : { ...adSpec, source: "ultimatespecs.com" as const };
       const rec = reconcile(adSpec, usSpec);
       const ins = await insertReconciled(rec);
       manifest.push({
         trim_label: ad.label,
         auto_data_url: ad.url,
-        ultimatespecs_url: us.url,
-        status: ins.reused.trim ? "ok_reused" : "ok",
+        ultimatespecs_url: us?.url ?? null,
+        status: us ? (ins.reused.trim ? "ok_reused" : "ok") : "ok_auto_data_only",
         trim_id: ins.trimId,
         warnings: rec.warnings.length,
         warning_fields: rec.warnings.map((w) => w.field),
@@ -109,7 +102,7 @@ async function main() {
       manifest.push({
         trim_label: ad.label,
         auto_data_url: ad.url,
-        ultimatespecs_url: us.url,
+        ultimatespecs_url: us?.url ?? null,
         status: "error",
         error: message,
       });
