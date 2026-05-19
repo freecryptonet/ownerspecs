@@ -28,11 +28,11 @@ type SiblingRow = { slug: string; title: string; procedure_type: string };
 
 export async function generateStaticParams(): Promise<Params[]> {
   return query<Params>(
-    `SELECT mk.slug AS brand, g.slug AS generation, p.slug AS procedure
-     FROM procedures p
-     JOIN generations g ON g.id = p.generation_id
-     JOIN models m      ON m.id = g.model_id
-     JOIN makes mk      ON mk.id = m.make_id`,
+    "SELECT mk.slug AS brand, g.slug AS generation, p.slug AS `procedure` " +
+    "FROM procedures p " +
+    "JOIN generations g ON g.id = p.generation_id " +
+    "JOIN models m      ON m.id = g.model_id " +
+    "JOIN makes mk      ON mk.id = m.make_id",
   );
 }
 

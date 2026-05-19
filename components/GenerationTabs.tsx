@@ -12,12 +12,12 @@ export function GenerationTabs({
   brand,
   generation,
   active,
-  counts,
+  counts = {},
 }: {
   brand: string;
   generation: string;
   active: TabKey;
-  counts: Partial<Record<TabKey, number>>;
+  counts?: Partial<Record<TabKey, number>>;
 }) {
   const base = `/${brand}/${generation}`;
   const tabs: Array<{ key: TabKey; label: string; href: string }> = [
