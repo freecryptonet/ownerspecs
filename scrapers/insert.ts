@@ -140,6 +140,33 @@ async function findOrCreateGeneration(
     }
   }
 
+  // When no codename, fall back to matching by (model, body_type, display_name)
+  // — different HP trims of "Golf VIII / hatchback" should still resolve to a
+  // single generation rather than splitting per trim year range.
+  if (!codename) {
+    const [byName] = await conn.execute<mysql.RowDataPacket[]>(
+      `SELECT id, slug, start_year, end_year FROM generations
+       WHERE model_id = ? AND body_type = ? AND display_name = ? AND codename IS NULL
+       LIMIT 1`,
+      [modelId, bodyType, displayName],
+    );
+    if (byName.length > 0) {
+      const row = byName[0];
+      const newStart = Math.min(row.start_year as number, startYear);
+      const newEnd =
+        row.end_year === null || endYear === null
+          ? null
+          : Math.max(row.end_year as number, endYear);
+      if (newStart !== row.start_year || newEnd !== row.end_year) {
+        await conn.execute(
+          "UPDATE generations SET start_year = ?, end_year = ? WHERE id = ?",
+          [newStart, newEnd, row.id],
+        );
+      }
+      return { id: row.id as number, slug: row.slug as string, reused: true };
+    }
+  }
+
   // Slug for new generations: {model}-{body}-{codename}-{startYear}-{endYear|present}.
   const codePart = codename ? slugify(codename) : "";
   const yearPart = `${startYear}-${endYear ?? "present"}`;
@@ -449,16 +476,24 @@ export async function insertReconciled(reconciled: Reconciled): Promise<InsertRe
     // Codename: try multiple sources — auto-data's generation string usually has
     // it in parentheticals ("3 Series Sedan (G20)"), but some makes (Mazda 3 IV)
     // omit the chassis code on auto-data while ultimatespecs's URL slug or
-    // raw_label keeps it. Fall through to any string with a "(XX)" pattern.
-    let codename: string | null = m.generation.match(/\(([^)]+)\)/)?.[1] ?? null;
+    // raw_label keeps it. Only accept tokens that look like a chassis code
+    // (uppercase letters + optional digits, no spaces, no "Hp"/units) — never
+    // a trim spec like "(245 Hp)".
+    const isChassisCode = (s: string | null | undefined): s is string =>
+      !!s && /^[A-Z]{1,5}\d{0,4}[A-Z]?$/.test(s);
+    const grabParen = (s: string): string | null => {
+      for (const m of s.matchAll(/\(([^)]+)\)/g)) {
+        if (isChassisCode(m[1])) return m[1];
+      }
+      return null;
+    };
+    let codename: string | null = grabParen(m.generation);
     if (!codename && reconciled.urls.ultimatespecs) {
       // URL like /car-specs/Mazda/M10704/3-(BP)-Sedan → "BP"
-      codename =
-        decodeURIComponent(reconciled.urls.ultimatespecs).match(/\(([^)]+)\)/)?.[1] ??
-        null;
+      codename = grabParen(decodeURIComponent(reconciled.urls.ultimatespecs));
     }
     if (!codename && m.raw_label) {
-      codename = m.raw_label.match(/\(([^)]+)\)/)?.[1] ?? null;
+      codename = grabParen(m.raw_label);
     }
 
     // Schema `layout` is short (VARCHAR 16) — meant for FF/FR/MR/RR/4WD codes.
