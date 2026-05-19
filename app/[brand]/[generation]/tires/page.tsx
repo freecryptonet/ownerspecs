@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { query } from "@/lib/db";
 import {
   getGenerationBase,
+  getGenerationHero,
   getAllGenerationParams,
   getSourcesFor,
   yearRange,
@@ -34,6 +35,7 @@ import {
   tirePositionLabels as positionLabels,
   tireConditionLabels as conditionLabels,
 } from "@/lib/labels";
+import { pageMetadata } from "@/lib/seo";
 
 export async function generateStaticParams(): Promise<Params[]> {
   return getAllGenerationParams();
@@ -48,13 +50,13 @@ export async function generateMetadata({
   const base = await getGenerationBase(brand, generation);
   if (!base) return { title: "Not found" };
   const yrs = yearRange(base.gen.start_year, base.gen.end_year);
-  return {
+  const heroPath = await getGenerationHero(base.gen.id);
+  return pageMetadata({
     title: `${base.make.name} ${base.gen.display_name} ${yrs} — Tire pressure & size`,
     description: `Door-jamb placard tire pressures (PSI and kPa), original-equipment tire size for the ${base.gen.display_name} (${base.make.name}, ${yrs}). Cross-verified.`,
-    alternates: {
-      canonical: `/${base.make.slug}/${base.gen.slug}/tires`,
-    },
-  };
+    path: `/${base.make.slug}/${base.gen.slug}/tires`,
+    heroPath,
+  });
 }
 
 export default async function Page({ params }: { params: Promise<Params> }) {

@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { query, queryOne } from "@/lib/db";
 import {
   getGenerationBase,
+  getGenerationHero,
   getAllGenerationParams,
   getSourcesFor,
   yearRange,
@@ -15,6 +16,7 @@ import { GenerationTabs } from "@/components/GenerationTabs";
 import { VerifyBadge } from "@/components/VerifyBadge";
 import { SourcesBlock } from "@/components/SourcesBlock";
 import { bulbLabel, fuseLocationLabel } from "@/lib/labels";
+import { pageMetadata } from "@/lib/seo";
 
 type Params = { brand: string; generation: string };
 
@@ -56,13 +58,13 @@ export async function generateMetadata({
   const base = await getGenerationBase(brand, generation);
   if (!base) return { title: "Not found" };
   const yrs = yearRange(base.gen.start_year, base.gen.end_year);
-  return {
+  const heroPath = await getGenerationHero(base.gen.id);
+  return pageMetadata({
     title: `${base.make.name} ${base.gen.display_name} ${yrs} — Battery, bulbs & fuses`,
     description: `Battery group, CCA, alternator, full bulb manifest, fuse box layout for the ${base.gen.display_name} (${base.make.name}, ${yrs}). Cross-verified, cited.`,
-    alternates: {
-      canonical: `/${base.make.slug}/${base.gen.slug}/electrical`,
-    },
-  };
+    path: `/${base.make.slug}/${base.gen.slug}/electrical`,
+    heroPath,
+  });
 }
 
 export default async function Page({ params }: { params: Promise<Params> }) {

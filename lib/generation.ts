@@ -59,6 +59,18 @@ export type GenerationBase = {
   markets: Market[];
 };
 
+/** Hero image URL for a generation — `/images/...` path or null. */
+export async function getGenerationHero(generationId: number): Promise<string | null> {
+  const row = await queryOne<{ url: string }>(
+    `SELECT url FROM images
+     WHERE generation_id = ?
+     ORDER BY (position = '3-4-front') DESC, trim_id IS NULL, id
+     LIMIT 1`,
+    [generationId],
+  );
+  return row?.url ?? null;
+}
+
 /** Resolve (brand-slug, generation-slug) → make + model + generation + markets. Null if not found. */
 export async function getGenerationBase(
   brand: string,

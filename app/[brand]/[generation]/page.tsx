@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { query, queryOne } from "@/lib/db";
 import { getGenerationSources } from "@/lib/generation";
 import { fluidLabel, torqueLabel, serviceLabel } from "@/lib/labels";
+import { pageMetadata, breadcrumbsJsonLd, vehicleJsonLd } from "@/lib/seo";
 
 type Params = { brand: string; generation: string };
 
@@ -305,13 +306,14 @@ export async function generateMetadata({
   const { brand, generation } = await params;
   const data = await getGenerationData(brand, generation);
   if (!data) return { title: "Not found" };
-  const { make, gen } = data;
+  const { make, gen, heroImage } = data;
   const yrs = yearRange(gen.start_year, gen.end_year);
-  return {
+  return pageMetadata({
     title: `${make.name} ${gen.display_name} ${yrs} — Specifications`,
     description: `Full specifications for the ${gen.display_name} (${make.name}, ${yrs}). Engine, performance, dimensions, fluid capacities, maintenance schedule, torque values — cross-verified.`,
-    alternates: { canonical: `/${make.slug}/${gen.slug}` },
-  };
+    path: `/${make.slug}/${gen.slug}`,
+    heroPath: heroImage?.url,
+  });
 }
 
 export default async function Page({ params }: { params: Promise<Params> }) {
@@ -414,6 +416,17 @@ export default async function Page({ params }: { params: Promise<Params> }) {
           <a className="tab" href="/compare">Compare</a>
         </div>
       </div>
+
+      {/* JSON-LD: Vehicle + BreadcrumbList for SERP rich-results */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify([
+            breadcrumbsJsonLd({ brand: make, model, gen }),
+            vehicleJsonLd({ brand: make, model, gen, heroPath: heroImage?.url }),
+          ]),
+        }}
+      />
 
       <main className="shell">
 

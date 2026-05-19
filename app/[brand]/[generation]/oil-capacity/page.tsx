@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { query } from "@/lib/db";
 import {
   getGenerationBase,
+  getGenerationHero,
   getSourcesFor,
   getAllGenerationParams,
   yearRange,
@@ -13,6 +14,7 @@ import { SiteFooter } from "@/components/SiteFooter";
 import { GenerationTabs } from "@/components/GenerationTabs";
 import { VerifyBadge } from "@/components/VerifyBadge";
 import { SourcesBlock } from "@/components/SourcesBlock";
+import { pageMetadata, breadcrumbsJsonLd, techArticleJsonLd } from "@/lib/seo";
 
 type Params = { brand: string; generation: string };
 
@@ -54,13 +56,13 @@ export async function generateMetadata({
   const base = await getGenerationBase(brand, generation);
   if (!base) return { title: "Not found" };
   const yrs = yearRange(base.gen.start_year, base.gen.end_year);
-  return {
+  const heroPath = await getGenerationHero(base.gen.id);
+  return pageMetadata({
     title: `${base.make.name} ${base.gen.display_name} ${yrs} — Engine oil capacity & viscosity`,
     description: `Engine oil capacity, viscosity grade, oil filter part number and drain interval for the ${base.gen.display_name} (${base.make.name}, ${yrs}). Every engine variant, every market. Cross-verified.`,
-    alternates: {
-      canonical: `/${base.make.slug}/${base.gen.slug}/oil-capacity`,
-    },
-  };
+    path: `/${base.make.slug}/${base.gen.slug}/oil-capacity`,
+    heroPath,
+  });
 }
 
 export default async function Page({ params }: { params: Promise<Params> }) {

@@ -45,7 +45,13 @@ export const metadata: Metadata = {
       "Vehicle specification and owner-manual reference — cross-verified, cited, free to read.",
     images: ["/og.png"],
   },
-  robots: { index: true, follow: true },
+  alternates: { canonical: "/" },
+  robots: {
+    index: true,
+    follow: true,
+    "max-image-preview": "large",
+    "max-snippet": -1,
+  },
   verification: GSC_VERIFY ? { google: GSC_VERIFY } : undefined,
 };
 

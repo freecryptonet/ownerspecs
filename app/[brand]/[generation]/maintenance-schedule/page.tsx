@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { query } from "@/lib/db";
 import {
   getGenerationBase,
+  getGenerationHero,
   getSourcesFor,
   getAllGenerationParams,
   yearRange,
@@ -14,6 +15,7 @@ import { GenerationTabs } from "@/components/GenerationTabs";
 import { VerifyBadge } from "@/components/VerifyBadge";
 import { SourcesBlock } from "@/components/SourcesBlock";
 import { serviceLabel } from "@/lib/labels";
+import { pageMetadata } from "@/lib/seo";
 
 type Params = { brand: string; generation: string };
 
@@ -43,13 +45,13 @@ export async function generateMetadata({
   const base = await getGenerationBase(brand, generation);
   if (!base) return { title: "Not found" };
   const yrs = yearRange(base.gen.start_year, base.gen.end_year);
-  return {
+  const heroPath = await getGenerationHero(base.gen.id);
+  return pageMetadata({
     title: `${base.make.name} ${base.gen.display_name} ${yrs} — Maintenance schedule`,
     description: `Full maintenance schedule for the ${base.gen.display_name} (${base.make.name}, ${yrs}), normal and severe-duty intervals. Every service from 7,500 to 150,000 miles, cross-verified.`,
-    alternates: {
-      canonical: `/${base.make.slug}/${base.gen.slug}/maintenance-schedule`,
-    },
-  };
+    path: `/${base.make.slug}/${base.gen.slug}/maintenance-schedule`,
+    heroPath,
+  });
 }
 
 export default async function Page({ params }: { params: Promise<Params> }) {

@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { query } from "@/lib/db";
 import {
   getGenerationBase,
+  getGenerationHero,
   getSourcesFor,
   getAllGenerationParams,
   yearRange,
@@ -14,6 +15,7 @@ import { GenerationTabs } from "@/components/GenerationTabs";
 import { VerifyBadge } from "@/components/VerifyBadge";
 import { SourcesBlock } from "@/components/SourcesBlock";
 import { torqueLabel as fastenerLabel } from "@/lib/labels";
+import { pageMetadata } from "@/lib/seo";
 
 type Params = { brand: string; generation: string };
 
@@ -39,13 +41,13 @@ export async function generateMetadata({
   const base = await getGenerationBase(brand, generation);
   if (!base) return { title: "Not found" };
   const yrs = yearRange(base.gen.start_year, base.gen.end_year);
-  return {
+  const heroPath = await getGenerationHero(base.gen.id);
+  return pageMetadata({
     title: `${base.make.name} ${base.gen.display_name} ${yrs} — Torque specifications`,
     description: `Torque values for the ${base.gen.display_name} (${base.make.name}, ${yrs}) — wheel lug nuts, spark plugs, drain plug, hub nut, suspension fasteners. Both N·m and ft·lb, cross-verified.`,
-    alternates: {
-      canonical: `/${base.make.slug}/${base.gen.slug}/torque`,
-    },
-  };
+    path: `/${base.make.slug}/${base.gen.slug}/torque`,
+    heroPath,
+  });
 }
 
 export default async function Page({ params }: { params: Promise<Params> }) {
