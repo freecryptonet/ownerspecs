@@ -156,9 +156,45 @@ export default async function Page({ params }: { params: Promise<Params> }) {
     [gen.id],
   );
 
+  const vehicleJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Vehicle",
+    name: `${make.name} ${gen.display_name} ${trimRow.name}`,
+    brand: { "@type": "Brand", name: make.name },
+    model: model.name,
+    modelDate: yrs,
+    bodyType: gen.body_type,
+    vehicleConfiguration: trimRow.engine_code ?? gen.codename ?? undefined,
+    image: heroImage ? `https://ownerspecs.com${heroImage.url}` : undefined,
+    url: `https://ownerspecs.com/${make.slug}/${gen.slug}/${trim}`,
+    ...(trimRow.engine_displacement_cc && {
+      vehicleEngine: {
+        "@type": "EngineSpecification",
+        engineDisplacement: { "@type": "QuantitativeValue", value: trimRow.engine_displacement_cc, unitText: "cm³" },
+        ...(trimRow.hp && { enginePower: { "@type": "QuantitativeValue", value: trimRow.hp, unitText: "hp" } }),
+        ...(trimRow.engine_fuel && { fuelType: trimRow.engine_fuel }),
+      },
+    }),
+    ...(trimRow.drive_wheel && { driveWheelConfiguration: trimRow.drive_wheel }),
+    ...(trimRow.curb_weight_kg && {
+      weight: { "@type": "QuantitativeValue", value: trimRow.curb_weight_kg, unitText: "kg" },
+    }),
+    ...(trimRow.top_speed_kmh && {
+      speed: { "@type": "QuantitativeValue", value: trimRow.top_speed_kmh, unitText: "km/h" },
+    }),
+    ...(trimRow.fuel_combined_l_100km && {
+      fuelConsumption: { "@type": "QuantitativeValue", value: Number(trimRow.fuel_combined_l_100km), unitText: "L/100km" },
+    }),
+  };
+
   return (
     <>
       <SiteHeader />
+
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(vehicleJsonLd) }}
+      />
 
       <div className="shell">
         <nav className="crumb">
