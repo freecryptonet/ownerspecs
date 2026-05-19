@@ -29,7 +29,7 @@ export type DiscoveredTrim = {
   label: string;
 };
 
-const AD_TRIM_PATTERN = /^https?:\/\/(www\.)?auto-data\.net\/en\/[a-z0-9-]+-\d+$/i;
+const AD_TRIM_PATTERN = /^https?:\/\/(www\.)?auto-data\.net\/en\/[a-z0-9.\-]+-\d+$/i;
 const US_TRIM_PATTERN =
   /^https?:\/\/(www\.)?ultimatespecs\.com\/car-specs\/[^/]+\/\d+\/[^/]+\.html$/i;
 

@@ -36,6 +36,26 @@ async function getRecent() {
   );
 }
 
+type BrandRow = {
+  slug: string;
+  name: string;
+  country_of_origin: string | null;
+  gen_count: number;
+  trim_count: number;
+};
+
+async function getBrands() {
+  return query<BrandRow>(
+    `SELECT mk.slug, mk.name, mk.country_of_origin,
+            (SELECT COUNT(*) FROM generations g JOIN models m ON m.id=g.model_id
+             WHERE m.make_id=mk.id AND g.is_active=1) AS gen_count,
+            (SELECT COUNT(*) FROM trims t JOIN generations g ON g.id=t.generation_id
+             JOIN models m ON m.id=g.model_id WHERE m.make_id=mk.id) AS trim_count
+     FROM makes mk WHERE mk.is_active=1
+     ORDER BY mk.name`,
+  );
+}
+
 const dataCategories = [
   {
     name: "Fluids & lubricants",
@@ -107,7 +127,7 @@ const dataCategories = [
 ];
 
 export default async function Home() {
-  const recent = await getRecent();
+  const [recent, brands] = await Promise.all([getRecent(), getBrands()]);
   return (
     <>
       <header className="site-header">
@@ -225,6 +245,55 @@ export default async function Home() {
               </li>
             ))}
           </ul>
+        </section>
+
+        <section>
+          <h2 className="section-h">
+            Browse by manufacturer <span className="count">{brands.length} indexed</span>
+          </h2>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))",
+              gap: 0,
+              border: "1px solid var(--rule)",
+              background: "var(--rule)",
+            }}
+          >
+            {brands.map((b) => (
+              <a
+                key={b.slug}
+                href={`/${b.slug}`}
+                style={{
+                  background: "var(--bg)",
+                  padding: "16px 20px",
+                  textDecoration: "none",
+                  color: "var(--ink)",
+                  outline: "1px solid var(--rule)",
+                  outlineOffset: "-0.5px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  gap: 8,
+                  transition: "background 80ms",
+                }}
+              >
+                <span style={{ fontSize: 14, fontWeight: 600 }}>{b.name}</span>
+                <span
+                  style={{
+                    fontFamily: "var(--font-mono)",
+                    fontSize: 11,
+                    color: "var(--ink-mute)",
+                    fontVariantNumeric: "tabular-nums",
+                    fontWeight: 400,
+                  }}
+                >
+                  {b.gen_count} gen{b.gen_count === 1 ? "" : "s"} · {b.trim_count}{" "}
+                  trim{b.trim_count === 1 ? "" : "s"}
+                </span>
+              </a>
+            ))}
+          </div>
         </section>
 
         <section>

@@ -446,8 +446,20 @@ export async function insertReconciled(reconciled: Reconciled): Promise<InsertRe
     const model = await findOrCreateModel(conn, make.id, m.model);
     log("insert", `model: ${m.model} → id ${model.id} (${model.reused ? "reused" : "new"})`);
 
-    // Codename: parse from generation string like "3 Series Sedan (G20)" → "G20"
-    const codename = m.generation.match(/\(([^)]+)\)/)?.[1] ?? null;
+    // Codename: try multiple sources — auto-data's generation string usually has
+    // it in parentheticals ("3 Series Sedan (G20)"), but some makes (Mazda 3 IV)
+    // omit the chassis code on auto-data while ultimatespecs's URL slug or
+    // raw_label keeps it. Fall through to any string with a "(XX)" pattern.
+    let codename: string | null = m.generation.match(/\(([^)]+)\)/)?.[1] ?? null;
+    if (!codename && reconciled.urls.ultimatespecs) {
+      // URL like /car-specs/Mazda/M10704/3-(BP)-Sedan → "BP"
+      codename =
+        decodeURIComponent(reconciled.urls.ultimatespecs).match(/\(([^)]+)\)/)?.[1] ??
+        null;
+    }
+    if (!codename && m.raw_label) {
+      codename = m.raw_label.match(/\(([^)]+)\)/)?.[1] ?? null;
+    }
 
     // Schema `layout` is short (VARCHAR 16) — meant for FF/FR/MR/RR/4WD codes.
     // TrimSpec.engine.layout is a different concept (engine orientation).

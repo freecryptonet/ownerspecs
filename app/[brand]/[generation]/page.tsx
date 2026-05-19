@@ -436,8 +436,7 @@ export default async function Page({ params }: { params: Promise<Params> }) {
         <nav className="crumb">
           <a href="/">Catalogue</a><span className="sep">/</span>
           <a href={`/${make.slug}`}>{make.name}</a><span className="sep">/</span>
-          <a href={`/${make.slug}/${model.slug}`}>{model.name}</a><span className="sep">/</span>
-          <span>{gen.display_name} · {yrs}</span>
+          <span>{model.name} {gen.display_name} · {yrs}</span>
         </nav>
 
         <div className="pagehead">
