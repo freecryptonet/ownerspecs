@@ -79,6 +79,16 @@ ssh -i ~/.ssh/autodtcs_key root@72.62.154.119 'sudo -u deploy pm2 restart os'
 2. Copy `.env.example` → `.env.local` and fill `DB_PASSWORD` (get it from `/home/deploy/ownerspecs/.env.local` on VPS)
 3. `npm install && npm run dev`
 
+## Deployment quirks (each cost 5–15 min before being captured)
+
+- **`scp` only to `root@72.62.154.119`**, never `deploy@`. The `deploy` user has no `authorized_keys` for `autodtcs_key`. Then `ssh root@... 'sudo -u deploy install -m 644 /tmp/x /home/deploy/ownerspecs/path'` to land it as deploy.
+- **No `db/migrations/` dir on VPS.** Migrations are scp'd to `/tmp/NNN.sql` and piped: `mariadb ownerspecs < /tmp/NNN.sql`. Don't try to `install` into a migrations dir — it doesn't exist on prod.
+- **Files can drift VPS-only.** `app/globals.css` was only on VPS at one point. Before editing anything you suspect is VPS-only, `scp root@...:/home/deploy/ownerspecs/<path> <local-path>` first to seed local.
+- **`generateStaticParams` snapshots at build time.** Adding a `generations` row doesn't render the page until the next `npm run build`. 404s right after a DB insert ≠ bug, just stale build.
+- **Build failures cascade to 502s.** If `npm run build` exits non-zero, pm2 keeps serving stale `.next` but new gens 502. After every build, grep its full output for `error|Type error`, not just `tail -2`.
+- **Bash `cmd | tail -N || fallback` swallows failures.** Pipe returns tail's (0) exit, so `||` never fires. Drop the pipe or use `if ! cmd; then ...; fi` for fallbacks.
+- **Playwright tab indices aren't stable.** Always `browser_tabs list` before `select`. HaynesPro/workshopdata.com has been tab 1, 3, and 8 across sessions.
+
 ## Data conventions
 
 - **URL pattern**: `/[brand]/[generation]` for the generation hub (e.g. `/honda/civic-sedan-x-2016-2021`); `/[brand]/[generation]/[topic]` for deep moat pages
