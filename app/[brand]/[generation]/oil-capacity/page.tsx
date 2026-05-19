@@ -80,7 +80,9 @@ export default async function Page({ params }: { params: Promise<Params> }) {
      LEFT JOIN engines e  ON e.id  = t.engine_id
      WHERE f.generation_id = ?
        AND f.fluid_type LIKE 'engine_oil%'
-     ORDER BY FIELD(f.fluid_type, 'engine_oil', 'engine_oil_2_0', 'engine_oil_1_0t', 'engine_oil_diesel')`,
+     ORDER BY FIELD(f.fluid_type, 'engine_oil', 'engine_oil_2_0', 'engine_oil_1_0t', 'engine_oil_diesel'),
+              -- prefer fully-populated rows over scraper leftovers when duplicates exist
+              (f.viscosity IS NULL) ASC, (f.spec_standard IS NULL) ASC, (f.filter_part_no IS NULL) ASC`,
     [gen.id],
   );
 

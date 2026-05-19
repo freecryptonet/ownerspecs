@@ -191,11 +191,18 @@ async function getGenerationData(brand: string, generation: string) {
     [gen.id],
   );
 
+  // source_count counts DISTINCT PUBLIC sources only (is_public=1).
+  // Internal cross-verification sources (auto_data, ultimatespecs, haynespro)
+  // are kept in spec_sources for audit but never rendered, so they must
+  // not inflate the citation badge — otherwise a row with 1 visible
+  // source displayed as [1][2]...[11].
   const fluids = await query<FluidSpec>(
     `SELECT f.id, f.fluid_type, f.capacity_l, f.capacity_qt, f.viscosity,
             f.spec_standard, f.filter_part_no, f.drain_interval_mi,
             f.drain_interval_km, f.drain_interval_months, f.notes,
-            (SELECT COUNT(*) FROM spec_sources WHERE spec_table='fluid_specs' AND spec_id=f.id) AS source_count
+            (SELECT COUNT(DISTINCT ss.source_id)
+               FROM spec_sources ss JOIN sources s ON s.id = ss.source_id
+               WHERE ss.spec_table='fluid_specs' AND ss.spec_id=f.id AND s.is_public=1) AS source_count
      FROM fluid_specs f
      WHERE f.generation_id = ?
      ORDER BY FIELD(f.fluid_type,'engine_oil','engine_oil_2_0','engine_oil_1_0t','engine_oil_diesel',
@@ -206,7 +213,9 @@ async function getGenerationData(brand: string, generation: string) {
 
   const torques = await query<TorqueSpec>(
     `SELECT t.id, t.fastener, t.torque_nm, t.torque_ftlb, t.notes,
-            (SELECT COUNT(*) FROM spec_sources WHERE spec_table='torque_specs' AND spec_id=t.id) AS source_count
+            (SELECT COUNT(DISTINCT ss.source_id)
+               FROM spec_sources ss JOIN sources s ON s.id = ss.source_id
+               WHERE ss.spec_table='torque_specs' AND ss.spec_id=t.id AND s.is_public=1) AS source_count
      FROM torque_specs t
      WHERE t.generation_id = ?
      ORDER BY FIELD(t.fastener,'lug_nut','spark_plug','oil_drain','wheel_hub_nut','caliper_bolt')`,
@@ -475,7 +484,7 @@ export default async function Page({ params }: { params: Promise<Params> }) {
                   {gen.platform && <tr><th>Platform</th><td className="alt">{gen.platform}</td></tr>}
                   <tr><th>Engines</th><td>{engines.map((e) => e.code).join(" · ")}</td></tr>
                   <tr><th>Trims (US)</th><td className="alt">{trims.map((t) => t.name).join(" · ")}</td></tr>
-                  <tr><th>Markets</th><td>{markets.map((m) => m.code).join(" · ")}</td></tr>
+                  <tr><th>Markets</th><td>{markets.length > 0 ? markets.map((m) => m.code).join(" · ") : "Global · multi-market"}</td></tr>
                   {gen.wheelbase_mm && <tr><th>Wheelbase</th><td>{gen.wheelbase_mm} mm</td></tr>}
                   {gen.length_mm && <tr><th>Length</th><td>{gen.length_mm} mm</td></tr>}
                   {gen.width_mm && <tr><th>Width</th><td>{gen.width_mm} mm</td></tr>}
