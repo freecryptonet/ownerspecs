@@ -1,10 +1,10 @@
 # HaynesPro WorkshopData — navigation reference
 
-Reference for future Claude sessions driving Tim's pre-authed Playwright tab on `workshopdata.com`. Switch with `mcp__playwright__browser_tabs select 1` (NOT startmycar.com). Auth already handled. Legal posture: facts only, never verbatim text, never diagrams.
+Reference for future Claude sessions driving Tim's pre-authed Playwright tab on `workshopdata.com`. Switch with `mcp__playwright__browser_tabs select 1` (NOT startmycar.com). Legal posture: facts only, never verbatim text, never diagrams.
 
 ## 1. What it is
 
-HaynesPro WorkshopData Car Edition (Infopro Digital, ex-Haynes). OEM-aggregated technical data for ~70 makes / 48,000+ models. Audience: indie shops, dealer techs, mobile diagnosticians. Sold rebadged by LKQ, Workshop Software, Thinktool, Mecainfo, balticdiag — same DB. `/touch/` is the tablet UI; `acc.haynespro.com` is the sales site.
+HaynesPro WorkshopData Car Edition (Infopro Digital, ex-Haynes). OEM-aggregated technical data for ~70 makes / 48,000+ models. Audience: indie shops, dealer techs, mobile diagnosticians. Rebadged by LKQ, Workshop Software, Thinktool, Mecainfo. `/touch/` is the tablet UI; `acc.haynespro.com` is the sales site.
 
 ## 2. URL pattern (BMW 3 Series G20 330i example)
 
@@ -14,7 +14,7 @@ Base: `https://www.workshopdata.com/touch/site/layout/`
 2. After picking BMW the URL advances through `site/layout/<step>` paths with IDs in the query string (`makeId`, `modelId`, `typeId`, `engineCode`). Step names rotate — observe live, don't hard-code.
 3. Model list → **3-Series (G20/G21) Saloon/Touring** (saloon and touring are separate models).
 4. Type/engine → **330i** by engine code **B48B20 / B48B20M1** (indexed by engine code, not trim).
-5. Year band → e.g. `03/2019 → …`.
+5. Year band → e.g. `03/2019 →`.
 6. Vehicle dashboard with category tabs (§3).
 
 Shortcut: the VIN box on `makesOverview` skips steps 2-5. Use it whenever the VIN is known.
@@ -41,10 +41,10 @@ Categorisation is **highly consistent** across makes. Coverage depth varies (mai
 
 ## 4. HTML structure / scrapability
 
-Spec pages are server-rendered HTML with classic `<table>` markup (the touch UI is a thin client over server pages). Maintenance, lubricants, torques, adjustment data extract cleanly via Cheerio/Playwright `page.content()` — no JS execution needed for the data tables.
+Spec pages are server-rendered HTML with classic `<table>` markup (the touch UI is a thin client over server pages). Maintenance, lubricants, torques, adjustment data extract cleanly via Cheerio/Playwright `page.content()` — no JS needed for the data tables.
 
 Exceptions needing a real browser render:
-- **VESA wiring diagrams** — interactive SVG, JS-wired hotspots; read DOM after click for pin/wire colour, never the image.
+- **VESA wiring diagrams** — JS-wired SVG; read DOM after click for pin/wire colour, never the image.
 - **Technical drawings** — PNG/SVG images. Out of scope.
 - Some adjustment-data sub-views lazy-load on tab click.
 
@@ -62,8 +62,8 @@ Map our `make/model/generation` to HaynesPro by chassis code + engine code, neve
 
 1. **OEM technical portals** — BMW TIS/AIR, VW erWin, Toyota TIS, Honda Service Express, Ford Motorcraft, GM ACDelco TDS, Hyundai HMA-TIS. Paid (~$20-50/day) but authoritative; owner's manuals usually free.
 2. **manualslib.com** — free OEM owner's-manual PDFs and many service manuals. Best free fallback for capacities and schedules.
-3. **ALLDATA / Mitchell1 / Identifix** — paid pro DBs, near-equivalent to HaynesPro. Not scrapeable; spot-check verification only.
+3. **ALLDATA / Mitchell1 / Identifix** — paid pro DBs, near-equivalent. Not scrapeable; spot-check verification only.
 4. **startmycar.com** — free, community-curated procedures. Variable quality; good for service-reset steps when HaynesPro is gated.
-5. **Bentley Publishers** (paid; BMW/VW/Audi/Porsche/MINI deep), **Chilton DIY** (paid, US), brand forums (bimmerfest, civicx, audizine) — forums for sanity-checking torques and surfacing TSBs; never quote verbatim.
+5. **Bentley Publishers** (paid; BMW/VW/Audi/Porsche/MINI deep), **Chilton DIY** (paid, US), brand forums (bimmerfest, civicx, audizine) — sanity-check torques and surface TSBs; never quote verbatim.
 
-Honour the ≥2-source rule from `PLAN.md`: pair HaynesPro with an OEM PDF or manualslib copy before writing a moat fact into `spec_sources`.
+Honour the ≥2-source rule from `PLAN.md`: pair HaynesPro with an OEM PDF or manualslib copy before writing a moat fact to `spec_sources`.
