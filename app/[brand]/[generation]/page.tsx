@@ -3,6 +3,17 @@ import type { Metadata } from "next";
 import { query, queryOne } from "@/lib/db";
 import { getGenerationSources } from "@/lib/generation";
 import { NameplateRail } from "@/components/NameplateRail";
+import {
+  mmDual,
+  kgDual,
+  kgRangeDual,
+  litreDual,
+  litreCargoDual,
+  consumptionDual,
+  speedDual,
+  boreStrokeDual,
+  displacementDual,
+} from "@/lib/units";
 import { fluidLabel, torqueLabel, serviceLabel } from "@/lib/labels";
 import { pageMetadata, breadcrumbsJsonLd, vehicleJsonLd } from "@/lib/seo";
 
@@ -499,17 +510,17 @@ export default async function Page({ params }: { params: Promise<Params> }) {
                   <tr><th>Engines</th><td>{engines.map((e) => e.code).join(" · ")}</td></tr>
                   <tr><th>Trims (US)</th><td className="alt">{trims.map((t) => t.name).join(" · ")}</td></tr>
                   <tr><th>Markets</th><td>{markets.length > 0 ? markets.map((m) => m.code).join(" · ") : "Global · multi-market"}</td></tr>
-                  {gen.wheelbase_mm && <tr><th>Wheelbase</th><td>{gen.wheelbase_mm} mm</td></tr>}
-                  {gen.length_mm && <tr><th>Length</th><td>{gen.length_mm} mm</td></tr>}
-                  {gen.width_mm && <tr><th>Width</th><td>{gen.width_mm} mm</td></tr>}
-                  {gen.height_mm && <tr><th>Height</th><td>{gen.height_mm} mm</td></tr>}
+                  {gen.wheelbase_mm && <tr><th>Wheelbase</th><td>{mmDual(gen.wheelbase_mm)}</td></tr>}
+                  {gen.length_mm && <tr><th>Length</th><td>{mmDual(gen.length_mm)}</td></tr>}
+                  {gen.width_mm && <tr><th>Width</th><td>{mmDual(gen.width_mm)}</td></tr>}
+                  {gen.height_mm && <tr><th>Height</th><td>{mmDual(gen.height_mm)}</td></tr>}
                   {trims.length > 0 && trims.some(t => t.curb_weight_kg) && (
                     <tr><th>Curb weight</th><td>
                       {(() => {
                         const ws = trims.map(t => t.curb_weight_kg).filter((w): w is number => w !== null);
                         if (ws.length === 0) return "—";
                         const min = Math.min(...ws), max = Math.max(...ws);
-                        return min === max ? `${min} kg` : `${min} – ${max} kg`;
+                        return kgRangeDual(min, max);
                       })()}
                     </td></tr>
                   )}
@@ -528,8 +539,8 @@ export default async function Page({ params }: { params: Promise<Params> }) {
             </h2>
             <table className="spec-table">
               <tbody>
-                <tr><th>Displacement</th><td>{e.displacement_cc} cm³</td></tr>
-                {e.bore_mm && e.stroke_mm && <tr><th>Bore × stroke</th><td>{e.bore_mm} × {e.stroke_mm} mm</td></tr>}
+                <tr><th>Displacement</th><td>{displacementDual(e.displacement_cc)}</td></tr>
+                {e.bore_mm && e.stroke_mm && <tr><th>Bore × stroke</th><td>{boreStrokeDual(e.bore_mm, e.stroke_mm)}</td></tr>}
                 {e.compression && <tr><th>Compression ratio</th><td>{e.compression} : 1</td></tr>}
                 {e.aspiration && <tr><th>Aspiration</th><td>{e.aspiration}</td></tr>}
                 {e.valvetrain && <tr><th>Valvetrain</th><td>{e.valvetrain}</td></tr>}
@@ -545,14 +556,14 @@ export default async function Page({ params }: { params: Promise<Params> }) {
             <h2 className="section-h">Dimensions &amp; capacities</h2>
             <table className="spec-table">
               <tbody>
-                {gen.length_mm && <tr><th>Length</th><td>{gen.length_mm} mm</td></tr>}
-                {gen.width_mm && <tr><th>Width</th><td>{gen.width_mm} mm</td></tr>}
-                {gen.height_mm && <tr><th>Height</th><td>{gen.height_mm} mm</td></tr>}
-                {gen.wheelbase_mm && <tr><th>Wheelbase</th><td>{gen.wheelbase_mm} mm</td></tr>}
-                {gen.front_track_mm && <tr><th>Front track</th><td>{gen.front_track_mm} mm</td></tr>}
-                {gen.rear_track_mm && <tr><th>Rear track</th><td>{gen.rear_track_mm} mm</td></tr>}
-                {gen.fuel_tank_l && <tr><th>Fuel tank</th><td>{Number(gen.fuel_tank_l).toFixed(0)} L</td></tr>}
-                {gen.cargo_l && <tr><th>Cargo capacity</th><td>{gen.cargo_l} L</td></tr>}
+                {gen.length_mm && <tr><th>Length</th><td>{mmDual(gen.length_mm)}</td></tr>}
+                {gen.width_mm && <tr><th>Width</th><td>{mmDual(gen.width_mm)}</td></tr>}
+                {gen.height_mm && <tr><th>Height</th><td>{mmDual(gen.height_mm)}</td></tr>}
+                {gen.wheelbase_mm && <tr><th>Wheelbase</th><td>{mmDual(gen.wheelbase_mm)}</td></tr>}
+                {gen.front_track_mm && <tr><th>Front track</th><td>{mmDual(gen.front_track_mm)}</td></tr>}
+                {gen.rear_track_mm && <tr><th>Rear track</th><td>{mmDual(gen.rear_track_mm)}</td></tr>}
+                {gen.fuel_tank_l && <tr><th>Fuel tank</th><td>{litreDual(gen.fuel_tank_l)}</td></tr>}
+                {gen.cargo_l && <tr><th>Cargo capacity</th><td>{litreCargoDual(gen.cargo_l)}</td></tr>}
               </tbody>
             </table>
           </section>
@@ -602,9 +613,9 @@ export default async function Page({ params }: { params: Promise<Params> }) {
                   <td>{t.hp} hp</td>
                   <td>{t.torque_nm} Nm</td>
                   <td>{t.zero_100_kmh_s ? `${Number(t.zero_100_kmh_s).toFixed(1)} s` : "—"}</td>
-                  <td>{t.top_speed_kmh ? `${t.top_speed_kmh} km/h` : "—"}</td>
-                  <td>{t.fuel_combined_l_100km ? `${Number(t.fuel_combined_l_100km).toFixed(1)} L/100km` : "—"}</td>
-                  <td>{t.curb_weight_kg ? `${t.curb_weight_kg} kg` : "—"}</td>
+                  <td>{t.top_speed_kmh ? speedDual(t.top_speed_kmh) : "—"}</td>
+                  <td>{t.fuel_combined_l_100km ? consumptionDual(t.fuel_combined_l_100km) : "—"}</td>
+                  <td>{t.curb_weight_kg ? kgDual(t.curb_weight_kg) : "—"}</td>
                   <td>{t.drive_wheel ?? "—"}</td>
                 </tr>
               ))}
