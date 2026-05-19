@@ -397,10 +397,10 @@ export default async function Page({ params }: { params: Promise<Params> }) {
           <a href="/" className="wordmark">ownerspecs</a>
           <nav className="nav-primary">
             <a href="/" className="active">Catalogue</a>
-            <a href="#">Maintenance</a>
-            <a href="#">Fluids</a>
-            <a href="#">Compare</a>
-            <a href="#">Methodology</a>
+            <a href="/#owner-manual-data">Maintenance</a>
+            <a href="/#owner-manual-data">Fluids</a>
+            <a href="/compare">Compare</a>
+            <a href="/#methodology">Methodology</a>
           </nav>
           <div className="search-bar">
             <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6">
@@ -442,14 +442,14 @@ export default async function Page({ params }: { params: Promise<Params> }) {
 
       <div className="tabs">
         <div className="tabs-inner">
-          <a className="tab active" href="#">Overview</a>
-          <a className="tab" href="#">Specifications <span className="count">{engines.length * 6 + 14}</span></a>
-          <a className="tab" href="#">Maintenance <span className="count">{serviceIntervals.length}</span></a>
-          <a className="tab" href="#">Fluids <span className="count">{fluids.length}</span></a>
-          <a className="tab" href="#">Torque <span className="count">{torques.length}</span></a>
-          <a className="tab" href="#">Electrical <span className="count">{bulbCount + fuseCount + 1}</span></a>
-          <a className="tab" href="#">Procedures</a>
-          <a className="tab" href="#">Compare</a>
+          <a className="tab active" href={`/${make.slug}/${gen.slug}`}>Overview</a>
+          <a className="tab" href={`/${make.slug}/${gen.slug}#specifications`}>Specifications <span className="count">{engines.length * 6 + 14}</span></a>
+          <a className="tab" href={`/${make.slug}/${gen.slug}/maintenance-schedule`}>Maintenance <span className="count">{serviceIntervals.length}</span></a>
+          <a className="tab" href={`/${make.slug}/${gen.slug}/oil-capacity`}>Fluids <span className="count">{fluids.length}</span></a>
+          <a className="tab" href={`/${make.slug}/${gen.slug}/torque`}>Torque <span className="count">{torques.length}</span></a>
+          <a className="tab" href={`/${make.slug}/${gen.slug}/electrical`}>Electrical <span className="count">{bulbCount + fuseCount + 1}</span></a>
+          <a className="tab" href={`/${make.slug}/${gen.slug}#procedures`}>Procedures</a>
+          <a className="tab" href="/compare">Compare</a>
         </div>
       </div>
 
@@ -766,7 +766,7 @@ export default async function Page({ params }: { params: Promise<Params> }) {
               </span>
               <span className="arrow">→</span>
             </a>
-            <a className="moat-row" href="#">
+            <a className="moat-row" href={`/${make.slug}/${gen.slug}/electrical`}>
               <svg className="icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="3" width="14" height="14" /><path d="M3 10h14M10 3v14" /></svg>
               <span>
                 <span className="name">Fuse box layout</span>
@@ -774,7 +774,7 @@ export default async function Page({ params }: { params: Promise<Params> }) {
               </span>
               <span className="arrow">→</span>
             </a>
-            <a className="moat-row" href="#">
+            <a className="moat-row" href={`/${make.slug}/${gen.slug}#procedures`}>
               <svg className="icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M3 5h14M3 10h14M3 15h9" /></svg>
               <span>
                 <span className="name">Service procedures</span>
@@ -782,7 +782,7 @@ export default async function Page({ params }: { params: Promise<Params> }) {
               </span>
               <span className="arrow">→</span>
             </a>
-            <a className="moat-row" href="#">
+            <a className="moat-row" href={`/${make.slug}/${gen.slug}#towing`}>
               <svg className="icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M3 7 10 3l7 4M3 7v7l7 4 7-4V7" /></svg>
               <span>
                 <span className="name">Towing &amp; load</span>
@@ -820,10 +820,10 @@ export default async function Page({ params }: { params: Promise<Params> }) {
               <p>Cross-verified vehicle specifications and owner-manual data for every car, every generation, every market.</p>
               <div style={{ marginTop: "var(--s-3)" }}><span className="market-pill">Global · multi-market</span></div>
             </div>
-            <div><h4>Catalogue</h4><ul><li><a href="#">By manufacturer</a></li><li><a href="#">By body type</a></li><li><a href="#">By fuel</a></li></ul></div>
-            <div><h4>Data</h4><ul><li><a href="#">Fluids</a></li><li><a href="#">Maintenance</a></li><li><a href="#">Torque</a></li></ul></div>
+            <div><h4>Catalogue</h4><ul><li><a href="/#brands">By manufacturer</a></li><li><a href="/#brands">By body type</a></li><li><a href="/#brands">By fuel</a></li></ul></div>
+            <div><h4>Data</h4><ul><li><a href="/#owner-manual-data">Fluids</a></li><li><a href="/#owner-manual-data">Maintenance</a></li><li><a href="/#owner-manual-data">Torque</a></li></ul></div>
             <div><h4>Sister sites</h4><ul><li><a href="https://vindecoder.site">vindecoder.site</a></li><li><a href="https://autodtcs.com">autodtcs.com</a></li><li><a href="https://servicereset.net">servicereset.net</a></li></ul></div>
-            <div><h4>About</h4><ul><li><a href="#">Methodology</a></li><li><a href="#">Sources</a></li></ul></div>
+            <div><h4>About</h4><ul><li><a href="/#methodology">Methodology</a></li><li><a href="/#methodology">Sources</a></li></ul></div>
           </div>
           <div className="foot-bottom">
             <span>© 2026 ownerspecs · v0.1</span>

@@ -28,7 +28,7 @@ export function GenerationTabs({
     { key: "torque", label: "Torque", href: `${base}/torque` },
     { key: "electrical", label: "Electrical", href: `${base}/electrical` },
     { key: "procedures", label: "Procedures", href: `${base}#procedures` },
-    { key: "compare", label: "Compare", href: "#" },
+    { key: "compare", label: "Compare", href: "/compare" },
   ];
   return (
     <div className="tabs">

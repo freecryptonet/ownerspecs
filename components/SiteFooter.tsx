@@ -19,16 +19,16 @@ export function SiteFooter({ reviewDate }: { reviewDate?: string }) {
             <h4>Catalogue</h4>
             <ul>
               <li>
-                <a href="#">By manufacturer</a>
+                <a href="/#brands">By manufacturer</a>
               </li>
               <li>
-                <a href="#">By body type</a>
+                <a href="/#brands">By body type</a>
               </li>
               <li>
-                <a href="#">By fuel</a>
+                <a href="/#brands">By fuel</a>
               </li>
               <li>
-                <a href="#">By market</a>
+                <a href="/#brands">By market</a>
               </li>
             </ul>
           </div>
@@ -36,16 +36,16 @@ export function SiteFooter({ reviewDate }: { reviewDate?: string }) {
             <h4>Data</h4>
             <ul>
               <li>
-                <a href="#">Fluids</a>
+                <a href="/#owner-manual-data">Fluids</a>
               </li>
               <li>
-                <a href="#">Maintenance</a>
+                <a href="/#owner-manual-data">Maintenance</a>
               </li>
               <li>
-                <a href="#">Torque</a>
+                <a href="/#owner-manual-data">Torque</a>
               </li>
               <li>
-                <a href="#">Electrical</a>
+                <a href="/#owner-manual-data">Electrical</a>
               </li>
             </ul>
           </div>
@@ -67,13 +67,13 @@ export function SiteFooter({ reviewDate }: { reviewDate?: string }) {
             <h4>About</h4>
             <ul>
               <li>
-                <a href="#">Methodology</a>
+                <a href="/#methodology">Methodology</a>
               </li>
               <li>
-                <a href="#">Sources</a>
+                <a href="/#methodology">Sources</a>
               </li>
               <li>
-                <a href="#">Contact</a>
+                <a href="mailto:contact@ownerspecs.com">Contact</a>
               </li>
             </ul>
           </div>

@@ -9,10 +9,10 @@ export function SiteHeader() {
           <a href="/" className="active">
             Catalogue
           </a>
-          <a href="#">Maintenance</a>
-          <a href="#">Fluids</a>
-          <a href="#">Compare</a>
-          <a href="#">Methodology</a>
+          <a href="/#owner-manual-data">Maintenance</a>
+          <a href="/#owner-manual-data">Fluids</a>
+          <a href="/compare">Compare</a>
+          <a href="/#methodology">Methodology</a>
         </nav>
         <div className="search-bar">
           <svg

@@ -308,7 +308,7 @@ export default async function Page({ params }: { params: Promise<Params> }) {
                 peek: "Engine, performance, dimensions, drivetrain",
               },
               {
-                href: "#",
+                href: `/${make.slug}/${gen.slug}/tires`,
                 name: "Tires & wheels",
                 peek: "OE size · bolt pattern · placard PSI",
               },
