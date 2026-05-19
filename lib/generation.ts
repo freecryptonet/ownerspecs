@@ -137,12 +137,13 @@ export async function getGenerationSources(
         (ss.spec_table = 'fuses'             AND ss.spec_id IN (SELECT id FROM fuses              WHERE generation_id = ?)) OR
         (ss.spec_table = 'parts'             AND ss.spec_id IN (SELECT id FROM parts              WHERE generation_id = ?)) OR
         (ss.spec_table = 'service_intervals' AND ss.spec_id IN (SELECT id FROM service_intervals  WHERE generation_id = ?)) OR
-        (ss.spec_table = 'tire_pressures'    AND ss.spec_id IN (SELECT id FROM tire_pressures     WHERE generation_id = ?))
+        (ss.spec_table = 'tire_pressures'    AND ss.spec_id IN (SELECT id FROM tire_pressures     WHERE generation_id = ?)) OR
+        (ss.spec_table = 'procedures'        AND ss.spec_id IN (SELECT id FROM procedures         WHERE generation_id = ?))
      )
      ORDER BY s.id`,
     [
       generationId, generationId, generationId, generationId, generationId,
-      generationId, generationId, generationId, generationId,
+      generationId, generationId, generationId, generationId, generationId,
     ],
   );
 }
