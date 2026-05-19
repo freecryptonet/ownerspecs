@@ -348,7 +348,7 @@ export default async function Page({ params }: { params: Promise<Params> }) {
                 peek: "Full specifications · all engines",
               },
               {
-                href: "#",
+                href: `/${make.slug}/${gen.slug}#fluids-all`,
                 name: "All fluids · other lubricants",
                 peek: "CVT · coolant · brake · A/C refrigerant",
               },
