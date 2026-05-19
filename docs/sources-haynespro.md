@@ -11,13 +11,13 @@ HaynesPro WorkshopData Car Edition (Infopro Digital, ex-Haynes). OEM-aggregated 
 Base: `https://www.workshopdata.com/touch/site/layout/`
 
 1. `makesOverview` — make grid (BMW tile).
-2. After picking BMW the URL advances through `site/layout/<step>` paths with IDs in the query string (`makeId`, `modelId`, `typeId`, `engineCode`). Step names rotate — observe live, don't hard-code.
+2. After picking BMW the URL advances through `site/layout/<step>` paths with IDs in the query string (`makeId`, `modelId`, `typeId`, `engineCode`). Step names rotate — observe live.
 3. Model list → **3-Series (G20/G21) Saloon/Touring** (saloon and touring are separate models).
 4. Type/engine → **330i** by engine code **B48B20 / B48B20M1** (indexed by engine code, not trim).
 5. Year band → e.g. `03/2019 →`.
 6. Vehicle dashboard with category tabs (§3).
 
-Shortcut: the VIN box on `makesOverview` skips steps 2-5. Use it whenever the VIN is known.
+Shortcut: the VIN box on `makesOverview` skips steps 2-5. Use whenever VIN is known.
 
 ## 3. Data categories (per vehicle)
 
@@ -56,7 +56,7 @@ Playwright is already required for auth, so `waitForSelector('table')` and parse
 - **Model**: family + chassis code ("3-Series (G20/G21) Saloon", "Golf VIII"). Body styles split. Long-running nameplates get **multiple HaynesPro entries per generation** (E90, F30, G20 are distinct models).
 - **Type/variant**: keyed off **engine code**, not trim. "330i" is inferred from B48B20; M340i is a separate type entry.
 
-Map our `make/model/generation` to HaynesPro by chassis code + engine code, never trim name. Cache the resolved `(makeId, modelId, typeId)` in DB.
+Map our `make/model/generation` by chassis + engine code, never trim. Cache the resolved `(makeId, modelId, typeId)` in DB.
 
 ## 6. Fallbacks when HaynesPro is blocked / thin / missing
 

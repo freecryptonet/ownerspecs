@@ -109,6 +109,15 @@ type SourceRow = {
   retrieved_at: string;
   notes: string | null;
 };
+type HeroImage = {
+  url: string;
+  attribution: string | null;
+  license: string;
+  original_url: string | null;
+  caption: string | null;
+  width: number | null;
+  height: number | null;
+};
 
 // ---------- helpers ----------
 const fluidLabels: Record<string, string> = {
@@ -279,6 +288,17 @@ async function getGenerationData(brand: string, generation: string) {
     [gen.id],
   );
 
+  // Hero image — prefer 3/4-front for this generation; trim-specific if available,
+  // else generation-level. NULL if no image yet (page falls back to SVG silhouette).
+  const heroImage = await queryOne<HeroImage>(
+    `SELECT url, attribution, license, original_url, caption, width, height
+     FROM images
+     WHERE generation_id = ?
+     ORDER BY (position = '3-4-front') DESC, trim_id IS NULL, id
+     LIMIT 1`,
+    [gen.id],
+  );
+
   // PUBLIC SOURCES ONLY — internal cross-verification sources (auto_data,
   // ultimatespecs, haynespro) are kept in the DB for provenance but filtered
   // out of the rendered Sources block. See sources.is_public.
@@ -319,6 +339,7 @@ async function getGenerationData(brand: string, generation: string) {
     partCount: partCount?.n ?? 0,
     serviceIntervals,
     sources,
+    heroImage,
   };
 }
 
@@ -369,6 +390,7 @@ export default async function Page({ params }: { params: Promise<Params> }) {
     partCount,
     serviceIntervals,
     sources,
+    heroImage,
   } = data;
 
   const yrs = yearRange(gen.start_year, gen.end_year);
@@ -459,18 +481,50 @@ export default async function Page({ params }: { params: Promise<Params> }) {
             <div>
               <div className="ib-photo">
                 <div className="frame">
-                  <svg viewBox="0 0 800 600" stroke="rgba(255,255,255,0.75)" fill="none" strokeWidth="1.6">
-                    <path d="M90 410c0-32 22-52 58-52h92l72-104c12-19 30-29 56-29h190c26 0 44 10 56 29l72 104h92c36 0 58 20 58 52v52H90z"/>
-                    <path d="M325 358l38-66h290l38 66"/>
-                    <circle cx="245" cy="462" r="52" fill="rgba(255,255,255,0.06)" />
-                    <circle cx="245" cy="462" r="38" />
-                    <circle cx="775" cy="462" r="52" fill="rgba(255,255,255,0.06)" />
-                    <circle cx="775" cy="462" r="38" />
-                  </svg>
+                  {heroImage ? (
+                    <img
+                      src={heroImage.url}
+                      alt={heroImage.caption ?? `${make.name} ${gen.display_name}`}
+                      width={heroImage.width ?? 1280}
+                      height={heroImage.height ?? 800}
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                        display: "block",
+                      }}
+                    />
+                  ) : (
+                    <svg viewBox="0 0 800 600" stroke="rgba(255,255,255,0.75)" fill="none" strokeWidth="1.6">
+                      <path d="M90 410c0-32 22-52 58-52h92l72-104c12-19 30-29 56-29h190c26 0 44 10 56 29l72 104h92c36 0 58 20 58 52v52H90z"/>
+                      <path d="M325 358l38-66h290l38 66"/>
+                      <circle cx="245" cy="462" r="52" fill="rgba(255,255,255,0.06)" />
+                      <circle cx="245" cy="462" r="38" />
+                      <circle cx="775" cy="462" r="52" fill="rgba(255,255,255,0.06)" />
+                      <circle cx="775" cy="462" r="38" />
+                    </svg>
+                  )}
                 </div>
                 <div className="caption">
-                  <span>{make.name} {gen.display_name}</span>
-                  <span>OEM press</span>
+                  <span>{heroImage?.caption ?? `${make.name} ${gen.display_name}`}</span>
+                  <span style={{ fontSize: 11, color: "var(--ink-mute)" }}>
+                    {heroImage ? (
+                      heroImage.original_url ? (
+                        <a
+                          href={heroImage.original_url}
+                          rel="noopener nofollow"
+                          target="_blank"
+                          style={{ color: "var(--ink-mute)" }}
+                        >
+                          Photo: {heroImage.attribution}
+                        </a>
+                      ) : (
+                        <>Photo: {heroImage.attribution}</>
+                      )
+                    ) : (
+                      "OEM press"
+                    )}
+                  </span>
                 </div>
               </div>
             </div>
