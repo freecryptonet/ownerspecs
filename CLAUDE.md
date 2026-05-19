@@ -95,6 +95,48 @@ ssh -i ~/.ssh/autodtcs_key root@72.62.154.119 'sudo -u deploy pm2 restart os'
 - Never break the source-tracking invariant — if you add a spec value without inserting a `spec_sources` row, that spec won't carry a citation and the page won't show it in the sources block.
 - Never use `git push --force`, `pm2 delete vd/vd-staging/zw/fc`, or any destructive op on the shared VPS without explicit confirmation. Other production sites live there.
 
+## Adding a new generation (the per-nameplate workflow)
+
+Full recipe in memory: `reference_nameplate_add_workflow.md`. Short form:
+
+1. Find auto-data + ultimatespecs gen-index URLs (WebSearch / WebFetch).
+2. `npx tsx scrapers/batch.ts --auto-data-gen <url> --ultimatespecs-gen <url> --limit 6` on the VPS as deploy.
+   - If ultimatespecs has no index for the exact gen, pass any sibling — batch.ts auto-falls-back to auto-data-only.
+3. Patch gen metadata: set codename (e.g. `G20`, `P702`, `BT`), clean up slug (`<model>-<codename>-<body>-<years>`), rename OEM source citation to `'<Brand> <Model> (<Codename>) Service Manual'`.
+4. Hero image: `python scrapers/images/wikimedia.py search <Brand> <Model> <Codename>` → download a 1280px CC BY-SA thumb to `public/images/<brand>/<gen-slug>/hero.jpg`. Standard widths only (220/320/640/800/1024/1280/1920/2560) — others 400.
+5. Write `db/migrations/NNN_seed_<model>_<codename>_moat.sql` populating fluid_specs / torque_specs / electrical_specs / bulbs / fuses / parts / service_intervals / tire_pressures + an IGNORE-INSERT into `images`. Cite the public OEM-manual source via `INSERT IGNORE INTO spec_sources` per table.
+6. scp the hero + the migration to the VPS, run the migration, `npm run build && pm2 restart os`. **Rebuild is required** — `generateStaticParams` snapshots gens at build time.
+7. Smoke-test the 6 routes (`/`, `/oil-capacity`, `/maintenance-schedule`, `/torque`, `/electrical`, `/tires`) for HTTP 200.
+
+## Where the moat data should come from (priority order)
+
+Real sources beat lore. See `feedback_data_sources_hierarchy.md`.
+
+1. **HaynesPro WorkshopData** — Tim has it pre-logged-in. Switch via `mcp__playwright__browser_tabs select 1`. Six-step nav walk-through in `docs/sources-haynespro.md`.
+2. **startmycar.com/{brand}/{model}/info/fusebox/{year}/{gencode}** — clean HTML fuse tables, generation-aware. Best for fuses.
+3. **OEM owner manuals** (BMW, VW, Audi, Toyota, Honda all host PDFs publicly).
+4. **manualslib.com source PDFs** (captcha-walled but downloaded file is a real text PDF, not the rasterized in-browser viewer). Tim has a session.
+5. **Dealer FSM** (BMW TIS, VW erWin, GM Service Information).
+6. **General automotive knowledge** — last resort, only for well-known constants (DOT 3 vs DOT 4, lug-nut JIS standards). Never for OE part numbers, with-filter capacities, or chassis-specific fuse layouts.
+
+Why this matters: the whole moat is data the incumbents miss. If the moat tables are filled from training-data lore, we have plausible numbers but no real differentiation — and we'd be wrong on chassis-specific values (caliper carrier bolt torque varies wildly between chassis even within one maker).
+
+## Known scraper/page bug patterns (do not regress)
+
+These were each discovered in production and fixed. Future Claude — read these before touching the related code.
+
+| Where | Bug | Fix |
+|---|---|---|
+| `lib/generation.ts:108` `getGenerationSources` | Mixed-table IN list cross-pollinated sources — a Civic fluid_spec id=8 matched as a BMW source if BMW also had any spec with id=8 in any table. | Use per-table compound checks `(spec_table = ? AND spec_id IN (SELECT id FROM <table> WHERE generation_id = ?))`. |
+| `app/[brand]/[generation]/page.tsx` (was) | The gen hub had its own copy of the buggy IN-list source query. | Removed duplicate; calls the shared helper. |
+| `app/[brand]/[generation]/oil-capacity/page.tsx` (was) | Hardcoded `engineLabel: Record<string, string>` map with demo Civic data (`"1.5 T (L15B7) — Sport · EX-T · Touring"`) leaked onto every gen because fallthrough never reached `engine_display`. | Replaced with a `rowLabel(o)` builder. Falls back to `"All engines · generation-wide"` when no trim is associated. |
+| Topic pages | Citation badge hardcoded `<sup>[1][2]</sup>`. | Generate from `sources.length`. |
+| `scrapers/insert.ts` codename extractor | Caught `(245 Hp)`, `(190 Hp)` etc. as chassis codes and forked one Golf VIII into 5 gens. | Restrict to `/^[A-Z]{1,5}\d{0,4}[A-Z]?$/` plus a `(model, body_type, display_name)` dedupe fallback when codename is NULL. |
+| `scrapers/insert.ts` body_type | "SUV / TT", "Sedan, Fastback", "Station wagon (estate)" slugified to ugly `-suv-tt-`, `-sedan-fastback-`, `-station-wagon-estate-` and forked gens. | Strip parentheticals, then split on `/` or `,`, take the leading token. |
+| `app/globals.css .tabs-inner` | `overflow-x: auto` rendered a thin cosmetic scrollbar on desktop. | Add `scrollbar-width: none` + `::-webkit-scrollbar { display: none }`. |
+| `db/migrations/*_seed_*.sql` | `tire_size varchar(48)` and `battery_group varchar(24)` overflow on long descriptors. | Trim to fit. |
+| Older migrations | `capacity_qt` left NULL when `capacity_l` was populated. | Backfill: `UPDATE fluid_specs SET capacity_qt = ROUND(capacity_l * 1.05669, 2) WHERE capacity_l IS NOT NULL AND capacity_qt IS NULL`. |
+
 ## Pending
 
 See the project memory file `ownerspecs-project.md` for the live pending list (Phase 2+ items: per-topic sub-pages, scraping pipeline, brand/model index pages, image ingestion, GA4 + GSC verification, GitHub remote push).
