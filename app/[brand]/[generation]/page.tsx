@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { query, queryOne } from "@/lib/db";
 import { getGenerationSources } from "@/lib/generation";
+import { NameplateRail } from "@/components/NameplateRail";
 import { fluidLabel, torqueLabel, serviceLabel } from "@/lib/labels";
 import { pageMetadata, breadcrumbsJsonLd, vehicleJsonLd } from "@/lib/seo";
 
@@ -787,6 +788,14 @@ export default async function Page({ params }: { params: Promise<Params> }) {
             ))}
           </ol>
         </section>
+
+        <NameplateRail
+          modelId={model.id}
+          makeSlug={make.slug}
+          currentGenSlug={gen.slug}
+          makeName={make.name}
+          modelName={model.name}
+        />
       </main>
 
       <footer className="site-footer">
