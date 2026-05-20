@@ -186,6 +186,20 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       ["odyssey-rl6-minivan-2018-2023", "sienna-xl40-minivan-2021-present"],
       ["odyssey-rl6-minivan-2018-2023", "pacifica-ru-minivan-2017-2023"],
       ["sienna-xl40-minivan-2021-present", "pacifica-ru-minivan-2017-2023"],
+      ["q7-4m-suv-2015-2019", "x5-g05-suv-2019-2023"],
+      ["q7-4m-suv-2015-2019", "gle-v167-suv-2019-2023"],
+      ["gle-v167-suv-2019-2023", "x5-g05-suv-2019-2023"],
+      ["xc90-ii-suv-2015-present", "x5-g05-suv-2019-2023"],
+      ["xc90-ii-suv-2015-present", "gle-v167-suv-2019-2023"],
+      ["macan-95b-suv-2014-2018", "x3-g01-suv-2018-2024"],
+      ["macan-95b-suv-2014-2018", "gv70-jk1-suv-2021-present"],
+      ["gv70-jk1-suv-2021-present", "x3-g01-suv-2018-2024"],
+      ["ascent-wm-suv-2019-2023", "highlander-xu70-suv-2020-2025"],
+      ["ascent-wm-suv-2019-2023", "pilot-yf-suv-2023-present"],
+      ["cx-90-kk-suv-2024-present", "telluride-on-suv-2020-2025"],
+      ["cx-90-kk-suv-2024-present", "grand-cherokee-wl-suv-2022-present"],
+      ["brz-zd8-coupe-2022-present", "mx-5-nd-roadster-2015-present"],
+      ["hr-v-rv3-suv-2023-present", "cr-v-rs-suv-2023-present"],
     ];
     for (const [a, b] of PAIRS) {
       pages.push({
