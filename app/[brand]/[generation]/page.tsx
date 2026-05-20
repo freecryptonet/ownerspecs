@@ -583,7 +583,17 @@ export default async function Page({ params }: { params: Promise<Params> }) {
                   <tr><th>Body</th><td className="alt">{gen.body_type}</td></tr>
                   <tr><th>Layout</th><td>{gen.layout}</td></tr>
                   {gen.platform && <tr><th>Platform</th><td className="alt">{gen.platform}</td></tr>}
-                  <tr><th>Engines</th><td>{engines.map((e) => e.code).join(" · ")}</td></tr>
+                  <tr><th>Engines</th><td>
+                    {engines.map((e, i) => {
+                      const slug = e.code.replace(/[\s/]/g, "-").replace(/[^a-zA-Z0-9-]/g, "").replace(/-+/g, "-").toLowerCase();
+                      return (
+                        <span key={e.id}>
+                          {i > 0 && " · "}
+                          <a href={`/engines/${slug}`} style={{ color: "var(--accent)" }}>{e.code}</a>
+                        </span>
+                      );
+                    })}
+                  </td></tr>
                   <tr><th>Trims (US)</th><td className="alt">{trims.map((t) => t.name).join(" · ")}</td></tr>
                   <tr><th>Markets</th><td>{markets.length > 0 ? markets.map((m) => m.code).join(" · ") : "Global · multi-market"}</td></tr>
                   {gen.wheelbase_mm && <tr><th>Wheelbase</th><td>{mmDual(gen.wheelbase_mm)}</td></tr>}
@@ -607,10 +617,12 @@ export default async function Page({ params }: { params: Promise<Params> }) {
         </section>
 
         {/* ENGINE SPECS */}
-        {engines.map((e) => (
+        {engines.map((e) => {
+          const slug = e.code.replace(/[\s/]/g, "-").replace(/[^a-zA-Z0-9-]/g, "").replace(/-+/g, "-").toLowerCase();
+          return (
           <section key={e.id} style={{ paddingTop: "var(--s-5)" }}>
             <h2 className="section-h">
-              Engine — {e.display_name} ({e.code})
+              Engine — {e.display_name} (<a href={`/engines/${slug}`} style={{ color: "var(--accent)" }}>{e.code}</a>)
               <span className="count">{trims.filter((t) => t.engine_code === e.code).map((t) => t.name).join(" · ") || "—"}</span>
             </h2>
             <table className="spec-table">
@@ -624,7 +636,8 @@ export default async function Page({ params }: { params: Promise<Params> }) {
               </tbody>
             </table>
           </section>
-        ))}
+          );
+        })}
 
         {/* DIMENSIONS & CAPACITIES */}
         {(gen.length_mm || gen.wheelbase_mm || gen.fuel_tank_l) && (
