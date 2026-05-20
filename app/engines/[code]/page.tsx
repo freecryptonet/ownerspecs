@@ -91,7 +91,7 @@ export async function generateMetadata({
   const engine = await findEngine(code);
   if (!engine) return { title: "Engine not found" };
   return pageMetadata({
-    title: `${engine.code} ${engine.display_name} — Engine specifications, oil capacity, applications`,
+    title: `${engine.code}${engine.display_name && engine.display_name !== engine.code ? ` (${engine.display_name})` : ""} — Engine specifications, oil capacity, applications`,
     description: `Specifications for the ${engine.code} engine (${engine.display_name}): ${engine.displacement_cc ? `${(engine.displacement_cc/1000).toFixed(1)} L, ` : ""}${engine.cylinders ?? "—"}-cyl ${engine.fuel}${engine.aspiration ? ` ${engine.aspiration}` : ""}. Oil capacity, viscosity, OE filter and spark-plug part numbers across every vehicle this engine appears in.`,
     path: `/engines/${code}`,
   });
@@ -201,7 +201,9 @@ export default async function Page({ params }: { params: Promise<Params> }) {
         </nav>
 
         <div className="pagehead">
-          <h1>{engine.code} <span style={{ color: "var(--ink-mute)", fontWeight: 400 }}>— {engine.display_name}</span></h1>
+          <h1>{engine.code}{engine.display_name && engine.display_name !== engine.code && (
+            <span style={{ color: "var(--ink-mute)", fontWeight: 400 }}> — {engine.display_name}</span>
+          )}</h1>
           <div className="sub">
             <span>
               {engine.displacement_cc ? `${(engine.displacement_cc/1000).toFixed(1)} L` : "—"}

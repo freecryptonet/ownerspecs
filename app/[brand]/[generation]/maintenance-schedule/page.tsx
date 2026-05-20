@@ -210,29 +210,31 @@ export default async function Page({ params }: { params: Promise<Params> }) {
               </tr>
             </thead>
             <tbody>
-              {services.map((s) => (
-                <tr key={s.id}>
-                  <td className="svc">
-                    {serviceLabel(s.service)}
-                    {s.notes && (
-                      <span
-                        className="muted"
-                        style={{ fontSize: 12, marginLeft: 8 }}
-                      >
-                        · {s.notes}
-                      </span>
-                    )}
-                  </td>
-                  {milestones.map((m) => {
-                    const due = !!s.miles_normal && m % s.miles_normal === 0;
-                    return (
-                      <td key={m} className="dot">
-                        {due && <span className="filled" />}
-                      </td>
-                    );
-                  })}
-                </tr>
-              ))}
+              {services
+                .filter((s) => s.miles_normal != null)
+                .map((s) => (
+                  <tr key={s.id}>
+                    <td className="svc">
+                      {serviceLabel(s.service)}
+                      {s.notes && (
+                        <span
+                          className="muted"
+                          style={{ fontSize: 12, marginLeft: 8 }}
+                        >
+                          · {s.notes}
+                        </span>
+                      )}
+                    </td>
+                    {milestones.map((m) => {
+                      const due = !!s.miles_normal && m % s.miles_normal === 0;
+                      return (
+                        <td key={m} className="dot">
+                          {due && <span className="filled" />}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                ))}
             </tbody>
           </table>
 
