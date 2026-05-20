@@ -35,7 +35,7 @@ import {
   tirePositionLabels as positionLabels,
   tireConditionLabels as conditionLabels,
 } from "@/lib/labels";
-import { pageMetadata } from "@/lib/seo";
+import { pageMetadata, faqJsonLd } from "@/lib/seo";
 
 export async function generateStaticParams(): Promise<Params[]> {
   return getAllGenerationParams();
@@ -92,9 +92,36 @@ export default async function Page({ params }: { params: Promise<Params> }) {
     new Set(tires.map((t) => t.tire_size).filter((s): s is string => !!s)),
   );
 
+  const faqs: Array<{ q: string; a: string }> = [];
+  if (front && rear) {
+    faqs.push({
+      q: `What is the tire pressure for the ${make.name} ${gen.display_name}?`,
+      a: `Cold tire pressure on the ${make.name} ${gen.display_name} (${yrs}) is ${front.psi} psi (${front.kpa} kPa) front and ${rear.psi} psi (${rear.kpa} kPa) rear${front.tire_size ? ` on ${front.tire_size}` : ""}.`,
+    });
+  }
+  if (sizes.length > 0) {
+    faqs.push({
+      q: `What tire sizes fit the ${make.name} ${gen.display_name}?`,
+      a: `Factory OE tire sizes for the ${make.name} ${gen.display_name} (${yrs}): ${sizes.slice(0, 4).join(", ")}.`,
+    });
+  }
+  if (spare) {
+    faqs.push({
+      q: `What spare tire pressure does the ${make.name} ${gen.display_name} use?`,
+      a: `Compact spare tire pressure for the ${make.name} ${gen.display_name} (${yrs}) is ${spare.psi} psi (${spare.kpa} kPa)${spare.tire_size ? ` — ${spare.tire_size}` : ""}.`,
+    });
+  }
+
   return (
     <>
       <SiteHeader />
+
+      {faqs.length >= 2 && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd(faqs)) }}
+        />
+      )}
 
       <div className="shell">
         <nav className="crumb">

@@ -108,6 +108,23 @@ export function vehicleJsonLd(opts: {
   };
 }
 
+/** FAQPage JSON-LD for a topic page. Captures "People Also Ask" SERP boxes
+ *  for question-format queries like "What is the oil capacity of ..." */
+export function faqJsonLd(qa: Array<{ q: string; a: string }>) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: qa.map((p) => ({
+      "@type": "Question",
+      name: p.q,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: p.a,
+      },
+    })),
+  };
+}
+
 /** A TechArticle schema for a single topic page (oil-capacity, etc.). */
 export function techArticleJsonLd(opts: {
   title: string;

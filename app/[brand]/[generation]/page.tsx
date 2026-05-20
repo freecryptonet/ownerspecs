@@ -383,7 +383,7 @@ export async function generateMetadata({
   const earliest = generations[generations.length - 1]?.start_year;
   const latest = generations[0]?.end_year ?? "present";
   return {
-    title: `${make.name} ${model.name} — Every generation, fluids, torque, maintenance · ownerspecs`,
+    title: `${make.name} ${model.name} — Every generation, fluids, torque, maintenance`,
     description: `Reference for every ${make.name} ${model.name} generation (${earliest ?? "—"}–${latest}). Engine specs, fluid capacities, service intervals, torque values, electrical, procedures. Cross-verified.`,
     alternates: { canonical: `/${make.slug}/${model.slug}` },
   };
@@ -468,7 +468,8 @@ export default async function Page({ params }: { params: Promise<Params> }) {
         <nav className="crumb">
           <a href="/">Catalogue</a><span className="sep">/</span>
           <a href={`/${make.slug}`}>{make.name}</a><span className="sep">/</span>
-          <span>{model.name} {gen.display_name} · {yrs}</span>
+          <a href={`/${make.slug}/${model.slug}`}>{model.name}</a><span className="sep">/</span>
+          <span>{gen.display_name} · {yrs}</span>
         </nav>
 
         <div className="pagehead">

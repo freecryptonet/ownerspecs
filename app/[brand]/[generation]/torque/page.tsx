@@ -15,7 +15,7 @@ import { GenerationTabs } from "@/components/GenerationTabs";
 import { VerifyBadge } from "@/components/VerifyBadge";
 import { SourcesBlock } from "@/components/SourcesBlock";
 import { torqueLabel as fastenerLabel } from "@/lib/labels";
-import { pageMetadata } from "@/lib/seo";
+import { pageMetadata, faqJsonLd } from "@/lib/seo";
 
 type Params = { brand: string; generation: string };
 
@@ -80,9 +80,36 @@ export default async function Page({ params }: { params: Promise<Params> }) {
   const plug = torques.find((t) => t.fastener === "spark_plug");
   const drain = torques.find((t) => t.fastener === "oil_drain");
 
+  const faqs: Array<{ q: string; a: string }> = [];
+  if (lug) {
+    faqs.push({
+      q: `What is the wheel lug nut torque for the ${make.name} ${gen.display_name}?`,
+      a: `Tighten the wheel lug nuts to ${lug.torque_nm} N·m (${lug.torque_ftlb} ft·lb) in a star pattern on the ${make.name} ${gen.display_name} (${yrs}).${lug.notes ? ` ${lug.notes}` : ""}`,
+    });
+  }
+  if (plug) {
+    faqs.push({
+      q: `What is the spark plug torque for the ${make.name} ${gen.display_name}?`,
+      a: `Spark plug torque on the ${make.name} ${gen.display_name} (${yrs}) is ${plug.torque_nm} N·m (${plug.torque_ftlb} ft·lb).${plug.notes ? ` ${plug.notes}` : ""}`,
+    });
+  }
+  if (drain) {
+    faqs.push({
+      q: `What is the oil drain plug torque for the ${make.name} ${gen.display_name}?`,
+      a: `Oil drain plug torque on the ${make.name} ${gen.display_name} (${yrs}) is ${drain.torque_nm} N·m (${drain.torque_ftlb} ft·lb) with a new crush washer.${drain.notes ? ` ${drain.notes}` : ""}`,
+    });
+  }
+
   return (
     <>
       <SiteHeader />
+
+      {faqs.length >= 2 && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd(faqs)) }}
+        />
+      )}
 
       <div className="shell">
         <nav className="crumb">

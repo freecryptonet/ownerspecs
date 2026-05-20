@@ -16,7 +16,7 @@ import { GenerationTabs } from "@/components/GenerationTabs";
 import { VerifyBadge } from "@/components/VerifyBadge";
 import { SourcesBlock } from "@/components/SourcesBlock";
 import { bulbLabel, fuseLocationLabel } from "@/lib/labels";
-import { pageMetadata } from "@/lib/seo";
+import { pageMetadata, faqJsonLd } from "@/lib/seo";
 
 type Params = { brand: string; generation: string };
 
@@ -116,9 +116,43 @@ export default async function Page({ params }: { params: Promise<Params> }) {
     return acc;
   }, {});
 
+  const faqs: Array<{ q: string; a: string }> = [];
+  if (electrical?.battery_group) {
+    faqs.push({
+      q: `What battery does the ${make.name} ${gen.display_name} use?`,
+      a: `The ${make.name} ${gen.display_name} (${yrs}) uses a ${electrical.battery_group} battery${electrical.cca ? ` rated at ${electrical.cca} CCA` : ""}${electrical.ah ? ` and ${electrical.ah} Ah` : ""}.`,
+    });
+  }
+  if (electrical?.alternator_amps) {
+    faqs.push({
+      q: `What is the alternator output of the ${make.name} ${gen.display_name}?`,
+      a: `Factory alternator output on the ${make.name} ${gen.display_name} (${yrs}) is ${electrical.alternator_amps} A.`,
+    });
+  }
+  const headlight = bulbs.find((b) => b.position === "headlight_low");
+  if (headlight) {
+    faqs.push({
+      q: `What headlight bulb does the ${make.name} ${gen.display_name} use?`,
+      a: `The low-beam headlight bulb on the ${make.name} ${gen.display_name} (${yrs}) is ${headlight.bulb_code}${headlight.led_from_factory ? " (LED from factory on most trims)" : ""}.`,
+    });
+  }
+  if (bulbs.length > 0 && fuses.length > 0) {
+    faqs.push({
+      q: `How many fuses does the ${make.name} ${gen.display_name} have?`,
+      a: `${fuses.length} fuse positions documented across under-hood and cabin fuse boxes on the ${make.name} ${gen.display_name} (${yrs}). Bulb manifest covers ${bulbs.length} positions.`,
+    });
+  }
+
   return (
     <>
       <SiteHeader />
+
+      {faqs.length >= 2 && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd(faqs)) }}
+        />
+      )}
 
       <div className="shell">
         <nav className="crumb">

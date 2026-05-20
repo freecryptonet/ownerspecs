@@ -15,7 +15,7 @@ import { GenerationTabs } from "@/components/GenerationTabs";
 import { VerifyBadge } from "@/components/VerifyBadge";
 import { SourcesBlock } from "@/components/SourcesBlock";
 import { serviceLabel } from "@/lib/labels";
-import { pageMetadata } from "@/lib/seo";
+import { pageMetadata, faqJsonLd } from "@/lib/seo";
 
 type Params = { brand: string; generation: string };
 
@@ -83,9 +83,46 @@ export default async function Page({ params }: { params: Promise<Params> }) {
     ),
   ).sort((a, b) => a - b);
 
+  const oilSvc = services.find((s) => s.service === "engine_oil_and_filter");
+  const plugSvc = services.find((s) => s.service === "spark_plugs");
+  const brakeSvc = services.find((s) => s.service === "brake_fluid_flush");
+
+  const faqs: Array<{ q: string; a: string }> = [];
+  if (oilSvc?.miles_normal) {
+    faqs.push({
+      q: `How often should the ${make.name} ${gen.display_name} get an oil change?`,
+      a: `The ${make.name} ${gen.display_name} (${yrs}) needs an engine oil + filter change every ${oilSvc.miles_normal.toLocaleString()} miles (${oilSvc.km_normal?.toLocaleString() ?? "—"} km) under normal duty${oilSvc.miles_severe ? `, or every ${oilSvc.miles_severe.toLocaleString()} miles under severe duty` : ""}.`,
+    });
+  }
+  if (plugSvc?.miles_normal) {
+    faqs.push({
+      q: `When do the spark plugs need replacement on the ${make.name} ${gen.display_name}?`,
+      a: `Spark plug replacement is due at ${plugSvc.miles_normal.toLocaleString()} miles (${plugSvc.km_normal?.toLocaleString() ?? "—"} km) on the ${make.name} ${gen.display_name} (${yrs}).${plugSvc.notes ? ` ${plugSvc.notes}` : ""}`,
+    });
+  }
+  if (brakeSvc?.months) {
+    faqs.push({
+      q: `How often does the ${make.name} ${gen.display_name} brake fluid need flushing?`,
+      a: `Brake fluid flush interval is every ${brakeSvc.months} months on the ${make.name} ${gen.display_name} (${yrs}).${brakeSvc.notes ? ` ${brakeSvc.notes}` : ""}`,
+    });
+  }
+  if (services.length > 0) {
+    faqs.push({
+      q: `What's in the maintenance schedule for the ${make.name} ${gen.display_name}?`,
+      a: `The official maintenance schedule for the ${make.name} ${gen.display_name} (${yrs}) covers ${services.length} services across mileage and time intervals, including oil, tire rotation, brake inspection, filter changes, transmission fluid, spark plugs and coolant. Severe-duty intervals are halved.`,
+    });
+  }
+
   return (
     <>
       <SiteHeader />
+
+      {faqs.length >= 2 && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd(faqs)) }}
+        />
+      )}
 
       <div className="shell">
         <nav className="crumb">

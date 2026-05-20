@@ -14,7 +14,7 @@ import { SiteFooter } from "@/components/SiteFooter";
 import { GenerationTabs } from "@/components/GenerationTabs";
 import { VerifyBadge } from "@/components/VerifyBadge";
 import { SourcesBlock } from "@/components/SourcesBlock";
-import { pageMetadata, breadcrumbsJsonLd, techArticleJsonLd } from "@/lib/seo";
+import { pageMetadata, breadcrumbsJsonLd, techArticleJsonLd, faqJsonLd } from "@/lib/seo";
 
 type Params = { brand: string; generation: string };
 
@@ -102,9 +102,42 @@ export default async function Page({ params }: { params: Promise<Params> }) {
     (o) => o.notes && /dilution|severe|cold-climate/i.test(o.notes),
   );
 
+  const faqs: Array<{ q: string; a: string }> = [];
+  if (primary.capacity_qt && primary.capacity_l) {
+    faqs.push({
+      q: `What is the oil capacity of the ${make.name} ${gen.display_name}?`,
+      a: `The ${make.name} ${gen.display_name} (${yrs}) holds ${Number(primary.capacity_qt).toFixed(1)} US qt (${Number(primary.capacity_l).toFixed(1)} L) of engine oil with a new filter${primary.engine_display ? ` on the ${primary.engine_display} engine` : ""}.`,
+    });
+  }
+  if (primary.viscosity) {
+    faqs.push({
+      q: `What oil viscosity does the ${make.name} ${gen.display_name} use?`,
+      a: `${primary.viscosity}${primary.spec_standard ? `, meeting ${primary.spec_standard}` : ""} is the manufacturer-specified viscosity for the ${make.name} ${gen.display_name} (${yrs}).`,
+    });
+  }
+  if (primary.filter_part_no) {
+    faqs.push({
+      q: `What oil filter fits the ${make.name} ${gen.display_name}?`,
+      a: `The OE oil filter part number for the ${make.name} ${gen.display_name} (${yrs}) is ${primary.filter_part_no}${primary.engine_code ? ` on the ${primary.engine_code} engine` : ""}.`,
+    });
+  }
+  if (primary.drain_interval_mi) {
+    faqs.push({
+      q: `How often should the oil be changed on the ${make.name} ${gen.display_name}?`,
+      a: `The manufacturer-recommended oil change interval for the ${make.name} ${gen.display_name} (${yrs}) is ${primary.drain_interval_mi.toLocaleString()} miles${primary.drain_interval_km ? ` / ${primary.drain_interval_km.toLocaleString()} km` : ""}${primary.drain_interval_months ? ` or ${primary.drain_interval_months} months, whichever comes first` : ""}.`,
+    });
+  }
+
   return (
     <>
       <SiteHeader />
+
+      {faqs.length >= 2 && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd(faqs)) }}
+        />
+      )}
 
       <div className="shell">
         <nav className="crumb">

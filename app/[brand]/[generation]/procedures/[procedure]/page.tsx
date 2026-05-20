@@ -94,9 +94,55 @@ export default async function Page({ params }: { params: Promise<Params> }) {
 
   const bodyHtml = renderMarkdown(proc.body_md);
 
+  // Extract step text from the markdown body (numbered list items under
+  // "## Procedure" / "## Steps" headings, or any ordered list). Each list
+  // item becomes a HowToStep in the JSON-LD payload.
+  const lines = proc.body_md.replace(/\r\n/g, "\n").split("\n");
+  const steps: string[] = [];
+  let inOl = false;
+  for (const raw of lines) {
+    const line = raw.trim();
+    const olm = line.match(/^(\d+)\.\s+(.+)$/);
+    if (olm) {
+      steps.push(olm[2].replace(/\*\*([^*]+)\*\*/g, "$1").replace(/`([^`]+)`/g, "$1").trim());
+      inOl = true;
+    } else if (inOl && !line) {
+      inOl = false;
+    }
+  }
+
+  const howToJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "HowTo",
+    name: `${proc.title}`,
+    description: `${proc.title} for the ${make.name} ${gen.display_name} (${yrs}). Restated from owner manual and factory service information.`,
+    totalTime: "PT5M",
+    supply: [],
+    tool: [],
+    step: steps.slice(0, 12).map((text, idx) => ({
+      "@type": "HowToStep",
+      position: idx + 1,
+      text,
+    })),
+    vehicleAtRisk: {
+      "@type": "Vehicle",
+      name: `${make.name} ${gen.display_name}`,
+      brand: { "@type": "Brand", name: make.name },
+      model: model.name,
+      modelDate: yrs,
+    },
+  };
+
   return (
     <>
       <SiteHeader />
+
+      {steps.length > 0 && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(howToJsonLd) }}
+        />
+      )}
 
       <div className="shell">
         <nav className="crumb">
