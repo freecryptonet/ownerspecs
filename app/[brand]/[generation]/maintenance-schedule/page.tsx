@@ -271,9 +271,9 @@ export default async function Page({ params }: { params: Promise<Params> }) {
                 peek: "Engine, performance, dimensions, drivetrain",
               },
               {
-                href: `/${make.slug}/${gen.slug}#procedures`,
+                href: `/${make.slug}/${gen.slug}/procedures`,
                 name: "Service procedures",
-                peek: "Oil reset · TPMS · throttle adapt · jump-start",
+                peek: "Oil reset · TPMS · battery · jump-start",
               },
             ].map((l) => (
               <li

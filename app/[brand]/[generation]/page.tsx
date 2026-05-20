@@ -301,13 +301,62 @@ async function getGenerationData(brand: string, generation: string) {
 
 // ---------- Next route ----------
 export async function generateStaticParams(): Promise<Params[]> {
-  const rows = await query<{ brand: string; generation: string }>(
+  const genRows = await query<{ brand: string; generation: string }>(
     `SELECT mk.slug AS brand, g.slug AS generation
      FROM generations g
      JOIN models m ON m.id = g.model_id
      JOIN makes mk ON mk.id = m.make_id`,
   );
-  return rows.map((r) => ({ brand: r.brand, generation: r.generation }));
+  // Also emit a static param for every (brand, model) pair so that the
+  // model-index page (e.g. /honda/civic) is prerendered.
+  const modelRows = await query<{ brand: string; generation: string }>(
+    `SELECT mk.slug AS brand, m.slug AS generation
+     FROM models m
+     JOIN makes mk ON mk.id = m.make_id
+     JOIN generations g ON g.model_id = m.id AND g.is_active = 1
+     GROUP BY mk.slug, m.slug`,
+  );
+  return [...genRows, ...modelRows].map((r) => ({ brand: r.brand, generation: r.generation }));
+}
+
+type ModelData = {
+  make: { id: number; slug: string; name: string };
+  model: { id: number; slug: string; name: string };
+  generations: Array<{
+    generation_slug: string;
+    display_name: string;
+    body_type: string;
+    codename: string | null;
+    start_year: number;
+    end_year: number | null;
+    trim_count: number;
+    hero_url: string | null;
+  }>;
+};
+
+async function getModelData(brand: string, modelSlug: string): Promise<ModelData | null> {
+  const make = await queryOne<{ id: number; slug: string; name: string }>(
+    "SELECT id, slug, name FROM makes WHERE slug = ? LIMIT 1",
+    [brand],
+  );
+  if (!make) return null;
+  const model = await queryOne<{ id: number; slug: string; name: string }>(
+    "SELECT id, slug, name FROM models WHERE slug = ? AND make_id = ? LIMIT 1",
+    [modelSlug, make.id],
+  );
+  if (!model) return null;
+  const generations = await query<ModelData["generations"][number]>(
+    `SELECT g.slug AS generation_slug, g.display_name, g.body_type, g.codename,
+            g.start_year, g.end_year,
+            (SELECT COUNT(*) FROM trims WHERE generation_id = g.id) AS trim_count,
+            (SELECT url FROM images WHERE generation_id = g.id LIMIT 1) AS hero_url
+     FROM generations g
+     WHERE g.model_id = ? AND g.is_active = 1
+     ORDER BY g.start_year DESC`,
+    [model.id],
+  );
+  if (generations.length === 0) return null;
+  return { make, model, generations };
 }
 
 export async function generateMetadata({
@@ -317,21 +366,47 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { brand, generation } = await params;
   const data = await getGenerationData(brand, generation);
-  if (!data) return { title: "Not found" };
-  const { make, gen, heroImage } = data;
-  const yrs = yearRange(gen.start_year, gen.end_year);
-  return pageMetadata({
-    title: `${make.name} ${gen.display_name} ${yrs} — Specifications`,
-    description: `Full specifications for the ${gen.display_name} (${make.name}, ${yrs}). Engine, performance, dimensions, fluid capacities, maintenance schedule, torque values — cross-verified.`,
-    path: `/${make.slug}/${gen.slug}`,
-    heroPath: heroImage?.url,
-  });
+  if (data) {
+    const { make, gen, heroImage } = data;
+    const yrs = yearRange(gen.start_year, gen.end_year);
+    return pageMetadata({
+      title: `${make.name} ${gen.display_name} ${yrs} — Specifications`,
+      description: `Full specifications for the ${gen.display_name} (${make.name}, ${yrs}). Engine, performance, dimensions, fluid capacities, maintenance schedule, torque values — cross-verified.`,
+      path: `/${make.slug}/${gen.slug}`,
+      heroPath: heroImage?.url,
+    });
+  }
+  // Fall through to model-index metadata
+  const modelData = await getModelData(brand, generation);
+  if (!modelData) return { title: "Not found" };
+  const { make, model, generations } = modelData;
+  const earliest = generations[generations.length - 1]?.start_year;
+  const latest = generations[0]?.end_year ?? "present";
+  return {
+    title: `${make.name} ${model.name} — Every generation, fluids, torque, maintenance · ownerspecs`,
+    description: `Reference for every ${make.name} ${model.name} generation (${earliest ?? "—"}–${latest}). Engine specs, fluid capacities, service intervals, torque values, electrical, procedures. Cross-verified.`,
+    alternates: { canonical: `/${make.slug}/${model.slug}` },
+  };
 }
 
 export default async function Page({ params }: { params: Promise<Params> }) {
   const { brand, generation } = await params;
   const data = await getGenerationData(brand, generation);
-  if (!data) notFound();
+  if (!data) {
+    // Maybe it's a model slug, not a generation slug
+    const modelData = await getModelData(brand, generation);
+    if (modelData) {
+      const { ModelView } = await import("@/components/ModelView");
+      return (
+        <ModelView
+          make={modelData.make}
+          model={modelData.model}
+          generations={modelData.generations}
+        />
+      );
+    }
+    notFound();
+  }
   const {
     make,
     model,
@@ -424,7 +499,7 @@ export default async function Page({ params }: { params: Promise<Params> }) {
           <a className="tab" href={`/${make.slug}/${gen.slug}/oil-capacity`}>Fluids <span className="count">{fluids.length}</span></a>
           <a className="tab" href={`/${make.slug}/${gen.slug}/torque`}>Torque <span className="count">{torques.length}</span></a>
           <a className="tab" href={`/${make.slug}/${gen.slug}/electrical`}>Electrical <span className="count">{bulbCount + fuseCount + 1}</span></a>
-          <a className="tab" href={`/${make.slug}/${gen.slug}#procedures`}>Procedures</a>
+          <a className="tab" href={`/${make.slug}/${gen.slug}/procedures`}>Procedures</a>
           <a className="tab" href="/compare">Compare</a>
         </div>
       </div>
@@ -763,19 +838,11 @@ export default async function Page({ params }: { params: Promise<Params> }) {
               </span>
               <span className="arrow">→</span>
             </a>
-            <a className="moat-row" href={`/${make.slug}/${gen.slug}#procedures`}>
+            <a className="moat-row" href={`/${make.slug}/${gen.slug}/procedures`}>
               <svg className="icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M3 5h14M3 10h14M3 15h9" /></svg>
               <span>
                 <span className="name">Service procedures</span>
-                <span className="peek">Oil reset · TPMS · throttle adapt · jump-start</span>
-              </span>
-              <span className="arrow">→</span>
-            </a>
-            <a className="moat-row" href={`/${make.slug}/${gen.slug}#towing`}>
-              <svg className="icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M3 7 10 3l7 4M3 7v7l7 4 7-4V7" /></svg>
-              <span>
-                <span className="name">Towing &amp; load</span>
-                <span className="peek">Braked &amp; unbraked · payload · roof load</span>
+                <span className="peek">Oil reset · TPMS · battery · jump-start</span>
               </span>
               <span className="arrow">→</span>
             </a>

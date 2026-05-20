@@ -21,7 +21,7 @@ export function pageMetadata(opts: {
 }): Metadata {
   const { title, description, path } = opts;
   const url = `${SITE}${path}`;
-  const ogImage = opts.heroPath ? `${SITE}${opts.heroPath}` : `${SITE}/og.png`;
+  const ogImage = opts.heroPath ? `${SITE}${opts.heroPath}` : `${SITE}/opengraph-image`;
   return {
     title,
     description,
