@@ -102,6 +102,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       { slug: "parts", existsSql: "EXISTS (SELECT 1 FROM parts WHERE generation_id = g.id)", params: [] },
       { slug: "bulbs", existsSql: "EXISTS (SELECT 1 FROM bulbs WHERE generation_id = g.id)", params: [] },
       { slug: "fuses", existsSql: "EXISTS (SELECT 1 FROM fuses WHERE generation_id = g.id)", params: [] },
+      { slug: "towing", existsSql: "EXISTS (SELECT 1 FROM trims WHERE generation_id = g.id AND (trailer_braked_kg IS NOT NULL OR trailer_unbraked_kg IS NOT NULL OR max_weight_kg IS NOT NULL))", params: [] },
     ];
     for (const ct of conditionalTopics) {
       const eligible = await query<{ brand: string; generation: string; updated: string }>(
