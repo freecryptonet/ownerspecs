@@ -423,6 +423,79 @@ export default async function Page({ params }: { params: Promise<Params> }) {
             </dl>
           </section>
         )}
+
+        {/* OBD-II diagnostic cross-link — sister site autodtcs.com handles
+            full DTC catalogue. Link from here captures users searching
+            "B58 check engine codes" / "A25A-FXS P0420". */}
+        <section>
+          <h2 className="section-h">Diagnostic trouble codes for the {engine.code}</h2>
+          <div
+            style={{
+              border: "1px solid var(--rule)",
+              borderLeft: "3px solid var(--accent)",
+              background: "var(--bg-alt)",
+              padding: "16px 20px",
+            }}
+          >
+            <p style={{ fontSize: 13, color: "var(--ink-soft)", lineHeight: 1.55, margin: 0 }}>
+              Looking up a specific OBD-II diagnostic code on the <strong>{engine.code}</strong>?
+              {" "}
+              <a
+                href={`https://autodtcs.com/search?q=${encodeURIComponent(engine.code)}`}
+                rel="noopener nofollow"
+                target="_blank"
+                style={{ color: "var(--accent)", fontWeight: 600 }}
+              >
+                Search autodtcs.com for {engine.code} codes →
+              </a>
+              {" "}
+              Common families covered:
+            </p>
+            <ul
+              style={{
+                listStyle: "none",
+                padding: 0,
+                margin: "10px 0 0",
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))",
+                gap: 6,
+                fontSize: 12,
+                fontFamily: "var(--font-mono)",
+              }}
+            >
+              {[
+                { code: "P0xxx", label: "Powertrain — generic" },
+                { code: "P03xx", label: "Misfire" },
+                { code: "P04xx", label: "Emissions / EGR" },
+                { code: "P0420", label: "Catalyst efficiency" },
+                { code: "P0171/P0174", label: "Lean fuel trim" },
+                { code: "P2xxx", label: "Fuel & injectors" },
+                { code: "C0xxx", label: "Chassis / ABS / TPMS" },
+                { code: "U0xxx", label: "Network communication" },
+              ].map((c) => (
+                <li
+                  key={c.code}
+                  style={{
+                    padding: "6px 10px",
+                    background: "white",
+                    border: "1px solid var(--rule)",
+                  }}
+                >
+                  <a
+                    href={`https://autodtcs.com/search?q=${encodeURIComponent(c.code)}`}
+                    rel="noopener nofollow"
+                    target="_blank"
+                    style={{ color: "var(--ink)" }}
+                  >
+                    <strong>{c.code}</strong>
+                    <br />
+                    <span style={{ fontSize: 10, color: "var(--ink-mute)" }}>{c.label}</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
       </main>
 
       <SiteFooter reviewDate={new Date().toISOString().slice(0, 10)} />
