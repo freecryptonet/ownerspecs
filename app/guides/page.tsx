@@ -28,6 +28,18 @@ const GUIDES = [
     excerpt:
       "Brake fluid is hygroscopic. After ~2 years it absorbs enough moisture to cause boiling under hard braking. Here's the DOT-grade table, the flush interval per OEM, and how to test it yourself.",
   },
+  {
+    slug: "coolant-types-explained",
+    title: "Coolant types decoded: G12, G13, OAT, HOAT, IAT, FL22",
+    excerpt:
+      "VW G12+, Toyota SLLC, GM Dex-Cool, Honda Type 2, Mazda FL22 — they're not interchangeable. Here's the chemistry behind each and which ones can be safely mixed.",
+  },
+  {
+    slug: "serpentine-belt-replacement",
+    title: "When to replace a serpentine belt (and what fails when it breaks)",
+    excerpt:
+      "Modern serpentine belts last 60,000-100,000 mi. The replacement window is wide, but the failure mode is catastrophic on engines with belt-driven water pumps. Inspection method + per-OEM intervals.",
+  },
 ];
 
 export default function GuidesIndex() {

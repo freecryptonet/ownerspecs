@@ -250,6 +250,176 @@ Brake-fluid type and flush interval are listed on every gen's [brake-fluid page]
       ],
     ],
   },
+  {
+    slug: "coolant-types-explained",
+    title: "Coolant types decoded: G12, G13, OAT, HOAT, IAT, FL22",
+    description:
+      "VW G12+, Toyota SLLC, GM Dex-Cool, Honda Type 2, Mazda FL22 — they're not interchangeable. Here's the technology behind each and which ones can be mixed in an emergency.",
+    body: `## The three families
+
+Modern engine coolant is one of three chemistries:
+
+### IAT — Inorganic Additive Technology (legacy green)
+
+Silicate + phosphate inhibitors. Cheap, fast corrosion protection, but additives deplete in 2 years / 30,000 mi. Used on pre-2000s US/JP cars. Color: green.
+
+### OAT — Organic Acid Technology
+
+Long-life additives (2-EHA + sebacate). Lasts 5 years / 150,000 mi. No silicates. Color varies by OEM: GM Dex-Cool (orange), VW G12+ (pink), Toyota SLLC (pink), Hyundai LLC (blue).
+
+### HOAT — Hybrid OAT
+
+OAT + small amount of silicate or nitrite. Lasts 5 years. Compromise for aluminum-block engines that benefit from silicates. Colors: VW G12 (red), Mopar OAT/HOAT (orange/pink).
+
+## OEM coolant cheat-sheet
+
+| Spec | Type | Color | Used by | Compatible with |
+|---|---|---|---|---|
+| VW G11 | HOAT (with silicate) | Blue-green | Older VW/Audi | G12+ |
+| VW G12 | OAT (2-EHA) | Red | VW/Audi/Porsche 2000-2008 | G12+ |
+| VW G12+ | OAT (2-EHA + sebacate) | Pink | VW/Audi/Porsche 2008+ | G12, G13 |
+| VW G13 | OAT (sebacate, no 2-EHA) | Lilac/purple | VW/Audi/Porsche 2012+ | G12+ |
+| Toyota SLLC | OAT (P-OAT) | Pink | Toyota/Lexus 2004+ | Same family only |
+| Toyota Red | IAT | Red | Toyota pre-2004 | IAT only |
+| Honda Type 2 | OAT | Blue | Honda/Acura 2004+ | Honda Type 2 only |
+| GM Dex-Cool | OAT | Orange | GM 1996+ | Dex-Cool only |
+| Mopar OAT | HOAT | Orange | FCA 2013+ | Mopar HOAT |
+| Mazda FL22 | OAT | Green | Mazda 2002+ | FL22 only |
+| Ford Motorcraft Orange | HOAT | Orange | Ford 2002+ | Ford Orange |
+| Subaru Super Coolant | OAT | Blue | Subaru 2008+ | Subaru only |
+| Hyundai-Kia LLC | OAT | Blue | Hyundai-Kia 2008+ | Hyundai-Kia only |
+
+## The mixing rule
+
+**Within the same family, you can mix freely.** Across families, never.
+
+If you mix OAT with IAT, the silicates precipitate out as gel that clogs the radiator. If you mix Dex-Cool with conventional green, the entire system corrodes within 6 months.
+
+In an emergency (highway shoulder, leaking system), distilled water is safer than the wrong coolant. Top off with water and drain/flush within a week.
+
+## Why the color codes lie
+
+Coolant dye is not standardized. The pink in Toyota SLLC is *not* the same chemistry as the pink in VW G12+. The color is for visibility, not technology identification. **Always check the label.**
+
+## Universal/"all makes" coolants
+
+Products like Prestone All Makes, Zerex G-05, Peak Universal claim cross-OEM compatibility. The fine print: they meet *only* the additive specs the OEM tests for. They don't perfectly replicate the corrosion protection of a true OEM fluid. Fine for older / out-of-warranty cars; not for new BMW / Audi / Porsche where spec compliance affects warranty.
+
+## Distilled water, not tap
+
+If you're mixing 50/50 (most US coolant ships pre-mixed; some EU ships concentrate), use *distilled* water. Tap water has dissolved minerals that precipitate inside the cooling system over time. Sources: ~$1.50/gallon at any grocery store.
+
+## Lifetime coolant — is it real?
+
+OEMs market some HV-coolant loops (Tesla, BMW i4, Volvo XC90 T8) as "lifetime fill." This usually means inspect-only at the documented interval, with full replacement only if pH drops below spec or if a major component is replaced. For ICE cars, "lifetime" is marketing — flush at 100,000-150,000 mi regardless.
+
+## Look up your spec
+
+Every gen page lists the OEM coolant spec, color, and capacity on the [coolant topic page]. The maintenance schedule shows the replace-by interval.`,
+    faq: [
+      [
+        "Can I mix Dex-Cool (orange) with green coolant?",
+        "No. Dex-Cool is OAT; green is IAT. Mixing them precipitates silicates as gel and corrodes the radiator. If accidentally mixed, drain and full-flush ASAP. Distilled water is safer in an emergency.",
+      ],
+      [
+        "Are all pink coolants the same?",
+        "No. Toyota SLLC pink, VW G12+ pink, and Hyundai LLC pink are all OAT but use different organic acids. Color is OEM-chosen for visibility, not chemistry. Match the spec on the bottle, not the color.",
+      ],
+      [
+        "Is universal coolant safe for my car?",
+        "Within the warranty period, no — use OEM-spec. Out of warranty: universal is OK for most older vehicles but not optimal. The cost difference is $10-20 per change; matching OEM spec is worth it.",
+      ],
+      [
+        "How often should I flush coolant?",
+        "OAT formulas: every 5 years or 100,000-150,000 mi. IAT (green): 2 years / 30,000 mi. HV coolant loops on EVs/PHEVs: inspect every 2 years, replace only if pH/condition triggers it. Look up your gen's spec on the maintenance schedule page.",
+      ],
+    ],
+  },
+  {
+    slug: "serpentine-belt-replacement",
+    title: "When to replace a serpentine belt (and what fails when it breaks)",
+    description:
+      "Modern serpentine belts last 60,000-100,000 mi. The replacement window is wide, but the failure mode is catastrophic on engines that share belt + water pump. Here's the inspection method and per-OEM intervals.",
+    body: `## What it drives
+
+The serpentine belt (a single multi-rib belt vs the old V-belt era) typically drives:
+
+- Alternator
+- Power steering pump (or eHPS if electric)
+- A/C compressor
+- Water pump (most modern engines)
+- Crankshaft balancer pulley (some engines)
+- Smog/secondary air pump (some engines)
+
+If the belt snaps mid-drive, all of these stop. On engines where the *water pump* is belt-driven, this is the dangerous combination: no coolant flow → overheat in 1-3 minutes → head gasket failure → engine ruined.
+
+## OEM replacement intervals
+
+| OEM | Interval (normal duty) | Notes |
+|---|---|---|
+| Honda/Acura | 60,000-100,000 mi | Inspect first, replace by condition |
+| Toyota/Lexus | 100,000 mi | Most pre-2010s; modern: inspect |
+| Subaru | 60,000 mi | Some models share belt-driven WP |
+| GM 4-cyl/V6 | 90,000-100,000 mi | LFY / 1.5T / 2.0T |
+| GM V8 (LS-series) | 100,000+ mi | Inspect at 60k |
+| Ford EcoBoost | 100,000 mi | Inspect at 75k |
+| BMW (most) | Inspect every service | CBS-driven |
+| Mercedes | 100,000 mi (no specific interval) | Inspect every 30k |
+| Mazda Skyactiv | 60,000 mi | Belt + tensioner combo |
+| VW/Audi | 60,000-100,000 mi | Single-rib vs poly-V varies by engine |
+
+## Inspection — how to tell if it's done
+
+Modern EPDM rubber belts don't crack — they *wear* (lose rib depth). A belt with worn ribs slips, especially on the alternator pulley, producing:
+
+1. Squealing on cold start
+2. Battery voltage dropping under load
+3. Visible rib-edge fraying
+
+OEMs sell **belt-wear gauges** for ~$10 (or use the eyeball-the-rib-shape test). If you can see daylight between the belt and the pulley grooves, it's slipping.
+
+## What also dies with the belt
+
+When you replace a belt, plan to inspect and probably replace:
+
+1. **Tensioner** — the spring-loaded pulley that holds the belt taut. Tensioner bearings are the #1 wear point on engines with 100k+ mi. A loose tensioner causes belt slip even on a fresh belt.
+2. **Idler pulley(s)** — sometimes 1-3 idler pulleys. Same bearing wear pattern.
+3. **Crank pulley dampener** — a separate replacement on some engines (Subaru, GM LS), but should be inspected for separation.
+
+Cost: belt alone $25-40 OEM; tensioner $80-120; idler $30-60. Total job $150-250 in parts, 1-2 hours labor.
+
+## Don't confuse with timing belt
+
+This is the serpentine (auxiliary) belt — external, visible, drives accessories.
+
+A *timing belt* is internal, drives the camshafts in sync with the crankshaft, and is on a strict OEM-mandated interval (60,000-105,000 mi). Modern engines moved to *timing chains* (no replacement interval) — but if your engine has a timing belt, missing the interval = bent valves + new engine. Check whether yours is belt or chain on the [parts page].
+
+## Catastrophic failure scenarios
+
+The worst case: a 2010s GM 1.5T with a belt-driven water pump and a snapped belt at highway speed. Coolant temp climbs from 200 °F to 260 °F in under 2 minutes. The aluminum head warps before you can pull over. Head gasket job ($1,500+) becomes a full short-block ($4,000+).
+
+The second-worst: a Subaru EJ-series with belt failure on the freeway. Same overheat path, plus the boxer head is dual-aluminum (more expensive to machine).
+
+**The fix:** replace by interval, not by symptom.`,
+    faq: [
+      [
+        "How can I tell if my serpentine belt is the original?",
+        "Look for a date code molded into the belt — usually a 4-digit YYWW. If the code is older than 7 years or the belt has been on >80,000 mi, it's near end-of-life regardless of how it looks.",
+      ],
+      [
+        "Can I drive a few more miles on a squealing belt?",
+        "Short trips at low speed, yes. Highway driving, no — slip will cook the alternator and overheat the engine on water-pump-driven systems. Replace within a week of first squeal.",
+      ],
+      [
+        "Does an EV have a serpentine belt?",
+        "Most pure BEVs (Tesla, Polestar, Lucid) have no serpentine belt — accessories are 12V-driven from the HV battery. Some hybrids (Toyota HSD, Honda IMA) keep a small belt for the A/C compressor on engine-on cycles. Check your gen's parts page.",
+      ],
+      [
+        "Should I replace the tensioner with the belt?",
+        "Above 80,000 mi, yes — the tensioner bearing is the limiting factor, and reusing a worn tensioner with a new belt causes the new belt to slip. Below 60,000 mi, inspect (no slop in pulley, smooth bearing rotation) and reuse.",
+      ],
+    ],
+  },
 ];
 
 export function generateStaticParams() {
