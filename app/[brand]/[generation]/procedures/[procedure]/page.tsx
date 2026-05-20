@@ -23,6 +23,8 @@ type ProcRow = {
   slug: string;
   title: string;
   body_md: string;
+  tools_required: string | null;
+  common_mistakes: string | null;
 };
 type SiblingRow = { slug: string; title: string; procedure_type: string };
 
@@ -45,7 +47,7 @@ export async function generateMetadata({
   const base = await getGenerationBase(brand, generation);
   if (!base) return { title: "Not found" };
   const proc = await queryOne<ProcRow>(
-    `SELECT id, procedure_type, slug, title, body_md
+    `SELECT id, procedure_type, slug, title, body_md, tools_required, common_mistakes
      FROM procedures WHERE generation_id = ? AND slug = ? LIMIT 1`,
     [base.gen.id, procedure],
   );
@@ -67,7 +69,7 @@ export default async function Page({ params }: { params: Promise<Params> }) {
   const { make, model, gen } = base;
 
   const proc = await queryOne<ProcRow>(
-    `SELECT id, procedure_type, slug, title, body_md
+    `SELECT id, procedure_type, slug, title, body_md, tools_required, common_mistakes
      FROM procedures WHERE generation_id = ? AND slug = ? LIMIT 1`,
     [gen.id, procedure],
   );
@@ -188,6 +190,46 @@ export default async function Page({ params }: { params: Promise<Params> }) {
           style={{ paddingTop: "var(--s-5)", maxWidth: 760 }}
           dangerouslySetInnerHTML={{ __html: bodyHtml }}
         />
+
+        {proc.tools_required && (
+          <section style={{ maxWidth: 760 }}>
+            <h2 className="section-h">Tools required</h2>
+            <div
+              style={{
+                background: "var(--bg-alt)",
+                border: "1px solid var(--rule)",
+                borderLeft: "3px solid var(--accent)",
+                padding: "14px 18px",
+                fontSize: 13,
+                lineHeight: 1.6,
+                whiteSpace: "pre-wrap",
+                color: "var(--ink-soft)",
+              }}
+            >
+              {proc.tools_required}
+            </div>
+          </section>
+        )}
+
+        {proc.common_mistakes && (
+          <section style={{ maxWidth: 760 }}>
+            <h2 className="section-h">Common mistakes &amp; how to avoid them</h2>
+            <div
+              style={{
+                background: "#fffaf3",
+                border: "1px solid #f3e5c1",
+                borderLeft: "3px solid #d97706",
+                padding: "14px 18px",
+                fontSize: 13,
+                lineHeight: 1.6,
+                whiteSpace: "pre-wrap",
+                color: "var(--ink)",
+              }}
+            >
+              {proc.common_mistakes}
+            </div>
+          </section>
+        )}
 
         {siblings.length > 0 && (
           <section>
