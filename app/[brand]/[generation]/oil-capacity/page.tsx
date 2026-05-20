@@ -370,6 +370,31 @@ export default async function Page({ params }: { params: Promise<Params> }) {
           >
             {[
               {
+                href: `/${make.slug}/${gen.slug}/transmission-fluid`,
+                name: "Transmission fluid",
+                peek: "ATF · CVT · DCT · manual",
+              },
+              {
+                href: `/${make.slug}/${gen.slug}/coolant`,
+                name: "Coolant",
+                peek: "Type · capacity · service interval",
+              },
+              {
+                href: `/${make.slug}/${gen.slug}/brake-fluid`,
+                name: "Brake fluid",
+                peek: "DOT spec · flush interval",
+              },
+              {
+                href: `/${make.slug}/${gen.slug}/ac-refrigerant`,
+                name: "A/C refrigerant",
+                peek: "R-1234yf / R-134a · charge weight",
+              },
+              {
+                href: `/${make.slug}/${gen.slug}/differential-fluid`,
+                name: "Differential & AWD fluid",
+                peek: "Front · rear · transfer case · Haldex",
+              },
+              {
                 href: `/${make.slug}/${gen.slug}/maintenance-schedule`,
                 name: "Full maintenance schedule",
                 peek: "By-mileage · normal & severe duty",
@@ -377,17 +402,12 @@ export default async function Page({ params }: { params: Promise<Params> }) {
               {
                 href: `/${make.slug}/${gen.slug}/torque`,
                 name: "Torque specifications",
-                peek: "Drain plug 30 ft·lb · 5 fasteners total",
+                peek: "Drain plug · 5 fasteners total",
               },
               {
                 href: `/${make.slug}/${gen.slug}`,
                 name: "Generation overview",
                 peek: "Full specifications · all engines",
-              },
-              {
-                href: `/${make.slug}/${gen.slug}#fluids-all`,
-                name: "All fluids · other lubricants",
-                peek: "CVT · coolant · brake · A/C refrigerant",
               },
             ].map((l) => (
               <li
