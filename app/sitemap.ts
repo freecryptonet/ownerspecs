@@ -49,6 +49,31 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       }
     }
 
+    // Conditional sub-topic pages — only emit if data exists for the gen
+    const conditionalTopics: Array<{ slug: string; existsSql: string; params: string[] }> = [
+      { slug: "parts", existsSql: "EXISTS (SELECT 1 FROM parts WHERE generation_id = g.id)", params: [] },
+      { slug: "bulbs", existsSql: "EXISTS (SELECT 1 FROM bulbs WHERE generation_id = g.id)", params: [] },
+      { slug: "fuses", existsSql: "EXISTS (SELECT 1 FROM fuses WHERE generation_id = g.id)", params: [] },
+    ];
+    for (const ct of conditionalTopics) {
+      const eligible = await query<{ brand: string; generation: string; updated: string }>(
+        `SELECT mk.slug AS brand, g.slug AS generation, g.updated_at AS updated
+         FROM generations g
+         JOIN models m ON m.id = g.model_id
+         JOIN makes mk ON mk.id = m.make_id
+         WHERE g.is_active = 1 AND ${ct.existsSql}`,
+        ct.params,
+      );
+      for (const e of eligible) {
+        pages.push({
+          url: `${BASE}/${e.brand}/${e.generation}/${ct.slug}`,
+          lastModified: new Date(e.updated),
+          changeFrequency: "monthly",
+          priority: 0.7,
+        });
+      }
+    }
+
     // Per-fluid-type topic pages (only where data exists for that gen)
     const fluidTopics: Array<{ slug: string; fluidTypes: string[] }> = [
       { slug: "transmission-fluid", fluidTypes: ["transmission_at","transmission_cvt","transmission_ecvt","transmission_dct","transmission_mt"] },

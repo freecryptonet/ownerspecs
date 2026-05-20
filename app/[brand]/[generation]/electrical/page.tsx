@@ -384,19 +384,29 @@ export default async function Page({ params }: { params: Promise<Params> }) {
           >
             {[
               {
-                href: `/${make.slug}/${gen.slug}/oil-capacity`,
-                name: "Engine oil capacity",
-                peek: "Viscosity · capacity · drain interval",
+                href: `/${make.slug}/${gen.slug}/bulbs`,
+                name: "Bulb manifest",
+                peek: "Every position · headlight to interior",
+              },
+              {
+                href: `/${make.slug}/${gen.slug}/fuses`,
+                name: "Fuse box layout",
+                peek: "Under-hood + cabin · amperage map",
+              },
+              {
+                href: `/${make.slug}/${gen.slug}/parts`,
+                name: "OE part numbers",
+                peek: "Battery · alternator · plugs",
+              },
+              {
+                href: `/${make.slug}/${gen.slug}/procedures`,
+                name: "Battery procedures",
+                peek: "Disconnect order · jump-start · register",
               },
               {
                 href: `/${make.slug}/${gen.slug}/maintenance-schedule`,
                 name: "Maintenance schedule",
-                peek: "TPMS battery interval · 90,000 mi",
-              },
-              {
-                href: `/${make.slug}/${gen.slug}/torque`,
-                name: "Torque specifications",
-                peek: "Battery hold-down · ground strap",
+                peek: "Battery replacement interval",
               },
               {
                 href: `/${make.slug}/${gen.slug}`,
