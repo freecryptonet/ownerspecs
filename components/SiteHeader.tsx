@@ -14,7 +14,7 @@ export function SiteHeader() {
           <a href="/compare">Compare</a>
           <a href="/#methodology">Methodology</a>
         </nav>
-        <div className="search-bar">
+        <form action="/search" method="get" className="search-bar" role="search">
           <svg
             width="13"
             height="13"
@@ -26,10 +26,22 @@ export function SiteHeader() {
             <circle cx="7" cy="7" r="5" />
             <path d="m11 11 3 3" />
           </svg>
-          <input placeholder="Make, model, VIN or part number" />
+          <input
+            id="site-search"
+            name="q"
+            type="search"
+            autoComplete="off"
+            placeholder="Make, model, VIN or part number"
+            aria-label="Search ownerspecs catalogue"
+          />
           <span className="kbd">⌘ K</span>
-        </div>
+        </form>
       </div>
+      <script
+        dangerouslySetInnerHTML={{
+          __html: `(function(){var go=function(e){if((e.metaKey||e.ctrlKey)&&e.key==='k'){e.preventDefault();var i=document.getElementById('site-search');if(i){i.focus();i.select();}}};document.addEventListener('keydown',go);})();`,
+        }}
+      />
     </header>
   );
 }
