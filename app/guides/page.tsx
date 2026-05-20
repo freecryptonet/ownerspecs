@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { pageMetadata } from "@/lib/seo";
 import { SiteHeader } from "@/components/SiteHeader";
+import { SiteFooter } from "@/components/SiteFooter";
 
 export const metadata = pageMetadata({
-  title: "Guides · ownerspecs",
+  title: "Guides",
   description:
     "Owner-manual-derived how-to guides for car maintenance: oil viscosity, TPMS, brake fluid, coolant, spark plugs, and more. Restated from OEM manuals — facts only, not opinions.",
   path: "/guides",
@@ -44,38 +45,38 @@ const GUIDES = [
 
 export default function GuidesIndex() {
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900">
+    <>
       <SiteHeader />
-      <main className="mx-auto max-w-3xl px-6 py-12">
-        <nav className="text-xs font-mono text-slate-500 mb-4">
-          <Link href="/" className="hover:underline">Catalogue</Link> · Guides
+      <div className="shell">
+        <nav className="crumb">
+          <Link href="/">Catalogue</Link>
+          <span className="sep">/</span>
+          <span>Guides</span>
         </nav>
-        <h1 className="text-4xl font-semibold tracking-tight">Guides</h1>
-        <p className="mt-3 text-slate-700">
-          Owner-manual-derived how-to guides on the topics most owners actually
-          ask about. Every guide cross-links to per-gen pages so the answer
-          tells you what <em>your</em> car wants, not generic advice.
-        </p>
+        <header className="pagehead">
+          <h1>Guides</h1>
+          <p className="sub">
+            Owner-manual-derived how-to guides on the topics most owners
+            actually ask about. Every guide cross-links to per-gen pages so the
+            answer tells you what your car wants, not generic advice.
+          </p>
+        </header>
 
-        <section className="mt-10 space-y-6">
+        <section className="guides-list">
           {GUIDES.map((g) => (
-            <article key={g.slug} className="rounded-xl border border-slate-200 bg-white p-6">
-              <h2 className="text-xl font-semibold">
-                <Link href={`/guides/${g.slug}`} className="hover:text-sky-700">
-                  {g.title}
-                </Link>
+            <article key={g.slug} className="guide-card">
+              <h2>
+                <Link href={`/guides/${g.slug}`}>{g.title}</Link>
               </h2>
-              <p className="mt-2 text-sm text-slate-700">{g.excerpt}</p>
-              <Link
-                href={`/guides/${g.slug}`}
-                className="mt-3 inline-block text-sm font-mono text-sky-700 hover:underline"
-              >
+              <p>{g.excerpt}</p>
+              <Link href={`/guides/${g.slug}`} className="guide-cta">
                 Read →
               </Link>
             </article>
           ))}
         </section>
-      </main>
-    </div>
+      </div>
+      <SiteFooter />
+    </>
   );
 }

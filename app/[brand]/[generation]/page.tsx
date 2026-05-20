@@ -16,6 +16,8 @@ import {
 } from "@/lib/units";
 import { fluidLabel, torqueLabel, serviceLabel } from "@/lib/labels";
 import { pageMetadata, breadcrumbsJsonLd, vehicleJsonLd } from "@/lib/seo";
+import { SiteHeader } from "@/components/SiteHeader";
+import { SiteFooter } from "@/components/SiteFooter";
 
 type Params = { brand: string; generation: string };
 
@@ -443,26 +445,7 @@ export default async function Page({ params }: { params: Promise<Params> }) {
 
   return (
     <>
-      <header className="site-header">
-        <div className="site-header-inner">
-          <a href="/" className="wordmark">ownerspecs</a>
-          <nav className="nav-primary">
-            <a href="/" className="active">Catalogue</a>
-            <a href="/#owner-manual-data">Maintenance</a>
-            <a href="/#owner-manual-data">Fluids</a>
-            <a href="/compare">Compare</a>
-            <a href="/#methodology">Methodology</a>
-          </nav>
-          <div className="search-bar">
-            <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6">
-              <circle cx="7" cy="7" r="5" />
-              <path d="m11 11 3 3" />
-            </svg>
-            <input placeholder="Make, model, VIN or part number" />
-            <span className="kbd">⌘ K</span>
-          </div>
-        </div>
-      </header>
+      <SiteHeader />
 
       <div className="shell">
         <nav className="crumb">
@@ -578,23 +561,29 @@ export default async function Page({ params }: { params: Promise<Params> }) {
                 <tbody>
                   <tr><th>Manufacturer</th><td className="alt">{make.name}</td></tr>
                   <tr><th>Model</th><td className="alt">{model.name}</td></tr>
-                  <tr><th>Generation</th><td>{gen.ordinal ? `${gen.ordinal}th (${gen.codename ?? "—"})` : gen.codename}</td></tr>
+                  {(gen.ordinal || gen.codename) && (
+                    <tr><th>Generation</th><td>{gen.ordinal ? `${gen.ordinal}th${gen.codename ? ` (${gen.codename})` : ""}` : gen.codename}</td></tr>
+                  )}
                   <tr><th>Production</th><td>{gen.start_year} – {gen.end_year ?? "present"}</td></tr>
                   <tr><th>Body</th><td className="alt">{gen.body_type}</td></tr>
-                  <tr><th>Layout</th><td>{gen.layout}</td></tr>
+                  {gen.layout && <tr><th>Layout</th><td>{gen.layout}</td></tr>}
                   {gen.platform && <tr><th>Platform</th><td className="alt">{gen.platform}</td></tr>}
-                  <tr><th>Engines</th><td>
-                    {engines.map((e, i) => {
-                      const slug = e.code.replace(/[\s/]/g, "-").replace(/[^a-zA-Z0-9-]/g, "").replace(/-+/g, "-").toLowerCase();
-                      return (
-                        <span key={e.id}>
-                          {i > 0 && " · "}
-                          <a href={`/engines/${slug}`} style={{ color: "var(--accent)" }}>{e.code}</a>
-                        </span>
-                      );
-                    })}
-                  </td></tr>
-                  <tr><th>Trims (US)</th><td className="alt">{trims.map((t) => t.name).join(" · ")}</td></tr>
+                  {engines.length > 0 && (
+                    <tr><th>Engines</th><td>
+                      {engines.map((e, i) => {
+                        const slug = e.code.replace(/[\s/]/g, "-").replace(/[^a-zA-Z0-9-]/g, "").replace(/-+/g, "-").toLowerCase();
+                        return (
+                          <span key={e.id}>
+                            {i > 0 && " · "}
+                            <a href={`/engines/${slug}`} style={{ color: "var(--accent)" }}>{e.code}</a>
+                          </span>
+                        );
+                      })}
+                    </td></tr>
+                  )}
+                  {trims.length > 0 && (
+                    <tr><th>Trims (US)</th><td className="alt">{trims.map((t) => t.name).join(" · ")}</td></tr>
+                  )}
                   <tr><th>Markets</th><td>{markets.length > 0 ? markets.map((m) => m.code).join(" · ") : "Global · multi-market"}</td></tr>
                   {gen.wheelbase_mm && <tr><th>Wheelbase</th><td>{mmDual(gen.wheelbase_mm)}</td></tr>}
                   {gen.length_mm && <tr><th>Length</th><td>{mmDual(gen.length_mm)}</td></tr>}
@@ -674,44 +663,46 @@ export default async function Page({ params }: { params: Promise<Params> }) {
           </section>
         )}
 
-        {/* TRIM PERFORMANCE TABLE */}
-        <section>
-          <h2 className="section-h">Trims &amp; performance <span className="count">{trims.length} trims</span></h2>
-          <div className="table-scroll">
-          <table className="spec-table">
-            <thead style={{ background: "var(--bg-alt)" }}>
-              <tr>
-                <th style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--ink-soft)", textAlign: "left", padding: "8px 12px" }}>Trim</th>
-                <th style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--ink-soft)", textAlign: "left", padding: "8px 12px" }}>Engine</th>
-                <th style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--ink-soft)", textAlign: "left", padding: "8px 12px" }}>Transmission</th>
-                <th style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--ink-soft)", textAlign: "left", padding: "8px 12px" }}>HP</th>
-                <th style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--ink-soft)", textAlign: "left", padding: "8px 12px" }}>Nm</th>
-                <th style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--ink-soft)", textAlign: "left", padding: "8px 12px" }}>0-100</th>
-                <th style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--ink-soft)", textAlign: "left", padding: "8px 12px" }}>Top</th>
-                <th style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--ink-soft)", textAlign: "left", padding: "8px 12px" }}>Fuel</th>
-                <th style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--ink-soft)", textAlign: "left", padding: "8px 12px" }}>Weight</th>
-                <th style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--ink-soft)", textAlign: "left", padding: "8px 12px" }}>Drive</th>
-              </tr>
-            </thead>
-            <tbody>
-              {trims.map((t) => (
-                <tr key={t.id}>
-                  <th><strong style={{ color: "var(--ink)" }}>{t.name}</strong></th>
-                  <td>{t.engine_code}</td>
-                  <td>{t.transmission_name}</td>
-                  <td>{t.hp} hp</td>
-                  <td>{t.torque_nm} Nm</td>
-                  <td>{t.zero_100_kmh_s ? `${Number(t.zero_100_kmh_s).toFixed(1)} s` : "—"}</td>
-                  <td>{t.top_speed_kmh ? speedDual(t.top_speed_kmh) : "—"}</td>
-                  <td>{t.fuel_combined_l_100km ? consumptionDual(t.fuel_combined_l_100km) : "—"}</td>
-                  <td>{t.curb_weight_kg ? kgDual(t.curb_weight_kg) : "—"}</td>
-                  <td>{t.drive_wheel ?? "—"}</td>
+        {/* TRIM PERFORMANCE TABLE — hidden when no trims indexed yet */}
+        {trims.length > 0 ? (
+          <section>
+            <h2 className="section-h">Trims &amp; performance <span className="count">{trims.length} trims</span></h2>
+            <div className="table-scroll">
+            <table className="spec-table">
+              <thead style={{ background: "var(--bg-alt)" }}>
+                <tr>
+                  <th style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--ink-soft)", textAlign: "left", padding: "8px 12px" }}>Trim</th>
+                  <th style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--ink-soft)", textAlign: "left", padding: "8px 12px" }}>Engine</th>
+                  <th style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--ink-soft)", textAlign: "left", padding: "8px 12px" }}>Transmission</th>
+                  <th style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--ink-soft)", textAlign: "left", padding: "8px 12px" }}>HP</th>
+                  <th style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--ink-soft)", textAlign: "left", padding: "8px 12px" }}>Nm</th>
+                  <th style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--ink-soft)", textAlign: "left", padding: "8px 12px" }}>0-100</th>
+                  <th style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--ink-soft)", textAlign: "left", padding: "8px 12px" }}>Top</th>
+                  <th style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--ink-soft)", textAlign: "left", padding: "8px 12px" }}>Fuel</th>
+                  <th style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--ink-soft)", textAlign: "left", padding: "8px 12px" }}>Weight</th>
+                  <th style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--ink-soft)", textAlign: "left", padding: "8px 12px" }}>Drive</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-          </div>
-        </section>
+              </thead>
+              <tbody>
+                {trims.map((t) => (
+                  <tr key={t.id}>
+                    <th><strong style={{ color: "var(--ink)" }}>{t.name}</strong></th>
+                    <td>{t.engine_code}</td>
+                    <td>{t.transmission_name}</td>
+                    <td>{t.hp} hp</td>
+                    <td>{t.torque_nm} Nm</td>
+                    <td>{t.zero_100_kmh_s ? `${Number(t.zero_100_kmh_s).toFixed(1)} s` : "—"}</td>
+                    <td>{t.top_speed_kmh ? speedDual(t.top_speed_kmh) : "—"}</td>
+                    <td>{t.fuel_combined_l_100km ? consumptionDual(t.fuel_combined_l_100km) : "—"}</td>
+                    <td>{t.curb_weight_kg ? kgDual(t.curb_weight_kg) : "—"}</td>
+                    <td>{t.drive_wheel ?? "—"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            </div>
+          </section>
+        ) : null}
 
         {/* FLUIDS */}
         <section>
@@ -890,25 +881,7 @@ export default async function Page({ params }: { params: Promise<Params> }) {
         />
       </main>
 
-      <footer className="site-footer">
-        <div className="shell">
-          <div className="foot-grid">
-            <div>
-              <a href="/" className="wordmark">ownerspecs</a>
-              <p>Cross-verified vehicle specifications and owner-manual data for every car, every generation, every market.</p>
-              <div style={{ marginTop: "var(--s-3)" }}><span className="market-pill">Global · multi-market</span></div>
-            </div>
-            <div><h4>Catalogue</h4><ul><li><a href="/#brands">By manufacturer</a></li><li><a href="/#brands">By body type</a></li><li><a href="/#brands">By fuel</a></li></ul></div>
-            <div><h4>Data</h4><ul><li><a href="/#owner-manual-data">Fluids</a></li><li><a href="/#owner-manual-data">Maintenance</a></li><li><a href="/#owner-manual-data">Torque</a></li></ul></div>
-            <div><h4>Sister sites</h4><ul><li><a href="https://vindecoder.site">vindecoder.site</a></li><li><a href="https://autodtcs.com">autodtcs.com</a></li><li><a href="https://servicereset.net">servicereset.net</a></li></ul></div>
-            <div><h4>About</h4><ul><li><a href="/#methodology">Methodology</a></li><li><a href="/#methodology">Sources</a></li></ul></div>
-          </div>
-          <div className="foot-bottom">
-            <span>© 2026 ownerspecs · v0.1</span>
-            <span>Page last reviewed {reviewDate}</span>
-          </div>
-        </div>
-      </footer>
+      <SiteFooter reviewDate={reviewDate} />
     </>
   );
 }

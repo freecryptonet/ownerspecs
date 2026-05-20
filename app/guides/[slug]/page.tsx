@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { pageMetadata, faqJsonLd } from "@/lib/seo";
 import { SiteHeader } from "@/components/SiteHeader";
+import { SiteFooter } from "@/components/SiteFooter";
 import { renderMarkdown } from "@/lib/markdown";
 
 type Guide = {
@@ -431,7 +432,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const g = GUIDES.find((x) => x.slug === slug);
   if (!g) return {};
   return pageMetadata({
-    title: `${g.title} · ownerspecs`,
+    title: g.title,
     description: g.description,
     path: `/guides/${g.slug}`,
   });
@@ -458,44 +459,47 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900">
+    <>
       <SiteHeader />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(article) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faq) }} />
-      <main className="mx-auto max-w-3xl px-6 py-12">
-        <nav className="text-xs font-mono text-slate-500 mb-4">
-          <Link href="/" className="hover:underline">Catalogue</Link>
-          {" · "}
-          <Link href="/guides" className="hover:underline">Guides</Link>
-          {" · "}
-          <span className="text-slate-700">{g.slug}</span>
+      <div className="shell guide-shell">
+        <nav className="crumb">
+          <Link href="/">Catalogue</Link>
+          <span className="sep">/</span>
+          <Link href="/guides">Guides</Link>
+          <span className="sep">/</span>
+          <span>{g.title}</span>
         </nav>
-        <h1 className="text-4xl font-semibold tracking-tight">{g.title}</h1>
-        <p className="mt-3 text-slate-700">{g.description}</p>
+        <header className="pagehead">
+          <h1>{g.title}</h1>
+          <p className="sub">{g.description}</p>
+        </header>
 
-        <article className="prose prose-slate mt-8 max-w-none prose-headings:font-semibold prose-headings:tracking-tight prose-h2:mt-10 prose-h2:text-2xl prose-h3:mt-6 prose-h3:text-lg prose-p:text-slate-700 prose-li:text-slate-700 prose-table:text-sm">
-          <div dangerouslySetInnerHTML={{ __html: renderMarkdown(g.body) }} />
-        </article>
+        <article
+          className="prose-body"
+          dangerouslySetInnerHTML={{ __html: renderMarkdown(g.body) }}
+        />
 
-        <section className="mt-12 rounded-xl border border-slate-200 bg-white p-6">
-          <h2 className="text-lg font-semibold">FAQ</h2>
-          <dl className="mt-4 space-y-4">
+        <section className="faq-block">
+          <h2 className="section-h">FAQ</h2>
+          <dl className="faq-list">
             {g.faq.map(([q, a]) => (
-              <div key={q}>
-                <dt className="font-semibold text-slate-900">{q}</dt>
-                <dd className="mt-1 text-sm text-slate-700">{a}</dd>
+              <div key={q} className="faq-item">
+                <dt>{q}</dt>
+                <dd>{a}</dd>
               </div>
             ))}
           </dl>
         </section>
 
-        <p className="mt-10 text-sm text-slate-500">
-          Looking for your car's specific number? Search by{" "}
-          <Link href="/" className="text-sky-700 hover:underline">make / model</Link>
-          {" "}or{" "}
-          <Link href="/search" className="text-sky-700 hover:underline">use the catalogue search</Link>.
+        <p className="guide-footnote">
+          Looking for your car&apos;s specific number? Search by{" "}
+          <Link href="/">make / model</Link> or{" "}
+          <Link href="/search">use the catalogue search</Link>.
         </p>
-      </main>
-    </div>
+      </div>
+      <SiteFooter />
+    </>
   );
 }

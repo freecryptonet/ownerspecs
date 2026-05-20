@@ -19,33 +19,33 @@ export function SiteFooter({ reviewDate }: { reviewDate?: string }) {
             <h4>Catalogue</h4>
             <ul>
               <li>
-                <a href="/#brands">By manufacturer</a>
+                <a href="/">All makes</a>
               </li>
               <li>
-                <a href="/#brands">By body type</a>
+                <a href="/engines">Engines</a>
               </li>
               <li>
-                <a href="/#brands">By fuel</a>
+                <a href="/compare">Compare</a>
               </li>
               <li>
-                <a href="/#brands">By market</a>
+                <a href="/search">Search</a>
               </li>
             </ul>
           </div>
           <div>
-            <h4>Data</h4>
+            <h4>Owner-manual data</h4>
             <ul>
               <li>
-                <a href="/#owner-manual-data">Fluids</a>
+                <a href="/procedures">Procedures</a>
               </li>
               <li>
-                <a href="/#owner-manual-data">Maintenance</a>
+                <a href="/guides">Guides</a>
               </li>
               <li>
-                <a href="/#owner-manual-data">Torque</a>
+                <a href="/guides/5w-20-vs-5w-30">Oil viscosity</a>
               </li>
               <li>
-                <a href="/#owner-manual-data">Electrical</a>
+                <a href="/guides/brake-fluid-flush">Brake fluid</a>
               </li>
             </ul>
           </div>
@@ -67,10 +67,10 @@ export function SiteFooter({ reviewDate }: { reviewDate?: string }) {
             <h4>About</h4>
             <ul>
               <li>
-                <a href="/#methodology">Methodology</a>
+                <a href="/methodology">Methodology</a>
               </li>
               <li>
-                <a href="/#methodology">Sources</a>
+                <a href="/methodology#provenance-is-exposed">Sources</a>
               </li>
               <li>
                 <a href="mailto:contact@ownerspecs.com">Contact</a>

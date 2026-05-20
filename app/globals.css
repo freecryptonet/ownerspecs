@@ -1055,4 +1055,189 @@ section { padding: var(--s-7) 0; }
   .moat-row { border-right: 0; }
   .hp-stats { grid-template-columns: repeat(2, 1fr); }
   .brand-grid { grid-template-columns: repeat(4, 1fr); }
+  .proc-grid { grid-template-columns: 1fr; }
 }
+
+/* =============================================================
+   GUIDES / PROCEDURES / METHODOLOGY (long-form pages)
+   ============================================================= */
+
+.guide-shell { max-width: 760px; }
+
+.pagehead .sub p,
+.pagehead p.sub { font-size: 14px; line-height: 1.55; color: var(--ink-soft); margin-top: var(--s-3); max-width: 64ch; }
+
+/* Guides index */
+.guides-list { display: grid; gap: var(--s-4); margin: var(--s-6) 0 var(--s-9); }
+.guide-card {
+  border: 1px solid var(--rule);
+  background: var(--bg);
+  padding: var(--s-5);
+  border-radius: 4px;
+}
+.guide-card h2 { font-size: 17px; margin: 0; }
+.guide-card h2 a { color: var(--ink); }
+.guide-card h2 a:hover { color: var(--accent); text-decoration: none; }
+.guide-card p {
+  margin: var(--s-3) 0 var(--s-3);
+  color: var(--ink-soft);
+  font-size: 14px;
+  line-height: 1.55;
+}
+.guide-cta {
+  display: inline-block;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 12px;
+  color: var(--accent);
+}
+.guide-cta:hover { text-decoration: underline; }
+
+/* Long-form body (guides + methodology) — substitute for Tailwind prose */
+.prose-body { margin-top: var(--s-7); padding-bottom: var(--s-9); }
+.prose-body h2 {
+  font-size: 20px;
+  letter-spacing: -0.005em;
+  margin-top: var(--s-9);
+  margin-bottom: var(--s-3);
+  color: var(--ink);
+}
+.prose-body h2:first-child { margin-top: var(--s-5); }
+.prose-body h3 {
+  font-size: 15px;
+  margin-top: var(--s-6);
+  margin-bottom: var(--s-2);
+  color: var(--ink);
+}
+.prose-body p {
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--ink);
+  margin: 0 0 var(--s-4);
+}
+.prose-body ul, .prose-body ol {
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--ink);
+  padding-left: 1.4em;
+  margin: 0 0 var(--s-4);
+}
+.prose-body li { margin-bottom: var(--s-2); }
+.prose-body li::marker { color: var(--ink-mute); }
+.prose-body strong { color: var(--ink); font-weight: 600; }
+.prose-body em { font-style: italic; }
+.prose-body code {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 13px;
+  background: var(--bg-alt);
+  padding: 1px 5px;
+  border-radius: 3px;
+  border: 1px solid var(--rule);
+}
+.prose-body a { color: var(--accent); }
+.prose-body a:hover { text-decoration: underline; }
+.prose-body table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  margin: var(--s-3) 0 var(--s-5);
+  border: 1px solid var(--rule);
+}
+.prose-body th, .prose-body td {
+  padding: var(--s-2) var(--s-3);
+  text-align: left;
+  border-bottom: 1px solid var(--rule);
+  vertical-align: top;
+}
+.prose-body th {
+  background: var(--bg-alt);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.prose-body tr:nth-child(even) td { background: var(--bg-stripe); }
+
+/* FAQ block (guides + topic pages) */
+.faq-block {
+  margin-top: var(--s-9);
+  padding: var(--s-5);
+  border: 1px solid var(--rule);
+  background: var(--bg);
+  border-radius: 4px;
+}
+.faq-block .section-h { margin-bottom: var(--s-4); padding-bottom: var(--s-3); border-bottom: 1px solid var(--rule); }
+.faq-list { display: grid; gap: var(--s-4); }
+.faq-item dt {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--ink);
+  margin-bottom: var(--s-2);
+}
+.faq-item dd {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--ink-soft);
+  margin: 0;
+}
+
+.guide-footnote {
+  margin-top: var(--s-7);
+  padding-bottom: var(--s-9);
+  color: var(--ink-mute);
+  font-size: 13px;
+}
+.guide-footnote a { color: var(--accent); }
+.guide-footnote a:hover { text-decoration: underline; }
+
+/* Procedures index */
+.proc-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--s-4);
+  margin: var(--s-6) 0 var(--s-7);
+}
+.proc-card {
+  border: 1px solid var(--rule);
+  background: var(--bg);
+  padding: var(--s-5);
+  border-radius: 4px;
+}
+.proc-card .section-h { margin-bottom: var(--s-3); padding-bottom: var(--s-2); border-bottom: 1px solid var(--rule); }
+.proc-card ul { list-style: none; margin: 0; padding: 0; }
+.proc-card li {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 13.5px;
+  padding: var(--s-2) 0;
+  border-bottom: 1px solid var(--bg-alt);
+}
+.proc-card li:last-child { border-bottom: 0; }
+.proc-card li span:first-child { color: var(--ink); }
+.proc-card li .num {
+  color: var(--ink-mute);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 12px;
+  white-space: nowrap;
+  padding-left: var(--s-3);
+}
+.proc-howto {
+  margin-top: var(--s-7);
+  padding: var(--s-5);
+  border: 1px solid var(--rule);
+  background: var(--bg-alt);
+  border-radius: 4px;
+}
+.proc-howto .section-h { margin-bottom: var(--s-3); }
+.proc-howto ol, .proc-howto p {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--ink);
+  margin: 0;
+  padding-left: 1.2em;
+}
+.proc-howto p { padding-left: 0; }
+.proc-howto li { margin-bottom: var(--s-2); }
+.proc-howto a { color: var(--accent); }
+.proc-howto a:hover { text-decoration: underline; }

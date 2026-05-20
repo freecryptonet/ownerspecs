@@ -2,6 +2,7 @@ import Link from "next/link";
 import { query } from "@/lib/db";
 import { pageMetadata } from "@/lib/seo";
 import { SiteHeader } from "@/components/SiteHeader";
+import { SiteFooter } from "@/components/SiteFooter";
 
 type ProcRow = {
   procedure_type: string;
@@ -37,7 +38,7 @@ const TYPE_GROUP: Record<string, string> = {
 };
 
 export const metadata = pageMetadata({
-  title: "Procedures · ownerspecs",
+  title: "Procedures",
   description:
     "Owner-manual-derived how-to procedures across every nameplate we cover: service resets, TPMS relearn, battery disconnect order, jump-start. Step-by-step, brand-specific, structured with HowTo schema.",
   path: "/procedures",
@@ -61,32 +62,33 @@ export default async function ProceduresIndex() {
   const total = rows.reduce((s, r) => s + Number(r.cnt), 0);
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900">
+    <>
       <SiteHeader />
-      <main className="mx-auto max-w-5xl px-6 py-12">
-        <nav className="text-xs font-mono text-slate-500 mb-4">
-          <Link href="/" className="hover:underline">Catalogue</Link> · Procedures
+      <div className="shell">
+        <nav className="crumb">
+          <Link href="/">Catalogue</Link>
+          <span className="sep">/</span>
+          <span>Procedures</span>
         </nav>
-        <h1 className="text-4xl font-semibold tracking-tight">Procedures</h1>
-        <p className="mt-3 text-slate-700 max-w-3xl">
-          {total} owner-method procedures across every nameplate we cover.
-          Restated from OEM owner manuals and Haynes Pro / startmycar /
-          manualslib references. Each procedure ships with{" "}
-          <strong>tools required</strong>, <strong>common mistakes</strong>,
-          and JSON-LD HowTo schema — so the answer is also a Google Rich Result.
-        </p>
+        <header className="pagehead">
+          <h1>Procedures</h1>
+          <p className="sub">
+            {total} owner-method procedures across every nameplate we cover.
+            Restated from OEM owner manuals and HaynesPro / startmycar /
+            manualslib references. Each procedure ships with tools required,
+            common mistakes, and JSON-LD HowTo schema.
+          </p>
+        </header>
 
-        <section className="mt-10 grid grid-cols-1 md:grid-cols-2 gap-6">
+        <section className="proc-grid">
           {Array.from(grouped.entries()).map(([group, items]) => (
-            <div key={group} className="rounded-xl border border-slate-200 bg-white p-6">
-              <h2 className="text-lg font-semibold text-slate-900">{group}</h2>
-              <ul className="mt-4 space-y-2 text-sm">
+            <div key={group} className="proc-card">
+              <h2 className="section-h">{group}</h2>
+              <ul>
                 {items.map((r) => (
-                  <li key={r.procedure_type} className="flex justify-between border-b border-slate-100 py-1.5">
-                    <span className="text-slate-800">
-                      {TYPE_LABEL[r.procedure_type] || r.procedure_type}
-                    </span>
-                    <span className="font-mono text-slate-500">{r.cnt} gens</span>
+                  <li key={r.procedure_type}>
+                    <span>{TYPE_LABEL[r.procedure_type] || r.procedure_type}</span>
+                    <span className="num">{r.cnt} gens</span>
                   </li>
                 ))}
               </ul>
@@ -94,27 +96,32 @@ export default async function ProceduresIndex() {
           ))}
         </section>
 
-        <section className="mt-10 rounded-xl border border-slate-200 bg-white p-6">
-          <h2 className="text-lg font-semibold">How to use this</h2>
-          <ol className="mt-3 space-y-2 text-sm text-slate-700 list-decimal pl-6">
-            <li>Find your generation: <Link href="/" className="text-sky-700 hover:underline">catalogue</Link> or <Link href="/search" className="text-sky-700 hover:underline">search</Link>.</li>
-            <li>Open the gen page · scroll to <em>Procedures</em> or use the top tab.</li>
+        <section className="proc-howto">
+          <h2 className="section-h">How to use this</h2>
+          <ol>
+            <li>
+              Find your generation:{" "}
+              <Link href="/">catalogue</Link> or{" "}
+              <Link href="/search">search</Link>.
+            </li>
+            <li>Open the gen page and use the Procedures tab.</li>
             <li>Each procedure detail lists tools, ordered steps, and common mistakes.</li>
           </ol>
         </section>
 
-        <section className="mt-10 rounded-xl border border-slate-200 bg-white p-6">
-          <h2 className="text-lg font-semibold">Why these are different</h2>
-          <p className="mt-2 text-sm text-slate-700">
+        <section className="proc-howto">
+          <h2 className="section-h">Why these are different</h2>
+          <p>
             Auto-data.net and ultimatespecs.com publish trim specs but no
-            owner-method procedures. We restate the steps from the original
-            OEM owner manual (Feist v. Rural: facts only, no verbatim text),
-            then mark the source. The point is not the steps — every Haynes
-            book has steps — it&apos;s that the steps are <em>per-gen specific</em>:
-            a Honda HR-V 2023 maintenance reset is different from a HR-V 2018.
+            owner-method procedures. We restate the steps from the original OEM
+            owner manual (Feist v. Rural: facts only, no verbatim text), then
+            mark the source. The point is not the steps — every Haynes book
+            has steps — it&apos;s that the steps are per-gen specific: a Honda
+            HR-V 2023 maintenance reset is different from a HR-V 2018.
           </p>
         </section>
-      </main>
-    </div>
+      </div>
+      <SiteFooter />
+    </>
   );
 }
