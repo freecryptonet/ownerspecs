@@ -120,6 +120,67 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       });
     }
 
+    // Comparison pages (curated head-to-head)
+    pages.push({
+      url: `${BASE}/compare`,
+      lastModified: new Date(),
+      changeFrequency: "weekly",
+      priority: 0.7,
+    });
+    const PAIRS: Array<[string, string]> = [
+      ["civic-sedan-x-2016-2021", "corolla-e170-sedan-2012-2018"],
+      ["civic-fe-sedan-2022-2025", "corolla-sedan-e210-2019-2022"],
+      ["civic-fe-sedan-2022-2025", "3-bm-sedan-2013-2018"],
+      ["civic-fe-sedan-2022-2025", "elantra-cn7-sedan-2021-present"],
+      ["camry-xv70-2018-2024", "accord-cv-sedan-2023-present"],
+      ["camry-xv70-2018-2024", "altima-l34-sedan-2018-2022"],
+      ["accord-cv-sedan-2023-present", "altima-l34-sedan-2018-2022"],
+      ["rav4-xa50-suv-2019-2021", "cr-v-rw-suv-2017-2022"],
+      ["rav4-xa50-suv-2019-2021", "tucson-nx4-suv-2021-2024"],
+      ["rav4-xa50-suv-2019-2021", "cx-5-kf-suv-2017-2024"],
+      ["rav4-xa50-suv-2019-2021", "tiguan-ad1-suv-2017-2024"],
+      ["tucson-nx4-suv-2021-2024", "sportage-nq5-suv-2021-2025"],
+      ["cr-v-rw-suv-2017-2022", "tucson-nx4-suv-2021-2024"],
+      ["cr-v-rs-suv-2023-present", "rav4-xa50-suv-2019-2021"],
+      ["highlander-xu70-suv-2020-2025", "pilot-yf-suv-2023-present"],
+      ["highlander-xu70-suv-2020-2025", "telluride-on-suv-2020-2025"],
+      ["pilot-yf-suv-2023-present", "telluride-on-suv-2020-2025"],
+      ["pilot-yf-suv-2023-present", "atlas-ca-suv-2018-2023"],
+      ["explorer-u625-suv-2020-2024", "highlander-xu70-suv-2020-2025"],
+      ["f-150-p702-pickup-2021-2025", "silverado-t1-pickup-2019-2024"],
+      ["f-150-p702-pickup-2021-2025", "1500-dt-pickup-2019-2024"],
+      ["silverado-t1-pickup-2019-2024", "1500-dt-pickup-2019-2024"],
+      ["silverado-t1-pickup-2019-2024", "sierra-1500-t1xx-pickup-2019-2024"],
+      ["tundra-xk70-pickup-2022-present", "f-150-p702-pickup-2021-2025"],
+      ["tacoma-n300-pickup-2023-present", "f-150-p702-pickup-2021-2025"],
+      ["3-series-sedan-g20-2019-2022", "c-class-sedan-w206-2022-present"],
+      ["3-series-sedan-g20-2019-2022", "a4-sedan-b9-2015-2018"],
+      ["c-class-sedan-w206-2022-present", "a4-sedan-b9-2015-2018"],
+      ["3-series-f30-sedan-2012-2018", "3-series-sedan-g20-2019-2022"],
+      ["e-class-w213-sedan-2017-2020", "3-series-sedan-g20-2019-2022"],
+      ["x5-g05-suv-2019-2023", "glc-x253-suv-2016-2022"],
+      ["x3-g01-suv-2018-2024", "glc-x253-suv-2016-2022"],
+      ["x3-g01-suv-2018-2024", "xc60-suv-2017-2024"],
+      ["nx-az20-suv-2022-present", "rx-al20-suv-2015-2022"],
+      ["mdx-yd4-suv-2022-2025", "pilot-yf-suv-2023-present"],
+      ["outback-bt-wagon-2019-2024", "forester-sk-suv-2018-2021"],
+      ["outback-bt-wagon-2019-2024", "crosstrek-gt-suv-2018-2023"],
+      ["forester-sk-suv-2018-2021", "rav4-xa50-suv-2019-2021"],
+      ["model-3-sedan-2017-2023", "model-y-suv-2020-2024"],
+      ["model-y-suv-2020-2024", "ioniq-5-ne1-suv-2021-2024"],
+      ["wrangler-jl-suv-2018-2023", "bronco-u725-suv-2021-present"],
+      ["wrangler-jl-suv-2018-2023", "grand-cherokee-wl-suv-2022-present"],
+      ["tahoe-t1xx-suv-2021-2024", "x5-g05-suv-2019-2023"],
+    ];
+    for (const [a, b] of PAIRS) {
+      pages.push({
+        url: `${BASE}/compare/${a}-vs-${b}`,
+        lastModified: new Date(),
+        changeFrequency: "monthly",
+        priority: 0.6,
+      });
+    }
+
     // Engine catalogue pages
     pages.push({
       url: `${BASE}/engines`,
