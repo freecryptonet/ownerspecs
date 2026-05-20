@@ -126,8 +126,28 @@ const dataCategories = [
   },
 ];
 
+type Stats = {
+  generations: number;
+  makes: number;
+  models: number;
+  trims: number;
+  procedures: number;
+};
+
+async function getStats(): Promise<Stats> {
+  const row = await query<Stats>(
+    `SELECT
+      (SELECT COUNT(*) FROM generations WHERE is_active=1) AS generations,
+      (SELECT COUNT(*) FROM makes WHERE is_active=1) AS makes,
+      (SELECT COUNT(DISTINCT m.id) FROM models m JOIN generations g ON g.model_id=m.id WHERE g.is_active=1) AS models,
+      (SELECT COUNT(*) FROM trims t JOIN generations g ON g.id=t.generation_id WHERE g.is_active=1) AS trims,
+      (SELECT COUNT(*) FROM procedures p JOIN generations g ON g.id=p.generation_id WHERE g.is_active=1) AS procedures`,
+  );
+  return row[0] ?? { generations: 0, makes: 0, models: 0, trims: 0, procedures: 0 };
+}
+
 export default async function Home() {
-  const [recent, brands] = await Promise.all([getRecent(), getBrands()]);
+  const [recent, brands, stats] = await Promise.all([getRecent(), getBrands(), getStats()]);
   return (
     <>
       <header className="site-header">
@@ -144,7 +164,7 @@ export default async function Home() {
             <a href="/compare">Compare</a>
             <a href="#methodology">Methodology</a>
           </nav>
-          <div className="search-bar">
+          <form action="/search" method="get" className="search-bar" role="search">
             <svg
               width="13"
               height="13"
@@ -156,9 +176,16 @@ export default async function Home() {
               <circle cx="7" cy="7" r="5" />
               <path d="m11 11 3 3" />
             </svg>
-            <input placeholder="Make, model, VIN or part number" />
+            <input
+              id="site-search"
+              name="q"
+              type="search"
+              autoComplete="off"
+              placeholder="Make, model, VIN or part number"
+              aria-label="Search ownerspecs catalogue"
+            />
             <span className="kbd">⌘ K</span>
-          </div>
+          </form>
         </div>
       </header>
 
@@ -173,15 +200,27 @@ export default async function Home() {
             dated.
           </p>
 
-          <div className="hp-search">
-            <input placeholder="2018 Honda Civic 1.5T oil capacity, BMW G20 lug nut torque, …" />
-            <button type="button">Search</button>
-          </div>
+          <form action="/search" method="get" className="hp-search" role="search">
+            <input
+              type="search"
+              name="q"
+              autoComplete="off"
+              aria-label="Search ownerspecs catalogue"
+              placeholder="2018 Honda Civic 1.5T oil capacity, BMW G20 lug nut torque, …"
+            />
+            <button type="submit">Search</button>
+          </form>
           <div className="hp-search-modes">
             <span className="on">Natural language</span>
-            <span>VIN</span>
-            <span>Licence plate</span>
-            <span>Browse catalogue</span>
+            <a href="/engines" style={{ color: "inherit", textDecoration: "none" }}>
+              <span>Engine code</span>
+            </a>
+            <a href="/compare" style={{ color: "inherit", textDecoration: "none" }}>
+              <span>Compare</span>
+            </a>
+            <a href="#brands" style={{ color: "inherit", textDecoration: "none" }}>
+              <span>Browse catalogue</span>
+            </a>
           </div>
 
           <div className="verify-badge" style={{ marginTop: "var(--s-5)" }}>
@@ -197,10 +236,10 @@ export default async function Home() {
               <circle cx="8" cy="8" r="7" />
             </svg>
             <span>
-              {recent.length} {recent.length === 1 ? "generation" : "generations"} indexed · catalogue expanding daily
+              {stats.generations} generations · {stats.makes} makes · {stats.trims} trims · {stats.procedures} procedures indexed
             </span>
             <span className="div" />
-            <span className="meta">Methodology below</span>
+            <span className="meta">Cross-verified · cited · dated</span>
           </div>
         </section>
 
