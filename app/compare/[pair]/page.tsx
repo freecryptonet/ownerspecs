@@ -109,6 +109,23 @@ const PAIRS: Array<[string, string, string?]> = [
   ["wrangler-jl-suv-2018-2023", "grand-cherokee-wl-suv-2022-present"],
   // Full-size SUVs
   ["tahoe-t1xx-suv-2021-2024", "x5-g05-suv-2019-2023"],
+  // Same-make sibling comparisons (high-intent intra-brand queries)
+  ["civic-fe-sedan-2022-2025", "accord-cv-sedan-2023-present"],
+  ["camry-xv70-2018-2024", "corolla-sedan-e210-2019-2022"],
+  ["highlander-xu70-suv-2020-2025", "rav4-xa50-suv-2019-2021"],
+  ["3-series-sedan-g20-2019-2022", "5-series-g30-sedan-2017-2020"],
+  ["x3-g01-suv-2018-2024", "x5-g05-suv-2019-2023"],
+  ["tucson-nx4-suv-2021-2024", "palisade-lx2-suv-2020-2022"],
+  ["sportage-nq5-suv-2021-2025", "sorento-mq4-suv-2021-present"],
+  ["pilot-yf-suv-2023-present", "cr-v-rs-suv-2023-present"],
+  ["mdx-yd4-suv-2022-2025", "tlx-ii-sedan-2021-2024"],
+  ["silverado-t1-pickup-2019-2024", "tahoe-t1xx-suv-2021-2024"],
+  ["3-sedan-bp-2020-present", "cx-5-kf-suv-2017-2024"],
+  ["model-y-suv-2020-2024", "model-3-sedan-2017-2023"],
+  // Minivan trio
+  ["odyssey-rl6-minivan-2018-2023", "sienna-xl40-minivan-2021-present"],
+  ["odyssey-rl6-minivan-2018-2023", "pacifica-ru-minivan-2017-2023"],
+  ["sienna-xl40-minivan-2021-present", "pacifica-ru-minivan-2017-2023"],
 ];
 
 const splitPair = (slug: string): [string, string] | null => {
