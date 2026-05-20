@@ -37,7 +37,7 @@ type ProcHit = {
 };
 
 export const metadata: Metadata = {
-  title: "Search — ownerspecs",
+  title: "Search",
   description: "Search across every make, model, generation, trim, and service procedure in the ownerspecs catalogue.",
   alternates: { canonical: "/search" },
 };
