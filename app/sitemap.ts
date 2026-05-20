@@ -120,6 +120,31 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       });
     }
 
+    // Engine catalogue pages
+    pages.push({
+      url: `${BASE}/engines`,
+      lastModified: new Date(),
+      changeFrequency: "weekly",
+      priority: 0.7,
+    });
+    const engines = await query<{ code: string }>(
+      `SELECT DISTINCT e.code
+       FROM engines e
+       JOIN trims t ON t.engine_id = e.id
+       JOIN generations g ON g.id = t.generation_id
+       WHERE g.is_active = 1 AND e.code IS NOT NULL AND e.code != ''`,
+    );
+    const slugFromCode = (code: string) =>
+      code.replace(/[\s/]/g, "-").replace(/[^a-zA-Z0-9-]/g, "").replace(/-+/g, "-").toLowerCase();
+    for (const e of engines) {
+      pages.push({
+        url: `${BASE}/engines/${slugFromCode(e.code)}`,
+        lastModified: new Date(),
+        changeFrequency: "monthly",
+        priority: 0.6,
+      });
+    }
+
     const procs = await query<{ brand: string; generation: string; procSlug: string; updated: string }>(
       "SELECT mk.slug AS brand, g.slug AS generation, p.slug AS procSlug, g.updated_at AS updated " +
       "FROM procedures p " +
