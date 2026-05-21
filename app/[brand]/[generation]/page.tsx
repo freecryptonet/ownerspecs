@@ -655,175 +655,104 @@ export default async function Page({ params }: { params: Promise<Params> }) {
           </section>
         )}
 
-        {/* VARIANT COMPARISON TABLE — one row per trim, columns include
-            per-engine fluids resolved via trim.engine_id. No competitor
-            publishes this. */}
+        {/* TRIM GRID — primary "pick your car" affordance. The gen overview
+            no longer renders per-trim data inline; each trim's full spec
+            sheet (fluids, torques, parts, maintenance) lives on its own
+            page. This is the IA pattern competitors use and matches owner
+            search intent — visitors arrive looking for THEIR trim. */}
         {trims.length > 0 ? (
           <section>
             <h2 className="section-h">
-              Variant comparison
-              <span className="count">{trims.length} trims · pick yours</span>
+              Pick your trim
+              <span className="count">{trims.length} {trims.length === 1 ? "trim" : "trims"}</span>
             </h2>
             <p className="muted" style={{ fontSize: 12, marginBottom: 8 }}>
-              Performance, drivetrain and engine-specific fluid capacities side-by-side.
-              Click a trim row for the complete spec sheet, torque values, parts and maintenance schedule.
-              {provisionalSuppressed > 0 && (
-                <>
-                  {" "}
-                  <strong style={{ color: "var(--ink-soft)" }}>
-                    {provisionalSuppressed === 1 ? "One fluid type" : `${provisionalSuppressed} fluid types`}
-                    {" "}({[...suppressedTypes].map(fluidLabel).join(", ")})
-                    {" "}{provisionalSuppressed === 1 ? "is" : "are"} pending per-engine verification
-                    and {provisionalSuppressed === 1 ? "has been" : "have been"} suppressed rather than
-                    displayed as one value across {trims.length} {trims.length === 1 ? "trim" : "trims"}.
-                  </strong>
-                </>
-              )}
+              Each trim has its own page with full fluids, torque values,
+              parts numbers and a maintenance schedule filtered to that
+              engine. No data from other trims — you only see what applies
+              to your car.
             </p>
-            <div className="table-scroll">
-              <table className="spec-table">
-                <thead style={{ background: "var(--bg-alt)" }}>
-                  <tr>
-                    {[
-                      "Trim", "Engine", "Trans", "HP", "Nm",
-                      "0-100", "Top", "Fuel", "Weight", "Drive",
-                      "Oil cap", "Oil grade", "Coolant cap",
-                    ].map((h) => (
-                      <th
-                        key={h}
-                        style={{
-                          fontSize: 11,
-                          fontWeight: 600,
-                          letterSpacing: "0.08em",
-                          textTransform: "uppercase",
-                          color: "var(--ink-soft)",
-                          textAlign: "left",
-                          padding: "8px 12px",
-                          whiteSpace: "nowrap",
-                        }}
-                      >
-                        {h}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {trims.map((t) => {
-                    const oil = trimFluid(t.engine_id, "engine_oil");
-                    const coolant = trimFluid(t.engine_id, "coolant");
-                    const trimCites = citations.citationsFor("trims", t.id);
-                    return (
-                      <tr key={t.id}>
-                        <th style={{ whiteSpace: "nowrap" }}>
-                          <a href={`/${make.slug}/${gen.slug}/${t.slug}`} style={{ color: "var(--ink)", fontWeight: 600 }}>
-                            {t.name}
-                          </a>
-                          <Cites nums={trimCites} />
-                        </th>
-                        <td style={{ whiteSpace: "nowrap" }}>{t.engine_code ?? "—"}</td>
-                        <td style={{ whiteSpace: "nowrap" }}>{t.transmission_name ?? "—"}</td>
-                        <td className="tnum">{t.hp ?? "—"}</td>
-                        <td className="tnum">{t.torque_nm ?? "—"}</td>
-                        <td className="tnum">{t.zero_100_kmh_s ? `${Number(t.zero_100_kmh_s).toFixed(1)}s` : "—"}</td>
-                        <td className="tnum" style={{ whiteSpace: "nowrap" }}>{t.top_speed_kmh ? speedDual(t.top_speed_kmh) : "—"}</td>
-                        <td className="tnum" style={{ whiteSpace: "nowrap" }}>{t.fuel_combined_l_100km ? consumptionDual(t.fuel_combined_l_100km) : "—"}</td>
-                        <td className="tnum" style={{ whiteSpace: "nowrap" }}>{t.curb_weight_kg ? kgDual(t.curb_weight_kg) : "—"}</td>
-                        <td>{t.drive_wheel ?? "—"}</td>
-                        <td className="tnum" style={{ whiteSpace: "nowrap" }}>
-                          {oil ? fmtCap(oil.capacity_l, oil.capacity_qt) : "—"}
-                          {oil && <Cites nums={citations.citationsFor("fluid_specs", oil.id)} />}
-                        </td>
-                        <td style={{ whiteSpace: "nowrap" }}>
-                          {oil?.viscosity ?? "—"}
-                          {oil?.spec_standard && (
-                            <span className="alt"> · {oil.spec_standard}</span>
-                          )}
-                        </td>
-                        <td className="tnum" style={{ whiteSpace: "nowrap" }}>
-                          {coolant ? fmtCap(coolant.capacity_l, coolant.capacity_qt) : "—"}
-                          {coolant && <Cites nums={citations.citationsFor("fluid_specs", coolant.id)} />}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
+            <ul
+              style={{
+                listStyle: "none",
+                padding: 0,
+                margin: 0,
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
+                gap: 0,
+                border: "1px solid var(--rule)",
+              }}
+            >
+              {trims.map((t) => (
+                <li key={t.id} style={{ borderRight: "1px solid var(--rule)", borderBottom: "1px solid var(--rule)" }}>
+                  <a
+                    href={`/${make.slug}/${gen.slug}/${t.slug}`}
+                    style={{ display: "block", padding: "12px 16px", color: "var(--ink)" }}
+                  >
+                    <div style={{ fontSize: 14, fontWeight: 600 }}>{t.name}</div>
+                    <div className="muted" style={{ fontSize: 12, marginTop: 2 }}>
+                      {[t.engine_code, t.transmission_name, t.hp ? `${t.hp} Hp` : null, t.drive_wheel]
+                        .filter(Boolean).join(" · ")}
+                    </div>
+                  </a>
+                </li>
+              ))}
+            </ul>
           </section>
         ) : null}
 
-        {/* ENGINE COMPARISON — engines as columns, specs as rows */}
+        {/* AVAILABLE ENGINES — catalogue listing (no spec values; trim
+            pages own those). Each row links to the gen-spanning engine
+            catalogue page at /engines/{code}. */}
         {engines.length > 0 && (
           <section>
             <h2 className="section-h">
-              Engines
+              Available engines
               <span className="count">{engines.length}</span>
             </h2>
-            <div className="table-scroll">
-              <table className="spec-table compare">
-                <thead style={{ background: "var(--bg-alt)" }}>
-                  <tr>
-                    <th style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--ink-soft)", textAlign: "left", padding: "8px 12px" }}>
-                      Spec
-                    </th>
-                    {engines.map((e) => {
-                      const slug = e.code.replace(/[\s/]/g, "-").replace(/[^a-zA-Z0-9-]/g, "").replace(/-+/g, "-").toLowerCase();
-                      return (
-                        <th
-                          key={e.id}
-                          style={{
-                            fontSize: 11,
-                            fontWeight: 600,
-                            letterSpacing: "0.08em",
-                            textTransform: "uppercase",
-                            color: "var(--ink-soft)",
-                            textAlign: "left",
-                            padding: "8px 12px",
-                            whiteSpace: "nowrap",
-                          }}
-                        >
-                          <a href={`/engines/${slug}`} style={{ color: "var(--accent)" }}>{e.code}</a>
-                        </th>
-                      );
-                    })}
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <th>Display name</th>
-                    {engines.map((e) => (<td key={e.id}>{e.display_name}</td>))}
-                  </tr>
-                  <tr>
-                    <th>Displacement</th>
-                    {engines.map((e) => (<td key={e.id} className="tnum">{displacementDual(e.displacement_cc)}</td>))}
-                  </tr>
-                  <tr>
-                    <th>Bore × stroke</th>
-                    {engines.map((e) => (
-                      <td key={e.id} className="tnum">
-                        {e.bore_mm && e.stroke_mm ? boreStrokeDual(e.bore_mm, e.stroke_mm) : "—"}
-                      </td>
-                    ))}
-                  </tr>
-                  <tr>
-                    <th>Compression</th>
-                    {engines.map((e) => (<td key={e.id} className="tnum">{e.compression ? `${e.compression} : 1` : "—"}</td>))}
-                  </tr>
-                  <tr>
-                    <th>Aspiration</th>
-                    {engines.map((e) => (<td key={e.id}>{e.aspiration ?? "—"}</td>))}
-                  </tr>
-                  <tr>
-                    <th>Valvetrain</th>
-                    {engines.map((e) => (<td key={e.id}>{e.valvetrain ?? "—"}</td>))}
-                  </tr>
-                  <tr>
-                    <th>Cylinders · fuel</th>
-                    {engines.map((e) => (<td key={e.id}>{e.cylinders ?? "—"} · {e.fuel}</td>))}
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+            <ul
+              style={{
+                listStyle: "none",
+                padding: 0,
+                margin: 0,
+                border: "1px solid var(--rule)",
+              }}
+            >
+              {engines.map((e) => {
+                const slug = e.code.replace(/[\s/]/g, "-").replace(/[^a-zA-Z0-9-]/g, "").replace(/-+/g, "-").toLowerCase();
+                return (
+                  <li key={e.id} style={{ borderBottom: "1px solid var(--rule)" }}>
+                    <a
+                      href={`/engines/${slug}`}
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "140px 1fr auto",
+                        gap: 16,
+                        alignItems: "center",
+                        padding: "10px 16px",
+                        color: "var(--ink)",
+                      }}
+                    >
+                      <span style={{ fontFamily: '"IBM Plex Mono", monospace', fontWeight: 600, color: "var(--accent)" }}>
+                        {e.code}
+                      </span>
+                      <span>
+                        <span style={{ fontSize: 13 }}>{e.display_name}</span>
+                        <span className="muted" style={{ fontSize: 12, marginLeft: 8 }}>
+                          {[
+                            e.displacement_cc ? `${(e.displacement_cc / 1000).toFixed(1)} L` : null,
+                            e.cylinders ? `${e.cylinders}-cyl` : null,
+                            e.fuel,
+                            e.aspiration && e.aspiration !== "NA" ? e.aspiration : null,
+                          ].filter(Boolean).join(" · ")}
+                        </span>
+                      </span>
+                      <span className="muted" style={{ fontSize: 12 }}>→ Engine catalogue</span>
+                    </a>
+                  </li>
+                );
+              })}
+            </ul>
           </section>
         )}
 
@@ -854,72 +783,6 @@ export default async function Page({ params }: { params: Promise<Params> }) {
                         {f.filter_part_no && <span className="alt"> · filter {f.filter_part_no}</span>}
                         <Cites nums={citations.citationsFor("fluid_specs", f.id)} />
                       </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </section>
-        )}
-
-        {/* TORQUE */}
-        {torques.length > 0 && (
-          <section>
-            <h2 className="section-h">
-              Torque specifications
-              <span className="count">{torques.length} fasteners</span>
-            </h2>
-            <table className="spec-table">
-              <tbody>
-                {torques.map((t) => (
-                  <tr key={t.id}>
-                    <th>{torqueLabel(t.fastener)}</th>
-                    <td>
-                      {t.torque_nm} N·m · {t.torque_ftlb} ft·lb
-                      {t.notes && <span className="alt"> · {t.notes}</span>}
-                      <Cites nums={citations.citationsFor("torque_specs", t.id)} />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </section>
-        )}
-
-        {/* ELECTRICAL */}
-        {electrical && (
-          <section>
-            <h2 className="section-h">Electrical</h2>
-            <table className="spec-table">
-              <tbody>
-                {electrical.battery_group && <tr><th>Battery group</th><td>BCI {electrical.battery_group}{electrical.cca && ` · ${electrical.cca} CCA`}{electrical.ah && ` · ${electrical.ah} Ah`}</td></tr>}
-                {electrical.alternator_amps && <tr><th>Alternator</th><td>{electrical.alternator_amps} A</td></tr>}
-                <tr><th>Bulb manifest</th><td>{bulbCount} bulb positions documented</td></tr>
-                <tr><th>Fuse positions</th><td>{fuseCount} positions across under-hood &amp; cabin boxes</td></tr>
-              </tbody>
-            </table>
-          </section>
-        )}
-
-        {/* MAINTENANCE SCHEDULE SUMMARY */}
-        {serviceIntervals.length > 0 && (
-          <section>
-            <h2 className="section-h">
-              Maintenance schedule (normal duty)
-              <span className="count">{serviceIntervals.length} services</span>
-            </h2>
-            <table className="spec-table">
-              <tbody>
-                {serviceIntervals.map((s, i) => {
-                  const interval = s.miles_normal
-                    ? `${s.miles_normal.toLocaleString()} mi`
-                    : s.months
-                      ? `${s.months} months`
-                      : "—";
-                  return (
-                    <tr key={i}>
-                      <th>{serviceLabel(s.service)}</th>
-                      <td>{interval}{s.km_normal && s.miles_normal ? ` · ${s.km_normal.toLocaleString()} km` : ""}</td>
                     </tr>
                   );
                 })}

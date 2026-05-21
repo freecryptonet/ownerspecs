@@ -328,14 +328,18 @@ export default async function Page({ params }: { params: Promise<Params> }) {
     [gen.id, trimRow.id, trimRow.id],
   );
 
-  // Service intervals — currently gen-wide on the schema. We still display
-  // them on the trim page because they're the maintenance answer for this car.
+  // Service intervals — filtered to this trim's engine. NULL engine_id rows
+  // are gen-wide (tire rotation, brake fluid flush, etc.) and apply to every
+  // trim. Engine-scoped rows (spark plugs, timing belt, accessory drive belt)
+  // appear only on the matching engine's trim. Matches the trim-focused IA:
+  // visitors only see schedule items that apply to their car.
   const serviceIntervals = await query<ServiceIntervalRow>(
     `SELECT id, service, miles_normal, km_normal, months, notes
      FROM service_intervals
      WHERE generation_id = ?
+       AND (engine_id IS NULL OR engine_id = ?)
      ORDER BY COALESCE(miles_normal, miles_severe, 999999)`,
-    [gen.id],
+    [gen.id, trimRow.engine_id ?? 0],
   );
 
   // Citation index restricted to rows this trim's page actually renders
