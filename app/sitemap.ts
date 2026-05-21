@@ -71,15 +71,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
        WHERE g.is_active = 1`,
     );
 
-    const topics = [
-      "oil-capacity",
-      "maintenance-schedule",
-      "torque",
-      "electrical",
-      "tires",
-      "procedures",
-    ];
-
+    // Hub page is always emitted; topic sub-pages are emitted conditionally
+    // below based on whether the underlying data table has rows for the gen.
+    // (Previously emitted unconditionally → 404s on EV gens for oil-capacity,
+    // and on gens lacking torque/tires/electrical data.)
     for (const g of generations) {
       pages.push({
         url: `${BASE}/${g.brand}/${g.generation}`,
@@ -87,18 +82,22 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         changeFrequency: "monthly",
         priority: 0.8,
       });
-      for (const topic of topics) {
-        pages.push({
-          url: `${BASE}/${g.brand}/${g.generation}/${topic}`,
-          lastModified: new Date(g.updated),
-          changeFrequency: "monthly",
-          priority: 0.7,
-        });
-      }
+      // maintenance-schedule is universal — every gen has service_intervals
+      pages.push({
+        url: `${BASE}/${g.brand}/${g.generation}/maintenance-schedule`,
+        lastModified: new Date(g.updated),
+        changeFrequency: "monthly",
+        priority: 0.7,
+      });
     }
 
     // Conditional sub-topic pages — only emit if data exists for the gen
     const conditionalTopics: Array<{ slug: string; existsSql: string; params: string[] }> = [
+      { slug: "oil-capacity", existsSql: "EXISTS (SELECT 1 FROM fluid_specs WHERE generation_id = g.id AND fluid_type = 'engine_oil')", params: [] },
+      { slug: "torque", existsSql: "EXISTS (SELECT 1 FROM torque_specs WHERE generation_id = g.id)", params: [] },
+      { slug: "electrical", existsSql: "EXISTS (SELECT 1 FROM electrical_specs WHERE generation_id = g.id) OR EXISTS (SELECT 1 FROM bulbs WHERE generation_id = g.id) OR EXISTS (SELECT 1 FROM fuses WHERE generation_id = g.id)", params: [] },
+      { slug: "tires", existsSql: "EXISTS (SELECT 1 FROM tire_pressures WHERE generation_id = g.id)", params: [] },
+      { slug: "procedures", existsSql: "EXISTS (SELECT 1 FROM procedures WHERE generation_id = g.id)", params: [] },
       { slug: "parts", existsSql: "EXISTS (SELECT 1 FROM parts WHERE generation_id = g.id)", params: [] },
       { slug: "bulbs", existsSql: "EXISTS (SELECT 1 FROM bulbs WHERE generation_id = g.id)", params: [] },
       { slug: "fuses", existsSql: "EXISTS (SELECT 1 FROM fuses WHERE generation_id = g.id)", params: [] },
