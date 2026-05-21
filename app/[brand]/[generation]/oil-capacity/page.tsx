@@ -4,17 +4,17 @@ import { query } from "@/lib/db";
 import {
   getGenerationBase,
   getGenerationHero,
-  getSourcesFor,
   getAllGenerationParams,
   yearRange,
   reviewDate,
 } from "@/lib/generation";
+import { buildCitationIndex } from "@/lib/citations";
+import { Cites } from "@/components/Cites";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { GenerationTabs } from "@/components/GenerationTabs";
 import { VerifyBadge } from "@/components/VerifyBadge";
-import { SourcesBlock } from "@/components/SourcesBlock";
-import { pageMetadata, breadcrumbsJsonLd, techArticleJsonLd, faqJsonLd } from "@/lib/seo";
+import { pageMetadata, breadcrumbsJsonLd, datasetJsonLd, faqJsonLd } from "@/lib/seo";
 
 type Params = { brand: string; generation: string };
 
@@ -32,16 +32,15 @@ type OilRow = {
   drain_interval_months: number | null;
   notes: string | null;
   trim_name: string | null;
+  engine_id: number | null;
   engine_code: string | null;
   engine_display: string | null;
 };
 
-function rowLabel(o: { engine_display: string | null; trim_name: string | null; fluid_type: string }): string {
-  if (o.engine_display && o.trim_name) return `${o.engine_display} — ${o.trim_name}`;
-  if (o.engine_display) return o.engine_display;
-  if (o.trim_name) return o.trim_name;
-  return "All engines · generation-wide";
-}
+type EngineLite = { id: number };
+type TrimLite = { id: number; hp: number | null; engine_id: number | null };
+
+const ENGINE_OIL_TYPES = ["engine_oil", "engine_oil_2_0", "engine_oil_1_0t", "engine_oil_diesel"];
 
 export async function generateStaticParams(): Promise<Params[]> {
   return getAllGenerationParams();
@@ -59,7 +58,7 @@ export async function generateMetadata({
   const heroPath = await getGenerationHero(base.gen.id);
   return pageMetadata({
     title: `${base.make.name} ${base.gen.display_name} ${yrs} — Engine oil capacity & viscosity`,
-    description: `Engine oil capacity, viscosity grade, oil filter part number and drain interval for the ${base.gen.display_name} (${base.make.name}, ${yrs}). Every engine variant, every market. Cross-verified.`,
+    description: `Engine oil capacity, viscosity grade, oil filter part number and drain interval for the ${base.gen.display_name} (${base.make.name}, ${yrs}). Per-engine comparison, cross-verified, per-row sources.`,
     path: `/${base.make.slug}/${base.gen.slug}/oil-capacity`,
     heroPath,
   });
@@ -70,85 +69,158 @@ export default async function Page({ params }: { params: Promise<Params> }) {
   const base = await getGenerationBase(brand, generation);
   if (!base) notFound();
   const { make, model, gen } = base;
+  const yrs = yearRange(gen.start_year, gen.end_year);
 
   const oils = await query<OilRow>(
     `SELECT f.id, f.fluid_type, mk.code AS market_code, f.capacity_l, f.capacity_qt,
             f.viscosity, f.spec_standard, f.filter_part_no, f.drain_interval_mi,
             f.drain_interval_km, f.drain_interval_months, f.notes,
-            t.name AS trim_name, e.code AS engine_code, e.display_name AS engine_display
+            t.name AS trim_name,
+            COALESCE(e_direct.id, e_via_trim.id)                  AS engine_id,
+            COALESCE(e_direct.code, e_via_trim.code)              AS engine_code,
+            COALESCE(e_direct.display_name, e_via_trim.display_name) AS engine_display
      FROM fluid_specs f
-     LEFT JOIN markets mk ON mk.id = f.market_id
-     LEFT JOIN trims t    ON t.id  = f.trim_id
-     LEFT JOIN engines e  ON e.id  = t.engine_id
+     LEFT JOIN markets mk         ON mk.id = f.market_id
+     LEFT JOIN trims t            ON t.id  = f.trim_id
+     LEFT JOIN engines e_direct   ON e_direct.id   = f.engine_id
+     LEFT JOIN engines e_via_trim ON e_via_trim.id = t.engine_id
      WHERE f.generation_id = ?
-       AND f.fluid_type LIKE 'engine_oil%'
+       AND f.fluid_type IN (${ENGINE_OIL_TYPES.map(() => "?").join(",")})
      ORDER BY FIELD(f.fluid_type, 'engine_oil', 'engine_oil_2_0', 'engine_oil_1_0t', 'engine_oil_diesel'),
-              -- prefer fully-populated rows over scraper leftovers when duplicates exist
-              (f.viscosity IS NULL) ASC, (f.spec_standard IS NULL) ASC, (f.filter_part_no IS NULL) ASC`,
-    [gen.id],
+              (COALESCE(e_direct.displacement_cc, e_via_trim.displacement_cc) IS NULL) ASC,
+              COALESCE(e_direct.displacement_cc, e_via_trim.displacement_cc) ASC,
+              f.id`,
+    [gen.id, ...ENGINE_OIL_TYPES],
   );
 
   if (oils.length === 0) notFound();
 
-  const sources = await getSourcesFor(gen.id, "fluid_specs");
+  // Multi-engine detection — same heuristic as gen + FluidTopicPage.
+  const engineList = await query<EngineLite>(
+    `SELECT DISTINCT e.id FROM engines e JOIN trims t ON t.engine_id = e.id WHERE t.generation_id = ?`,
+    [gen.id],
+  );
+  const trimList = await query<TrimLite>(
+    `SELECT id, hp, engine_id FROM trims WHERE generation_id = ?`,
+    [gen.id],
+  );
+  const distinctHps = new Set(trimList.map((t) => t.hp).filter((h): h is number => h != null));
+  const someRowScoped = oils.some((r) => r.engine_id != null);
+  const multiEngine = engineList.length > 1 || distinctHps.size > 1 || someRowScoped;
+
+  const rendered: OilRow[] = [];
+  let suppressedCount = 0;
+  for (const r of oils) {
+    if (r.engine_id == null && multiEngine) {
+      suppressedCount++;
+    } else {
+      rendered.push(r);
+    }
+  }
+
+  const citations = await buildCitationIndex(
+    gen.id,
+    rendered.map((r) => ({ table: "fluid_specs", id: r.id })),
+  );
+  const sources = citations.sources;
   const rev = reviewDate(sources);
-  const yrs = yearRange(gen.start_year, gen.end_year);
 
-  // Primary answer = first row (typically the highest-volume trim)
-  const primary = oils[0];
-
-  // Service-bulletin / dilution warning if any oil row has notes mentioning dilution or severe-duty interval revision
-  const bulletinRow = oils.find(
+  // Service-bulletin / dilution warning (kept) — pull from any rendered row
+  const bulletinRow = rendered.find(
     (o) => o.notes && /dilution|severe|cold-climate/i.test(o.notes),
   );
 
+  // FAQ — guarded for multi-engine: only emit "what is X" if we have a clear
+  // single value (un-suppressed primary row). Otherwise emit a "varies by engine"
+  // answer that lists the range, so we never lie via JSON-LD.
+  const primary = rendered[0];
   const faqs: Array<{ q: string; a: string }> = [];
-  if (primary.capacity_qt && primary.capacity_l) {
-    faqs.push({
-      q: `What is the oil capacity of the ${make.name} ${gen.display_name}?`,
-      a: `The ${make.name} ${gen.display_name} (${yrs}) holds ${Number(primary.capacity_qt).toFixed(1)} US qt (${Number(primary.capacity_l).toFixed(1)} L) of engine oil with a new filter${primary.engine_display ? ` on the ${primary.engine_display} engine` : ""}.`,
-    });
-  }
-  if (primary.viscosity) {
-    faqs.push({
-      q: `What oil viscosity does the ${make.name} ${gen.display_name} use?`,
-      a: `${primary.viscosity}${primary.spec_standard ? `, meeting ${primary.spec_standard}` : ""} is the manufacturer-specified viscosity for the ${make.name} ${gen.display_name} (${yrs}).`,
-    });
-  }
-  if (primary.filter_part_no) {
-    faqs.push({
-      q: `What oil filter fits the ${make.name} ${gen.display_name}?`,
-      a: `The OE oil filter part number for the ${make.name} ${gen.display_name} (${yrs}) is ${primary.filter_part_no}${primary.engine_code ? ` on the ${primary.engine_code} engine` : ""}.`,
-    });
-  }
-  if (primary.drain_interval_mi) {
-    faqs.push({
-      q: `How often should the oil be changed on the ${make.name} ${gen.display_name}?`,
-      a: `The manufacturer-recommended oil change interval for the ${make.name} ${gen.display_name} (${yrs}) is ${primary.drain_interval_mi.toLocaleString()} miles${primary.drain_interval_km ? ` / ${primary.drain_interval_km.toLocaleString()} km` : ""}${primary.drain_interval_months ? ` or ${primary.drain_interval_months} months, whichever comes first` : ""}.`,
-    });
+  if (primary && rendered.length === 1) {
+    if (primary.capacity_qt && primary.capacity_l) {
+      faqs.push({
+        q: `What is the oil capacity of the ${make.name} ${gen.display_name}?`,
+        a: `The ${make.name} ${gen.display_name} (${yrs}) holds ${Number(primary.capacity_qt).toFixed(1)} US qt (${Number(primary.capacity_l).toFixed(1)} L) of engine oil with a new filter${primary.engine_display ? ` on the ${primary.engine_display}` : ""}.`,
+      });
+    }
+    if (primary.viscosity) {
+      faqs.push({
+        q: `What oil viscosity does the ${make.name} ${gen.display_name} use?`,
+        a: `${primary.viscosity}${primary.spec_standard ? `, meeting ${primary.spec_standard}` : ""} is the manufacturer-specified viscosity for the ${make.name} ${gen.display_name} (${yrs}).`,
+      });
+    }
+    if (primary.filter_part_no) {
+      faqs.push({
+        q: `What oil filter fits the ${make.name} ${gen.display_name}?`,
+        a: `The OE oil filter part number for the ${make.name} ${gen.display_name} (${yrs}) is ${primary.filter_part_no}${primary.engine_code ? ` on the ${primary.engine_code} engine` : ""}.`,
+      });
+    }
+    if (primary.drain_interval_mi) {
+      faqs.push({
+        q: `How often should the oil be changed on the ${make.name} ${gen.display_name}?`,
+        a: `The manufacturer-recommended oil change interval for the ${make.name} ${gen.display_name} (${yrs}) is ${primary.drain_interval_mi.toLocaleString()} miles${primary.drain_interval_km ? ` / ${primary.drain_interval_km.toLocaleString()} km` : ""}${primary.drain_interval_months ? ` or ${primary.drain_interval_months} months, whichever comes first` : ""}.`,
+      });
+    }
+  } else if (rendered.length > 1) {
+    const caps = rendered.map((r) => r.capacity_l).filter((c): c is string => c != null).map(Number);
+    const viscs = [...new Set(rendered.map((r) => r.viscosity).filter(Boolean))];
+    if (caps.length >= 2) {
+      const min = Math.min(...caps), max = Math.max(...caps);
+      faqs.push({
+        q: `What is the oil capacity of the ${make.name} ${gen.display_name}?`,
+        a: `Oil capacity varies by engine on the ${make.name} ${gen.display_name} (${yrs}): from ${min.toFixed(1)} L on the smallest engine to ${max.toFixed(1)} L on the largest. See the per-engine table on this page for the exact value for your trim.`,
+      });
+    }
+    if (viscs.length === 1 && viscs[0]) {
+      faqs.push({
+        q: `What oil viscosity does the ${make.name} ${gen.display_name} use?`,
+        a: `${viscs[0]} is shared across every engine on the ${make.name} ${gen.display_name} (${yrs}).`,
+      });
+    } else if (viscs.length > 1) {
+      faqs.push({
+        q: `What oil viscosity does the ${make.name} ${gen.display_name} use?`,
+        a: `Multiple viscosities apply across the ${make.name} ${gen.display_name} (${yrs}) lineup: ${viscs.join(", ")}. The per-engine table on this page maps each viscosity to the correct engine.`,
+      });
+    }
   }
 
   return (
     <>
       <SiteHeader />
 
-      {faqs.length >= 2 && (
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd(faqs)) }}
-        />
-      )}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify([
+            breadcrumbsJsonLd({
+              brand: make,
+              model,
+              gen,
+              topic: { label: "Engine oil", path: `/${make.slug}/${gen.slug}/oil-capacity` },
+            }),
+            datasetJsonLd({
+              name: `${make.name} ${gen.display_name} ${yrs} — Engine oil capacity`,
+              description: `Per-engine oil capacity, viscosity, OEM specification, filter PN and drain interval for the ${make.name} ${gen.display_name} (${yrs}). Cross-verified, per-row sources.`,
+              path: `/${make.slug}/${gen.slug}/oil-capacity`,
+              reviewDate: rev,
+              variables: [
+                { name: "Capacity with new filter", unitText: "L / US qt" },
+                { name: "Viscosity grade" },
+                { name: "OEM specification" },
+                { name: "Filter part number" },
+                { name: "Drain interval", unitText: "miles / km / months" },
+              ],
+            }),
+            ...(faqs.length >= 2 ? [faqJsonLd(faqs)] : []),
+          ]),
+        }}
+      />
 
       <div className="shell">
         <nav className="crumb">
-          <a href="/">Catalogue</a>
-          <span className="sep">/</span>
-          <a href={`/${make.slug}`}>{make.name}</a>
-          <span className="sep">/</span>
-          <a href={`/${make.slug}/${model.slug}`}>{model.name}</a>
-          <span className="sep">/</span>
-          <a href={`/${make.slug}/${gen.slug}`}>{gen.display_name} · {yrs}</a>
-          <span className="sep">/</span>
+          <a href="/">Catalogue</a><span className="sep">/</span>
+          <a href={`/${make.slug}`}>{make.name}</a><span className="sep">/</span>
+          <a href={`/${make.slug}/${model.slug}`}>{model.name}</a><span className="sep">/</span>
+          <a href={`/${make.slug}/${gen.slug}`}>{gen.display_name} · {yrs}</a><span className="sep">/</span>
           <span>Engine oil</span>
         </nav>
 
@@ -157,7 +229,7 @@ export default async function Page({ params }: { params: Promise<Params> }) {
           <div className="sub">
             <span>{make.name} {gen.display_name} · {yrs}</span>
             <span className="pip"></span>
-            <span>{oils.length} engine {oils.length === 1 ? "variant" : "variants"}</span>
+            <span>{rendered.length} engine {rendered.length === 1 ? "variant" : "variants"} compared</span>
             {base.markets.length > 0 && (
               <>
                 <span className="pip"></span>
@@ -177,140 +249,98 @@ export default async function Page({ params }: { params: Promise<Params> }) {
         brand={make.slug}
         generation={gen.slug}
         active="fluids"
-        counts={{}}
       />
 
       <main className="shell">
-        {/* ANSWER CARD — primary engine variant */}
         <section style={{ paddingTop: "var(--s-5)" }}>
-          <h2 className="section-h">{rowLabel(primary)}</h2>
-          <div className="answer-card">
-            <div>
-              <div className="a-label">Capacity with new filter</div>
-              <div className="a-big">
-                {primary.capacity_qt && Number(primary.capacity_qt).toFixed(1)}
-                <span className="u">
-                  US qt · {primary.capacity_l && Number(primary.capacity_l).toFixed(1)} L
-                </span>
-              </div>
-              <div className="a-sub">
-                {primary.viscosity}
-                {primary.spec_standard && ` · ${primary.spec_standard}`}
-                {primary.notes && primary.notes.length < 80 && ` · ${primary.notes}`}
-                {sources.length > 0 && (
-                  <sup className="cite">
-                    {sources.map((_, i) => `[${i + 1}]`).join("")}
-                  </sup>
-                )}
-              </div>
-            </div>
-            <table className="ib-table" style={{ border: 0 }}>
-              <tbody>
-                <tr>
-                  <th>With new filter</th>
-                  <td>
-                    {primary.capacity_qt} US qt · {primary.capacity_l} L
-                  </td>
-                </tr>
-                <tr>
-                  <th>Viscosity grade</th>
-                  <td>{primary.viscosity}</td>
-                </tr>
-                <tr>
-                  <th>Specification</th>
-                  <td>{primary.spec_standard}</td>
-                </tr>
-                {primary.drain_interval_mi && (
-                  <tr>
-                    <th>Drain interval (normal)</th>
-                    <td>
-                      {primary.drain_interval_mi.toLocaleString()} mi ·{" "}
-                      {primary.drain_interval_km?.toLocaleString()} km
-                    </td>
-                  </tr>
-                )}
-                {primary.drain_interval_months && (
-                  <tr>
-                    <th>Time-based</th>
-                    <td>{primary.drain_interval_months} months</td>
-                  </tr>
-                )}
-                {primary.filter_part_no && (
-                  <tr>
-                    <th>Filter part number</th>
-                    <td>{primary.filter_part_no}</td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
+          <p style={{ maxWidth: 720, color: "var(--ink-soft)", fontSize: 14, lineHeight: 1.55 }}>
+            Oil capacity, viscosity grade, OEM specification, and filter part number for every engine variant of the {make.name} {gen.display_name} ({yrs}).
+            Click any row to inspect its source citations. Capacity figures are the dry-fill value with a new filter.
+          </p>
         </section>
 
-        {/* ALL ENGINES MATRIX */}
         <section>
           <h2 className="section-h">
-            All engines · oil capacity matrix
-            <span className="count">{oils.length} variants</span>
+            Oil capacity by engine
+            <span className="count">{rendered.length} {rendered.length === 1 ? "row" : "rows"}</span>
           </h2>
-          <table className="spec-table">
-            <thead style={{ background: "var(--bg-alt)" }}>
-              <tr>
-                {[
-                  "Engine",
-                  "Market",
-                  "With filter",
-                  "Viscosity",
-                  "Spec.",
-                  "Filter PN",
-                  "Drain interval",
-                ].map((h) => (
-                  <th
-                    key={h}
-                    style={{
-                      fontSize: 11,
-                      fontWeight: 600,
-                      letterSpacing: "0.08em",
-                      textTransform: "uppercase",
-                      color: "var(--ink-soft)",
-                      textAlign: "left",
-                      padding: "8px 12px",
-                    }}
-                  >
-                    {h}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {oils.map((o) => (
-                <tr key={o.id}>
-                  <th>
-                    <strong style={{ color: "var(--ink)" }}>{rowLabel(o)}</strong>
-                  </th>
-                  <td>{o.market_code ?? "global"}</td>
-                  <td>
-                    <strong>
-                      {o.capacity_qt && Number(o.capacity_qt).toFixed(1)} qt
-                    </strong>
-                    <span className="alt">
-                      {" "}
-                      · {o.capacity_l && Number(o.capacity_l).toFixed(1)} L
-                    </span>
-                  </td>
-                  <td>{o.viscosity}</td>
-                  <td>{o.spec_standard}</td>
-                  <td>{o.filter_part_no ?? "—"}</td>
-                  <td>
-                    {o.drain_interval_mi
-                      ? `${o.drain_interval_mi.toLocaleString()} mi`
+          <p className="muted" style={{ fontSize: 12, marginBottom: 8 }}>
+            One row per engine variant. Per-row footnotes link to the sources used.
+            {suppressedCount > 0 && (
+              <>
+                {" "}
+                <strong style={{ color: "var(--ink-soft)" }}>
+                  {suppressedCount} {suppressedCount === 1 ? "legacy row is" : "legacy rows are"}{" "}
+                  flagged as &ldquo;all engines&rdquo; in the database. {suppressedCount === 1 ? "It has" : "They have"}{" "}
+                  been suppressed rather than displayed against {trimList.length} different trims, because
+                  oil capacity changes with engine displacement.
+                </strong>
+              </>
+            )}
+          </p>
+          {rendered.length > 0 ? (
+            <div className="table-scroll">
+              <table className="spec-table">
+                <thead style={{ background: "var(--bg-alt)" }}>
+                  <tr>
+                    {["Engine", "Capacity (w/ filter)", "Viscosity", "Spec", "Filter PN", "Drain interval"].map((h) => (
+                      <th
+                        key={h}
+                        style={{
+                          fontSize: 11,
+                          fontWeight: 600,
+                          letterSpacing: "0.08em",
+                          textTransform: "uppercase",
+                          color: "var(--ink-soft)",
+                          textAlign: "left",
+                          padding: "8px 12px",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        {h}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {rendered.map((o) => {
+                    const cap = o.capacity_qt && o.capacity_l
+                      ? `${Number(o.capacity_qt).toFixed(1)} qt · ${Number(o.capacity_l).toFixed(1)} L`
+                      : o.capacity_l ? `${Number(o.capacity_l).toFixed(1)} L` : "—";
+                    const interval = o.drain_interval_mi
+                      ? `${o.drain_interval_mi.toLocaleString()} mi${o.drain_interval_km ? ` / ${o.drain_interval_km.toLocaleString()} km` : ""}`
                       : o.drain_interval_months
                         ? `${o.drain_interval_months} months`
-                        : "—"}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                        : "—";
+                    const engineLabel = o.engine_id
+                      ? (o.engine_display || o.engine_code || `engine #${o.engine_id}`)
+                      : "All engines";
+                    return (
+                      <tr key={o.id}>
+                        <th style={{ whiteSpace: "nowrap" }}>
+                          <strong style={{ color: "var(--ink)" }}>{engineLabel}</strong>
+                          <Cites nums={citations.citationsFor("fluid_specs", o.id)} />
+                        </th>
+                        <td className="tnum" style={{ whiteSpace: "nowrap" }}><strong>{cap}</strong></td>
+                        <td style={{ whiteSpace: "nowrap" }}>{o.viscosity ?? "—"}</td>
+                        <td>{o.spec_standard ?? "—"}</td>
+                        <td className="tnum" style={{ whiteSpace: "nowrap" }}>{o.filter_part_no ?? "—"}</td>
+                        <td className="tnum" style={{ whiteSpace: "nowrap" }}>{interval}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <p style={{ fontSize: 13, color: "var(--ink-soft)", padding: "16px 0" }}>
+              Per-engine data is pending verification — see the note above. The{" "}
+              <a href={`/${make.slug}/${gen.slug}`} style={{ color: "var(--accent)" }}>
+                generation overview
+              </a>{" "}
+              is the most complete page until each engine variant has its own confirmed source.
+            </p>
+          )}
         </section>
 
         {/* SERVICE BULLETIN (conditional) */}
@@ -331,15 +361,7 @@ export default async function Page({ params }: { params: Promise<Params> }) {
                 alignItems: "start",
               }}
             >
-              <svg
-                width="20"
-                height="20"
-                viewBox="0 0 20 20"
-                fill="none"
-                stroke="var(--warn)"
-                strokeWidth="1.6"
-                style={{ marginTop: 2 }}
-              >
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="var(--warn)" strokeWidth="1.6" style={{ marginTop: 2 }}>
                 <path d="M10 3v7" />
                 <circle cx="10" cy="14" r="1" />
                 <circle cx="10" cy="10" r="8" />
@@ -347,17 +369,33 @@ export default async function Page({ params }: { params: Promise<Params> }) {
               <div>
                 <p>{bulletinRow.notes}</p>
                 <p style={{ marginTop: 8, color: "var(--ink-soft)" }}>
-                  If the dipstick reads above the upper mark or the oil smells
-                  of fuel, the affected VIN range and updated drain interval
-                  likely applies. Dealer reprogramming is free under the
-                  manufacturer revision.
+                  Affects {bulletinRow.engine_display ?? "the affected engine variant"}.
+                  If the dipstick reads above the upper mark or the oil smells of fuel,
+                  the affected VIN range and updated drain interval likely applies.
+                  Dealer reprogramming is free under the manufacturer revision.
                 </p>
               </div>
             </div>
           </section>
         )}
 
-        {/* RELATED — quick links back into the cluster */}
+        {faqs.length > 0 && (
+          <section>
+            <h2 className="section-h">
+              Frequently asked
+              <span className="count">{faqs.length}</span>
+            </h2>
+            <dl>
+              {faqs.map((f) => (
+                <div key={f.q} style={{ borderTop: "1px solid var(--rule)", padding: "14px 0" }}>
+                  <dt style={{ fontWeight: 600, fontSize: 14, marginBottom: 4 }}>{f.q}</dt>
+                  <dd style={{ margin: 0, color: "var(--ink-soft)", fontSize: 13, lineHeight: 1.55 }}>{f.a}</dd>
+                </div>
+              ))}
+            </dl>
+          </section>
+        )}
+
         <section>
           <h2 className="section-h">Related</h2>
           <ul
@@ -366,49 +404,17 @@ export default async function Page({ params }: { params: Promise<Params> }) {
               display: "grid",
               gridTemplateColumns: "repeat(2, 1fr)",
               border: "1px solid var(--rule)",
+              padding: 0,
+              margin: 0,
             }}
           >
             {[
-              {
-                href: `/${make.slug}/${gen.slug}/transmission-fluid`,
-                name: "Transmission fluid",
-                peek: "ATF · CVT · DCT · manual",
-              },
-              {
-                href: `/${make.slug}/${gen.slug}/coolant`,
-                name: "Coolant",
-                peek: "Type · capacity · service interval",
-              },
-              {
-                href: `/${make.slug}/${gen.slug}/brake-fluid`,
-                name: "Brake fluid",
-                peek: "DOT spec · flush interval",
-              },
-              {
-                href: `/${make.slug}/${gen.slug}/ac-refrigerant`,
-                name: "A/C refrigerant",
-                peek: "R-1234yf / R-134a · charge weight",
-              },
-              {
-                href: `/${make.slug}/${gen.slug}/differential-fluid`,
-                name: "Differential & AWD fluid",
-                peek: "Front · rear · transfer case · Haldex",
-              },
-              {
-                href: `/${make.slug}/${gen.slug}/maintenance-schedule`,
-                name: "Full maintenance schedule",
-                peek: "By-mileage · normal & severe duty",
-              },
-              {
-                href: `/${make.slug}/${gen.slug}/torque`,
-                name: "Torque specifications",
-                peek: "Drain plug · 5 fasteners total",
-              },
-              {
-                href: `/${make.slug}/${gen.slug}`,
-                name: "Generation overview",
-                peek: "Full specifications · all engines",
-              },
+              { href: `/${make.slug}/${gen.slug}/coolant`, name: "Coolant", peek: "Type · capacity · service interval" },
+              { href: `/${make.slug}/${gen.slug}/transmission-fluid`, name: "Transmission fluid", peek: "ATF · CVT · DCT · manual" },
+              { href: `/${make.slug}/${gen.slug}/brake-fluid`, name: "Brake fluid", peek: "DOT spec · flush interval" },
+              { href: `/${make.slug}/${gen.slug}/torque`, name: "Torque", peek: "Drain plug · spark plug · per-engine" },
+              { href: `/${make.slug}/${gen.slug}/maintenance-schedule`, name: "Full maintenance schedule", peek: "By-mileage · normal & severe duty" },
+              { href: `/${make.slug}/${gen.slug}`, name: "Generation overview", peek: "All variants side-by-side" },
             ].map((l) => (
               <li
                 key={l.name}
@@ -419,20 +425,8 @@ export default async function Page({ params }: { params: Promise<Params> }) {
                   fontSize: 13,
                 }}
               >
-                <a
-                  href={l.href}
-                  style={{ color: "var(--ink)", fontWeight: 500 }}
-                >
-                  {l.name}
-                </a>
-                <span
-                  style={{
-                    fontFamily: "var(--font-mono)",
-                    fontSize: 11,
-                    color: "var(--ink-mute)",
-                    marginLeft: 12,
-                  }}
-                >
+                <a href={l.href} style={{ color: "var(--ink)", fontWeight: 500 }}>{l.name}</a>
+                <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--ink-mute)", marginLeft: 12 }}>
                   {l.peek}
                 </span>
               </li>
@@ -440,7 +434,28 @@ export default async function Page({ params }: { params: Promise<Params> }) {
           </ul>
         </section>
 
-        <SourcesBlock sources={sources} />
+        {sources.length > 0 && (
+          <section className="sources-block">
+            <h3>Sources</h3>
+            <ol className="sources-list">
+              {sources.map((s, i) => (
+                <li key={s.id} id={`src-${i + 1}`}>
+                  <span>
+                    <span className="who">
+                      {s.url ? (
+                        <a href={s.url} rel="noopener nofollow" target="_blank">{s.citation}</a>
+                      ) : s.citation}
+                    </span>
+                    {s.notes && <span className="what">{s.notes}</span>}
+                  </span>
+                  <span className="when">
+                    Retrieved {new Date(s.retrieved_at).toISOString().slice(0, 10)}
+                  </span>
+                </li>
+              ))}
+            </ol>
+          </section>
+        )}
       </main>
 
       <SiteFooter reviewDate={rev} />

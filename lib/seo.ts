@@ -125,6 +125,34 @@ export function faqJsonLd(qa: Array<{ q: string; a: string }>) {
   };
 }
 
+/** Dataset JSON-LD for an engine-comparison topic page (oil-capacity, coolant,
+ *  torque, etc.). Signals to Google that the page is a structured table of
+ *  per-engine values, eligible for Dataset rich-results / SERP table previews. */
+export function datasetJsonLd(opts: {
+  name: string;
+  description: string;
+  path: string;
+  reviewDate: string;
+  variables: Array<{ name: string; unitText?: string }>;
+}) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Dataset",
+    name: opts.name,
+    description: opts.description,
+    url: `${SITE}${opts.path}`,
+    creator: { "@type": "Organization", name: "ownerspecs", url: SITE },
+    publisher: { "@type": "Organization", name: "ownerspecs", url: SITE },
+    license: "https://creativecommons.org/licenses/by-sa/4.0/",
+    dateModified: opts.reviewDate,
+    variableMeasured: opts.variables.map((v) => ({
+      "@type": "PropertyValue",
+      name: v.name,
+      ...(v.unitText ? { unitText: v.unitText } : {}),
+    })),
+  };
+}
+
 /** A TechArticle schema for a single topic page (oil-capacity, etc.). */
 export function techArticleJsonLd(opts: {
   title: string;

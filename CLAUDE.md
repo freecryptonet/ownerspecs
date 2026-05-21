@@ -81,6 +81,7 @@ ssh -i ~/.ssh/autodtcs_key root@72.62.154.119 'sudo -u deploy pm2 restart os'
 
 ## Deployment quirks (each cost 5–15 min before being captured)
 
+- **Always `rm -rf .next/cache` before `npm run build` after schema or code changes.** Next.js incremental builds cache prerendered SSG output and silently serve stale HTML otherwise. pm2 restart alone does NOT force regen — without this, deploys look successful but pages don't change.
 - **`scp` only to `root@72.62.154.119`**, never `deploy@`. The `deploy` user has no `authorized_keys` for `autodtcs_key`. Then `ssh root@... 'sudo -u deploy install -m 644 /tmp/x /home/deploy/ownerspecs/path'` to land it as deploy.
 - **No `db/migrations/` dir on VPS.** Migrations are scp'd to `/tmp/NNN.sql` and piped: `mariadb ownerspecs < /tmp/NNN.sql`. Don't try to `install` into a migrations dir — it doesn't exist on prod.
 - **Files can drift VPS-only.** `app/globals.css` was only on VPS at one point. Before editing anything you suspect is VPS-only, `scp root@...:/home/deploy/ownerspecs/<path> <local-path>` first to seed local.
@@ -91,6 +92,8 @@ ssh -i ~/.ssh/autodtcs_key root@72.62.154.119 'sudo -u deploy pm2 restart os'
 
 ## Data conventions
 
+- **Data grain rules locked in `STRUCTURE.md`.** Engine-scoped fluid types (`engine_oil`, `coolant`, `transmission_*`) MUST have `engine_id` on multi-engine gens; NULL rows on multi-engine gens get suppressed at render. Canonical migration template: `db/migrations/089_civic_x_sedan_full_moat.sql`.
+- **Aggregator source IDs (use these for the 2nd-source citation — don't create duplicates):** 593=NHTSA vPIC · 603=BMW · 604=Mercedes · 605=Toyota/Lexus · 606=Honda · 607=Hyundai/Kia/Genesis · 608=Mazda/Subaru · 609=VW Group · 610=GM · 611=Stellantis/FCA · 613=Volvo. Each gen also has a primary OEM Service Manual source — `SELECT id, citation FROM sources WHERE is_public=1 AND citation LIKE '%<Model>%Service%'`.
 - **URL pattern**: `/[brand]/[generation]` for the generation hub (e.g. `/honda/civic-sedan-x-2016-2021`); `/[brand]/[generation]/[topic]` for deep moat pages
 - **Slugs**: generation slug includes model + body + ordinal + years (e.g. `civic-sedan-x-2016-2021`). Globally unique within brand.
 - **market_id** on spec tables is nullable: `NULL` = global default, non-NULL = per-market override. When querying, fall back from market-specific → global.
@@ -110,6 +113,7 @@ ssh -i ~/.ssh/autodtcs_key root@72.62.154.119 'sudo -u deploy pm2 restart os'
 
 ## Recurring data-quality patterns
 
+- **Engine duplicate records on US pickups.** F-150 P702, Silverado T1, Tahoe T1XX, Escalade T1XX each have shadow engine rows (e.g. `engines.id=26` "EcoBoost" 2264cc vs `id=172` "3.5 EcoBoost" 3496cc — same engine, two rows). Trims reference short-code IDs; legacy fluid_specs reference full-name IDs. Dedupe `engines` table before per-engine backfill on these gens.
 - **Per-row `source_count` must filter `s.is_public = 1`.** Internal cross-verification sources (auto_data, ultimatespecs, haynespro) are stored for audit but never rendered. Counting them inflates `[1][2]...[N]` citation badges. Subqueries on `fluid_specs` / `torque_specs` must `JOIN sources s ON s.id = ss.source_id WHERE s.is_public = 1` and `COUNT(DISTINCT ss.source_id)`.
 - **Thin scraper-leftover fluid rows.** The scraper auto-creates `engine_oil` + `coolant` rows from auto-data's `fluid_hints` (capacity_l only, NULL viscosity / spec_standard / filter_part_no). Hand-seeded moat migrations add rich rows for the same fluid_type without deduping → 2 rows per `engine_oil` / `coolant`. After each new moat migration, sweep:
   ```sql
@@ -145,6 +149,10 @@ ssh -i ~/.ssh/autodtcs_key root@72.62.154.119 \
 - Never break the source-tracking invariant — if you add a spec value without inserting a `spec_sources` row, that spec won't carry a citation and the page won't show it in the sources block.
 - Never use `git push --force`, `pm2 delete vd/vd-staging/zw/fc`, or any destructive op on the shared VPS without explicit confirmation. Other production sites live there.
 
+## Backfilling per-engine moat data (multi-gen batching)
+
+For backfilling multiple gens of the same manufacturer family, batch into ONE migration file (see mig 101 Korean, 102 Toyota+Ford, 103 European, 104 VW Group, 105 BMW+MB, 106 Lexus). One scp + one apply + one rebuild covers the whole batch. Each gen subsection sets `@gen`, `@e_*` engine IDs, and `@s_sm` source IDs locally so they don't leak. Cut from ~30 min/gen to ~8 min/gen.
+
 ## Adding a new generation (the per-nameplate workflow)
 
 Full recipe in memory: `reference_nameplate_add_workflow.md`. Short form:
@@ -177,6 +185,8 @@ These were each discovered in production and fixed. Future Claude — read these
 
 | Where | Bug | Fix |
 |---|---|---|
+| `app/[brand]/[generation]/[trim]/page.tsx` trim render | Trim page showed BOTH `transmission_mt` and `transmission_cvt` rows for a 6MT trim because filter was on engine_id only and the same engine pairs with both transmissions across sibling trims. | Trim query joins `transmissions` to get `tr.type`; render filters `transmission_*` rows where suffix mismatches `trim.transmission.type` (MT/AT/CVT/DCT/eCVT). Don't regress. |
+| `lib/citations.ts` `buildCitationIndex` | Sources block included sources tied to spec rows the page didn't actually render — Sources block out of sync with `[N]` footnotes. | Function takes `renderedRows: {table,id}[]` — callers MUST pass post-suppression row IDs. Empty list = empty Sources block (correct). |
 | `lib/generation.ts:108` `getGenerationSources` | Mixed-table IN list cross-pollinated sources — a Civic fluid_spec id=8 matched as a BMW source if BMW also had any spec with id=8 in any table. | Use per-table compound checks `(spec_table = ? AND spec_id IN (SELECT id FROM <table> WHERE generation_id = ?))`. |
 | `app/[brand]/[generation]/page.tsx` (was) | The gen hub had its own copy of the buggy IN-list source query. | Removed duplicate; calls the shared helper. |
 | `app/[brand]/[generation]/oil-capacity/page.tsx` (was) | Hardcoded `engineLabel: Record<string, string>` map with demo Civic data (`"1.5 T (L15B7) — Sport · EX-T · Touring"`) leaked onto every gen because fallthrough never reached `engine_display`. | Replaced with a `rowLabel(o)` builder. Falls back to `"All engines · generation-wide"` when no trim is associated. |

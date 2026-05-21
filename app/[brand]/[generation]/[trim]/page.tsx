@@ -4,24 +4,26 @@ import { query, queryOne } from "@/lib/db";
 import {
   getGenerationBase,
   getGenerationHero,
-  getSourcesFor,
   yearRange,
   reviewDate,
 } from "@/lib/generation";
+import { buildCitationIndex } from "@/lib/citations";
+import { Cites } from "@/components/Cites";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { GenerationTabs } from "@/components/GenerationTabs";
 import { VerifyBadge } from "@/components/VerifyBadge";
-import { SourcesBlock } from "@/components/SourcesBlock";
-import { pageMetadata } from "@/lib/seo";
+import { pageMetadata, breadcrumbsJsonLd } from "@/lib/seo";
+import { fluidLabel, torqueLabel, serviceLabel } from "@/lib/labels";
 import {
-  mmDual,
   kgDual,
   consumptionDual,
   speedDual,
   boreStrokeDual,
   displacementDual,
 } from "@/lib/units";
+
+const SITE = "https://ownerspecs.com";
 
 type Params = { brand: string; generation: string; trim: string };
 
@@ -42,6 +44,7 @@ type Trim = {
   drive_wheel: string | null;
   tire_size: string | null;
   rim_size: string | null;
+  engine_id: number | null;
   engine_code: string | null;
   engine_display: string | null;
   engine_displacement_cc: number | null;
@@ -52,19 +55,102 @@ type Trim = {
   engine_compression: string | null;
   engine_fuel: string | null;
   engine_valvetrain: string | null;
+  transmission_id: number | null;
+  transmission_type: string | null;
   transmission_name: string | null;
   market_code: string | null;
 };
 
-const SUB_TABS = [
-  { key: "overview", label: "Overview" },
-  { key: "oil-capacity", label: "Fluids" },
-  { key: "maintenance-schedule", label: "Maintenance" },
-  { key: "torque", label: "Torque" },
-  { key: "electrical", label: "Electrical" },
-  { key: "tires", label: "Tires" },
-  { key: "procedures", label: "Procedures" },
-];
+type FluidRow = {
+  id: number;
+  fluid_type: string;
+  engine_id: number | null;
+  capacity_l: string | null;
+  capacity_qt: string | null;
+  viscosity: string | null;
+  spec_standard: string | null;
+  filter_part_no: string | null;
+  drain_interval_mi: number | null;
+  drain_interval_km: number | null;
+  drain_interval_months: number | null;
+  notes: string | null;
+};
+type TorqueRow = {
+  id: number;
+  fastener: string;
+  engine_id: number | null;
+  torque_nm: number | null;
+  torque_ftlb: number | null;
+  thread_lock: string | null;
+  notes: string | null;
+};
+type PartRow = {
+  id: number;
+  part_type: string;
+  engine_id: number | null;
+  part_number: string;
+  source_brand: string | null;
+  gap_mm: string | null;
+  size: string | null;
+  notes: string | null;
+};
+type TirePressureRow = {
+  id: number;
+  position: string;
+  load_condition: string;
+  psi: string | null;
+  kpa: number | null;
+  tire_size: string | null;
+  trim_id: number | null;
+};
+type ServiceIntervalRow = {
+  id: number;
+  service: string;
+  miles_normal: number | null;
+  km_normal: number | null;
+  months: number | null;
+  notes: string | null;
+};
+
+// Engine-scoped types — gen-wide (NULL engine_id) rows are suppressed on
+// multi-engine gens to avoid showing the wrong value against this trim's engine.
+const ENGINE_SCOPED_FLUIDS = new Set([
+  "engine_oil",
+  "engine_oil_2_0",
+  "engine_oil_1_0t",
+  "engine_oil_diesel",
+  "coolant",
+  "transmission_at",
+  "transmission_mt",
+  "transmission_cvt",
+  "transmission_dct",
+  "transmission_ecvt",
+]);
+const ENGINE_SCOPED_FASTENERS = new Set([
+  "spark_plug",
+  "oil_drain",
+  "cylinder_head_bolt",
+  "intake_manifold",
+  "exhaust_manifold",
+  "flywheel_bolt",
+  "valve_cover",
+  "cam_bearing_cap",
+  "rod_bolt",
+  "main_bearing",
+]);
+const ENGINE_SCOPED_PARTS = new Set([
+  "spark_plug",
+  "air_filter",
+  "oil_filter",
+  "pcv_valve",
+]);
+
+function fmtCap(l: string | null, qt: string | null): string {
+  if (!l && !qt) return "—";
+  if (l && qt) return `${Number(qt).toFixed(1)} qt · ${Number(l).toFixed(1)} L`;
+  if (l) return `${Number(l).toFixed(1)} L`;
+  return `${Number(qt).toFixed(1)} qt`;
+}
 
 export async function generateStaticParams(): Promise<Params[]> {
   return query<Params>(
@@ -98,7 +184,7 @@ export async function generateMetadata({
 
   return pageMetadata({
     title: `${base.make.name} ${base.gen.display_name} ${trimRow.name} ${yrs} — Specifications`,
-    description: `Specifications for the ${base.make.name} ${base.gen.display_name} ${trimRow.name} (${yrs}). ${trimRow.hp ? `${trimRow.hp} hp,` : ""} ${trimRow.zero_100_kmh_s ? `${trimRow.zero_100_kmh_s}s 0-100 km/h,` : ""} ${trimRow.fuel_combined_l_100km ? `${trimRow.fuel_combined_l_100km} L/100km combined.` : ""} Cross-verified spec sheet.`,
+    description: `Complete spec sheet for the ${base.make.name} ${base.gen.display_name} ${trimRow.name} (${yrs}). ${trimRow.hp ? `${trimRow.hp} hp, ` : ""}fluids, torques, parts, tire pressures and maintenance schedule for this specific engine. Cross-verified.`,
     path: `/${base.make.slug}/${base.gen.slug}/${trimRow.slug}`,
     heroPath,
   });
@@ -115,11 +201,12 @@ export default async function Page({ params }: { params: Promise<Params> }) {
        t.id, t.slug, t.name, t.hp, t.torque_nm, t.zero_100_kmh_s, t.top_speed_kmh,
        t.fuel_combined_l_100km, t.co2_g_km, t.curb_weight_kg, t.max_weight_kg,
        t.trailer_braked_kg, t.trailer_unbraked_kg, t.drive_wheel, t.tire_size, t.rim_size,
+       t.engine_id,
        e.code AS engine_code, e.display_name AS engine_display, e.displacement_cc AS engine_displacement_cc,
        e.aspiration AS engine_aspiration, e.cylinders AS engine_cylinders,
        e.bore_mm AS engine_bore_mm, e.stroke_mm AS engine_stroke_mm, e.compression AS engine_compression,
        e.fuel AS engine_fuel, e.valvetrain AS engine_valvetrain,
-       tr.display_name AS transmission_name,
+       t.transmission_id, tr.type AS transmission_type, tr.display_name AS transmission_name,
        mk2.code AS market_code
      FROM trims t
      LEFT JOIN engines e        ON e.id  = t.engine_id
@@ -130,16 +217,139 @@ export default async function Page({ params }: { params: Promise<Params> }) {
   );
   if (!trimRow) notFound();
 
+  const yrs = yearRange(gen.start_year, gen.end_year);
+
+  // Sibling trims for the bottom nav.
   const siblings = await query<{ slug: string; name: string }>(
     `SELECT slug, name FROM trims
      WHERE generation_id = ? AND slug != ?
-     ORDER BY hp DESC, name LIMIT 12`,
+     ORDER BY hp ASC, name LIMIT 12`,
     [gen.id, trim],
   );
 
-  const sources = await getSourcesFor(gen.id, "trims");
+  // Multi-engine signal for the data-grain rule (mirrors gen + topic pages).
+  const engineList = await query<{ id: number }>(
+    `SELECT DISTINCT e.id FROM engines e JOIN trims t ON t.engine_id = e.id WHERE t.generation_id = ?`,
+    [gen.id],
+  );
+  const trimList = await query<{ hp: number | null }>(
+    `SELECT hp FROM trims WHERE generation_id = ?`,
+    [gen.id],
+  );
+  const distinctHps = new Set(trimList.map((t) => t.hp).filter((h): h is number => h != null));
+  const multiEngine = engineList.length > 1 || distinctHps.size > 1;
+
+  // FLUIDS for this trim's engine: matching engine_id OR truly gen-wide rows.
+  // Engine-scoped NULL rows on multi-engine gens are filtered out.
+  const fluidsAll = await query<FluidRow>(
+    `SELECT id, fluid_type, engine_id, capacity_l, capacity_qt, viscosity, spec_standard,
+            filter_part_no, drain_interval_mi, drain_interval_km, drain_interval_months, notes
+     FROM fluid_specs
+     WHERE generation_id = ?
+       AND (engine_id = ? OR engine_id IS NULL)
+     ORDER BY FIELD(fluid_type,
+       'engine_oil','engine_oil_2_0','engine_oil_1_0t','engine_oil_diesel',
+       'coolant',
+       'transmission_at','transmission_mt','transmission_cvt','transmission_dct','transmission_ecvt',
+       'transfer_case','differential_front','differential_rear',
+       'brake','ps','ac_refrigerant','washer'),
+       id`,
+    [gen.id, trimRow.engine_id],
+  );
+  // Match a transmission_* fluid row against the trim's actual transmission
+  // type so e.g. a 6MT Civic Sport doesn't show CVT fluid data, and a CVT
+  // EX-T doesn't show MT fluid data. Mapping is fluid_type → transmissions.type.
+  const TRANS_FLUID_TYPE: Record<string, string> = {
+    transmission_at: "AT",
+    transmission_mt: "MT",
+    transmission_cvt: "CVT",
+    transmission_dct: "DCT",
+    transmission_ecvt: "eCVT",
+  };
+  const trimTransType = trimRow.transmission_type;
+  const transmissionFluidMismatch = (fluidType: string) => {
+    const expected = TRANS_FLUID_TYPE[fluidType];
+    if (!expected) return false; // not a transmission fluid row
+    if (!trimTransType) return false; // trim has no known transmission — show all
+    // Toyota hybrids use CVT type for eCVT; allow eCVT fluid on CVT trims.
+    if (expected === "eCVT" && trimTransType === "CVT") return false;
+    if (expected === "CVT" && trimTransType === "eCVT") return false;
+    return expected !== trimTransType;
+  };
+  const fluids = fluidsAll.filter(
+    (f) =>
+      !(f.engine_id == null && multiEngine && ENGINE_SCOPED_FLUIDS.has(f.fluid_type)) &&
+      !transmissionFluidMismatch(f.fluid_type),
+  );
+
+  const torquesAll = await query<TorqueRow>(
+    `SELECT id, fastener, engine_id, torque_nm, torque_ftlb, thread_lock, notes
+     FROM torque_specs
+     WHERE generation_id = ?
+       AND (engine_id = ? OR engine_id IS NULL)
+     ORDER BY FIELD(fastener,
+       'lug_nut','spark_plug','oil_drain','wheel_hub_nut',
+       'caliper_bolt','caliper_bracket_bolt','control_arm_bolt',
+       'sway_bar_link','cv_axle_nut','cylinder_head_bolt',
+       'intake_manifold','exhaust_manifold','flywheel_bolt',
+       'valve_cover','cam_bearing_cap','rod_bolt','main_bearing'),
+     fastener`,
+    [gen.id, trimRow.engine_id],
+  );
+  const torques = torquesAll.filter(
+    (t) => !(t.engine_id == null && multiEngine && ENGINE_SCOPED_FASTENERS.has(t.fastener)),
+  );
+
+  const partsAll = await query<PartRow>(
+    `SELECT id, part_type, engine_id, part_number, source_brand, gap_mm, size, notes
+     FROM parts
+     WHERE generation_id = ?
+       AND (engine_id = ? OR engine_id IS NULL)
+     ORDER BY FIELD(part_type,
+       'oil_filter','air_filter','cabin_filter','spark_plug','pcv_valve',
+       'wiper_front','wiper_rear','drive_belt'),
+     part_type`,
+    [gen.id, trimRow.engine_id],
+  );
+  const parts = partsAll.filter(
+    (p) => !(p.engine_id == null && multiEngine && ENGINE_SCOPED_PARTS.has(p.part_type)),
+  );
+
+  // Tire pressures: rows tied to this trim, OR rows tied to no trim (gen-wide
+  // placard) which fall back when the trim has no specific row.
+  const tirePressures = await query<TirePressureRow>(
+    `SELECT id, position, load_condition, psi, kpa, tire_size, trim_id
+     FROM tire_pressures
+     WHERE generation_id = ?
+       AND (trim_id = ? OR trim_id IS NULL)
+     ORDER BY (trim_id = ?) DESC,
+              FIELD(position,'front','rear','spare'),
+              FIELD(load_condition,'normal','max_load','winter')`,
+    [gen.id, trimRow.id, trimRow.id],
+  );
+
+  // Service intervals — currently gen-wide on the schema. We still display
+  // them on the trim page because they're the maintenance answer for this car.
+  const serviceIntervals = await query<ServiceIntervalRow>(
+    `SELECT id, service, miles_normal, km_normal, months, notes
+     FROM service_intervals
+     WHERE generation_id = ?
+     ORDER BY COALESCE(miles_normal, miles_severe, 999999)`,
+    [gen.id],
+  );
+
+  // Citation index restricted to rows this trim's page actually renders
+  // (post-suppression + post-trim-engine-filter). Includes service_intervals
+  // (currently gen-wide on the schema) so maintenance citations resolve.
+  const citations = await buildCitationIndex(gen.id, [
+    ...fluids.map((r) => ({ table: "fluid_specs", id: r.id })),
+    ...torques.map((r) => ({ table: "torque_specs", id: r.id })),
+    ...parts.map((r) => ({ table: "parts", id: r.id })),
+    ...tirePressures.map((r) => ({ table: "tire_pressures", id: r.id })),
+    ...serviceIntervals.map((r) => ({ table: "service_intervals", id: r.id })),
+  ]);
+  const sources = citations.sources;
   const rev = reviewDate(sources);
-  const yrs = yearRange(gen.start_year, gen.end_year);
 
   const heroImage = await queryOne<{
     url: string;
@@ -156,22 +366,28 @@ export default async function Page({ params }: { params: Promise<Params> }) {
     [gen.id],
   );
 
-  const vehicleJsonLd = {
+  // JSON-LD: full Car schema (ultimatespecs pattern — strongest among competitors).
+  const carJsonLd = {
     "@context": "https://schema.org",
-    "@type": "Vehicle",
+    "@type": "Car",
     name: `${make.name} ${gen.display_name} ${trimRow.name}`,
     brand: { "@type": "Brand", name: make.name },
     model: model.name,
     modelDate: yrs,
     bodyType: gen.body_type,
     vehicleConfiguration: trimRow.engine_code ?? gen.codename ?? undefined,
-    image: heroImage ? `https://ownerspecs.com${heroImage.url}` : undefined,
-    url: `https://ownerspecs.com/${make.slug}/${gen.slug}/${trim}`,
+    image: heroImage ? `${SITE}${heroImage.url}` : undefined,
+    url: `${SITE}/${make.slug}/${gen.slug}/${trim}`,
     ...(trimRow.engine_displacement_cc && {
       vehicleEngine: {
         "@type": "EngineSpecification",
+        name: trimRow.engine_display ?? trimRow.engine_code ?? undefined,
         engineDisplacement: { "@type": "QuantitativeValue", value: trimRow.engine_displacement_cc, unitText: "cm³" },
+        ...(trimRow.engine_cylinders && {
+          cylinder: { "@type": "QuantitativeValue", value: trimRow.engine_cylinders },
+        }),
         ...(trimRow.hp && { enginePower: { "@type": "QuantitativeValue", value: trimRow.hp, unitText: "hp" } }),
+        ...(trimRow.torque_nm && { torque: { "@type": "QuantitativeValue", value: trimRow.torque_nm, unitText: "N·m" } }),
         ...(trimRow.engine_fuel && { fuelType: trimRow.engine_fuel }),
       },
     }),
@@ -185,7 +401,10 @@ export default async function Page({ params }: { params: Promise<Params> }) {
     ...(trimRow.fuel_combined_l_100km && {
       fuelConsumption: { "@type": "QuantitativeValue", value: Number(trimRow.fuel_combined_l_100km), unitText: "L/100km" },
     }),
+    ...(trimRow.market_code && { vehicleSpecialUsage: trimRow.market_code }),
   };
+
+  const engineMissingNote = !trimRow.engine_id && multiEngine;
 
   return (
     <>
@@ -193,19 +412,25 @@ export default async function Page({ params }: { params: Promise<Params> }) {
 
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(vehicleJsonLd) }}
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify([
+            breadcrumbsJsonLd({
+              brand: make,
+              model,
+              gen,
+              topic: { label: trimRow.name, path: `/${make.slug}/${gen.slug}/${trim}` },
+            }),
+            carJsonLd,
+          ]),
+        }}
       />
 
       <div className="shell">
         <nav className="crumb">
-          <a href="/">Catalogue</a>
-          <span className="sep">/</span>
-          <a href={`/${make.slug}`}>{make.name}</a>
-          <span className="sep">/</span>
-          <a href={`/${make.slug}/${model.slug}`}>{model.name}</a>
-          <span className="sep">/</span>
-          <a href={`/${make.slug}/${gen.slug}`}>{gen.display_name} · {yrs}</a>
-          <span className="sep">/</span>
+          <a href="/">Catalogue</a><span className="sep">/</span>
+          <a href={`/${make.slug}`}>{make.name}</a><span className="sep">/</span>
+          <a href={`/${make.slug}/${model.slug}`}>{model.name}</a><span className="sep">/</span>
+          <a href={`/${make.slug}/${gen.slug}`}>{gen.display_name} · {yrs}</a><span className="sep">/</span>
           <span>{trimRow.name}</span>
         </nav>
 
@@ -235,13 +460,7 @@ export default async function Page({ params }: { params: Promise<Params> }) {
 
       <main className="shell">
         <section style={{ paddingTop: "var(--s-5)" }}>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr",
-              gap: 24,
-            }}
-          >
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24 }}>
             <div>
               {heroImage ? (
                 <img
@@ -270,6 +489,30 @@ export default async function Page({ params }: { params: Promise<Params> }) {
               </tbody>
             </table>
           </div>
+
+          {engineMissingNote && (
+            <p
+              className="muted"
+              style={{
+                marginTop: 12,
+                padding: "10px 14px",
+                background: "var(--bg-alt)",
+                border: "1px solid var(--rule)",
+                borderLeft: "3px solid var(--warn, #c0822a)",
+                fontSize: 12,
+                color: "var(--ink-soft)",
+              }}
+            >
+              <strong>Engine wiring incomplete:</strong> this trim is not yet mapped to a specific engine
+              in our database. Engine-scoped fluids, torques and parts (oil capacity, spark plug torque,
+              filter PNs) cannot be filtered to this exact engine and are not shown below. Truly gen-wide
+              values (brake fluid, A/C refrigerant, lug nut torque) are still displayed. See the{" "}
+              <a href={`/${make.slug}/${gen.slug}`} style={{ color: "var(--accent)" }}>
+                generation comparison
+              </a>{" "}
+              for an at-a-glance view of all variants.
+            </p>
+          )}
         </section>
 
         {/* PERFORMANCE */}
@@ -287,7 +530,7 @@ export default async function Page({ params }: { params: Promise<Params> }) {
           </table>
         </section>
 
-        {/* ENGINE */}
+        {/* ENGINE BLOCK */}
         {trimRow.engine_displacement_cc && (
           <section>
             <h2 className="section-h">Engine — {trimRow.engine_display ?? trimRow.engine_code}</h2>
@@ -323,7 +566,7 @@ export default async function Page({ params }: { params: Promise<Params> }) {
           </section>
         )}
 
-        {/* WHEELS */}
+        {/* WHEELS + OE tire size */}
         {(trimRow.tire_size || trimRow.rim_size) && (
           <section>
             <h2 className="section-h">Wheels &amp; tires</h2>
@@ -336,7 +579,161 @@ export default async function Page({ params }: { params: Promise<Params> }) {
           </section>
         )}
 
-        {/* RELATED TRIMS */}
+        {/* FLUIDS — for THIS trim's engine */}
+        {fluids.length > 0 && (
+          <section>
+            <h2 className="section-h">
+              Fluids for this trim
+              <span className="count">{fluids.length}</span>
+            </h2>
+            <p className="muted" style={{ fontSize: 12, marginBottom: 8 }}>
+              Engine-specific fluids (oil, coolant, transmission) match this trim&apos;s
+              {trimRow.engine_display ? ` ${trimRow.engine_display}` : " engine"}.
+              Brake fluid, A/C refrigerant and washer fluid apply to the whole generation.
+            </p>
+            <table className="spec-table">
+              <tbody>
+                {fluids.map((f) => {
+                  const cap = fmtCap(f.capacity_l, f.capacity_qt);
+                  const grade = [f.viscosity, f.spec_standard].filter(Boolean).join(" · ");
+                  const interval = f.drain_interval_mi
+                    ? ` · ${f.drain_interval_mi.toLocaleString()} mi`
+                    : f.drain_interval_months
+                      ? ` · ${f.drain_interval_months} mo`
+                      : "";
+                  return (
+                    <tr key={f.id}>
+                      <th>
+                        {fluidLabel(f.fluid_type)}
+                        <Cites nums={citations.citationsFor("fluid_specs", f.id)} />
+                      </th>
+                      <td>
+                        {cap}{grade ? ` · ${grade}` : ""}{interval}
+                        {f.filter_part_no && <span className="alt"> · filter {f.filter_part_no}</span>}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </section>
+        )}
+
+        {/* TORQUES — for THIS trim's engine + gen-wide fasteners */}
+        {torques.length > 0 && (
+          <section>
+            <h2 className="section-h">
+              Torque specifications
+              <span className="count">{torques.length} {torques.length === 1 ? "fastener" : "fasteners"}</span>
+            </h2>
+            <table className="spec-table">
+              <tbody>
+                {torques.map((t) => (
+                  <tr key={t.id}>
+                    <th>
+                      {torqueLabel(t.fastener)}
+                      <Cites nums={citations.citationsFor("torque_specs", t.id)} />
+                    </th>
+                    <td>
+                      {t.torque_nm} N·m · {t.torque_ftlb} ft·lb
+                      {t.thread_lock && <span className="alt"> · {t.thread_lock}</span>}
+                      {t.notes && <span className="alt"> · {t.notes}</span>}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </section>
+        )}
+
+        {/* PARTS — oil filter PN, spark plug PN, air filter PN */}
+        {parts.length > 0 && (
+          <section>
+            <h2 className="section-h">
+              OEM part numbers
+              <span className="count">{parts.length}</span>
+            </h2>
+            <table className="spec-table">
+              <tbody>
+                {parts.map((p) => (
+                  <tr key={p.id}>
+                    <th>
+                      {p.part_type.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}
+                      <Cites nums={citations.citationsFor("parts", p.id)} />
+                    </th>
+                    <td>
+                      <strong>{p.part_number}</strong>
+                      {p.source_brand && <span className="alt"> · {p.source_brand}</span>}
+                      {p.gap_mm && <span className="alt"> · gap {p.gap_mm} mm</span>}
+                      {p.size && <span className="alt"> · {p.size}</span>}
+                      {p.notes && <span className="alt"> · {p.notes}</span>}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </section>
+        )}
+
+        {/* TIRE PRESSURES */}
+        {tirePressures.length > 0 && (
+          <section>
+            <h2 className="section-h">
+              Tire pressures (placard)
+              <span className="count">{tirePressures.length}</span>
+            </h2>
+            <table className="spec-table">
+              <tbody>
+                {tirePressures.map((p) => (
+                  <tr key={p.id}>
+                    <th>
+                      {p.position[0].toUpperCase() + p.position.slice(1)}
+                      {p.load_condition !== "normal" && <span className="alt"> · {p.load_condition.replace(/_/g, " ")}</span>}
+                      <Cites nums={citations.citationsFor("tire_pressures", p.id)} />
+                    </th>
+                    <td>
+                      {p.psi ? `${Number(p.psi).toFixed(0)} psi` : "—"}
+                      {p.kpa && <span className="alt"> · {p.kpa} kPa</span>}
+                      {p.tire_size && <span className="alt"> · {p.tire_size}</span>}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </section>
+        )}
+
+        {/* MAINTENANCE */}
+        {serviceIntervals.length > 0 && (
+          <section>
+            <h2 className="section-h">
+              Maintenance schedule (normal duty)
+              <span className="count">{serviceIntervals.length} services</span>
+            </h2>
+            <table className="spec-table">
+              <tbody>
+                {serviceIntervals.map((s) => {
+                  const interval = s.miles_normal
+                    ? `${s.miles_normal.toLocaleString()} mi${s.km_normal ? ` · ${s.km_normal.toLocaleString()} km` : ""}`
+                    : s.months
+                      ? `${s.months} months`
+                      : "—";
+                  return (
+                    <tr key={s.id}>
+                      <th>
+                        {serviceLabel(s.service)}
+                        <Cites nums={citations.citationsFor("service_intervals", s.id)} />
+                      </th>
+                      <td>{interval}{s.notes && <span className="alt"> · {s.notes}</span>}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </section>
+        )}
+
+        {/* OTHER TRIMS */}
         {siblings.length > 0 && (
           <section>
             <h2 className="section-h">
@@ -355,21 +752,10 @@ export default async function Page({ params }: { params: Promise<Params> }) {
               }}
             >
               {siblings.map((s) => (
-                <li
-                  key={s.slug}
-                  style={{
-                    borderRight: "1px solid var(--rule)",
-                    borderBottom: "1px solid var(--rule)",
-                  }}
-                >
+                <li key={s.slug} style={{ borderRight: "1px solid var(--rule)", borderBottom: "1px solid var(--rule)" }}>
                   <a
                     href={`/${make.slug}/${gen.slug}/${s.slug}`}
-                    style={{
-                      display: "block",
-                      padding: "10px 14px",
-                      fontSize: 13,
-                      color: "var(--ink)",
-                    }}
+                    style={{ display: "block", padding: "10px 14px", fontSize: 13, color: "var(--ink)" }}
                   >
                     {s.name}
                   </a>
@@ -379,9 +765,12 @@ export default async function Page({ params }: { params: Promise<Params> }) {
           </section>
         )}
 
-        {/* GEN SUB-PAGES */}
+        {/* TOPIC PAGES */}
         <section>
-          <h2 className="section-h">{gen.display_name} owner-manual data</h2>
+          <h2 className="section-h">Compare across all engines</h2>
+          <p className="muted" style={{ fontSize: 12, marginBottom: 8 }}>
+            Side-by-side comparison pages for the {gen.display_name} lineup.
+          </p>
           <ul
             style={{
               listStyle: "none",
@@ -393,22 +782,20 @@ export default async function Page({ params }: { params: Promise<Params> }) {
               border: "1px solid var(--rule)",
             }}
           >
-            {SUB_TABS.slice(1).map((t) => (
-              <li
-                key={t.key}
-                style={{
-                  borderRight: "1px solid var(--rule)",
-                  borderBottom: "1px solid var(--rule)",
-                }}
-              >
+            {[
+              { key: "oil-capacity", label: "Engine oil — by engine" },
+              { key: "coolant", label: "Coolant — by engine" },
+              { key: "transmission-fluid", label: "Transmission fluid" },
+              { key: "torque", label: "Torque specifications" },
+              { key: "maintenance-schedule", label: "Maintenance schedule" },
+              { key: "electrical", label: "Electrical (battery, bulbs, fuses)" },
+              { key: "tires", label: "Tires & pressures" },
+              { key: "procedures", label: "Service procedures" },
+            ].map((t) => (
+              <li key={t.key} style={{ borderRight: "1px solid var(--rule)", borderBottom: "1px solid var(--rule)" }}>
                 <a
                   href={`/${make.slug}/${gen.slug}/${t.key}`}
-                  style={{
-                    display: "block",
-                    padding: "10px 14px",
-                    fontSize: 13,
-                    color: "var(--ink)",
-                  }}
+                  style={{ display: "block", padding: "10px 14px", fontSize: 13, color: "var(--ink)" }}
                 >
                   {t.label}
                 </a>
@@ -417,7 +804,29 @@ export default async function Page({ params }: { params: Promise<Params> }) {
           </ul>
         </section>
 
-        <SourcesBlock sources={sources} />
+        {/* SOURCES */}
+        {sources.length > 0 && (
+          <section className="sources-block">
+            <h3>Sources</h3>
+            <ol className="sources-list">
+              {sources.map((s, i) => (
+                <li key={s.id} id={`src-${i + 1}`}>
+                  <span>
+                    <span className="who">
+                      {s.url ? (
+                        <a href={s.url} rel="noopener nofollow" target="_blank">{s.citation}</a>
+                      ) : s.citation}
+                    </span>
+                    {s.notes && <span className="what">{s.notes}</span>}
+                  </span>
+                  <span className="when">
+                    Retrieved {new Date(s.retrieved_at).toISOString().slice(0, 10)}
+                  </span>
+                </li>
+              ))}
+            </ol>
+          </section>
+        )}
       </main>
 
       <SiteFooter reviewDate={rev} />
