@@ -760,7 +760,7 @@ export default async function Page({ params }: { params: Promise<Params> }) {
               <span className="count">{engines.length}</span>
             </h2>
             <div className="table-scroll">
-              <table className="spec-table">
+              <table className="spec-table compare">
                 <thead style={{ background: "var(--bg-alt)" }}>
                   <tr>
                     <th style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--ink-soft)", textAlign: "left", padding: "8px 12px" }}>

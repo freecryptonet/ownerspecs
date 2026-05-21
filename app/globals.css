@@ -466,6 +466,15 @@ section { padding: var(--s-7) 0; }
   margin-left: 6px;
 }
 
+/* Comparison variant — used when the table has multiple engine/trim columns
+   so cells shouldn't be squeezed by the default 35%-wide label column.
+   Each cell gets a min-width; the .table-scroll wrapper provides horizontal
+   scroll on narrow viewports instead of letting the cells wrap into 3-4
+   lines per row. */
+.spec-table.compare th { width: auto; white-space: nowrap; }
+.spec-table.compare td { min-width: 140px; }
+.spec-table.compare th:first-child { min-width: 160px; }
+
 /* Multi-column spec tables */
 .spec-grid {
   display: grid;
