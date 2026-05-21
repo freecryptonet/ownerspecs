@@ -87,6 +87,9 @@ type Trim = {
 type FluidSpec = {
   id: number;
   fluid_type: string;
+  engine_id: number | null;
+  engine_code: string | null;
+  engine_display_name: string | null;
   capacity_l: string | null;
   capacity_qt: string | null;
   viscosity: string | null;
@@ -212,17 +215,21 @@ async function getGenerationData(brand: string, generation: string) {
   // not inflate the citation badge — otherwise a row with 1 visible
   // source displayed as [1][2]...[11].
   const fluids = await query<FluidSpec>(
-    `SELECT f.id, f.fluid_type, f.capacity_l, f.capacity_qt, f.viscosity,
+    `SELECT f.id, f.fluid_type, f.engine_id,
+            e.code AS engine_code, e.display_name AS engine_display_name,
+            f.capacity_l, f.capacity_qt, f.viscosity,
             f.spec_standard, f.filter_part_no, f.drain_interval_mi,
             f.drain_interval_km, f.drain_interval_months, f.notes,
             (SELECT COUNT(DISTINCT ss.source_id)
                FROM spec_sources ss JOIN sources s ON s.id = ss.source_id
                WHERE ss.spec_table='fluid_specs' AND ss.spec_id=f.id AND s.is_public=1) AS source_count
      FROM fluid_specs f
+     LEFT JOIN engines e ON e.id = f.engine_id
      WHERE f.generation_id = ?
      ORDER BY FIELD(f.fluid_type,'engine_oil','engine_oil_2_0','engine_oil_1_0t','engine_oil_diesel',
                                   'transmission_cvt','transmission_mt','coolant','brake','ps',
-                                  'ac_refrigerant','washer')`,
+                                  'ac_refrigerant','washer'),
+              e.displacement_cc IS NULL, e.displacement_cc ASC, f.id`,
     [gen.id],
   );
 
@@ -704,29 +711,79 @@ export default async function Page({ params }: { params: Promise<Params> }) {
           </section>
         ) : null}
 
-        {/* FLUIDS */}
+        {/* FLUIDS — grouped by fluid_type, with engine-scoped sub-rows
+            when the same fluid_type has multiple engine_id values. */}
         <section>
           <h2 className="section-h">Fluid capacities &amp; specifications <span className="count">{fluids.length} fluids</span></h2>
           <table className="spec-table">
             <tbody>
-              {fluids.map((f) => {
-                const cap = f.capacity_qt && f.capacity_l
-                  ? `${Number(f.capacity_qt).toFixed(1)} qt · ${Number(f.capacity_l).toFixed(1)} L`
-                  : f.capacity_l ? `${Number(f.capacity_l).toFixed(1)} L` : "—";
-                const grade = [f.viscosity, f.spec_standard].filter(Boolean).join(" · ");
-                return (
-                  <tr key={f.id}>
-                    <th>{fluidLabel(f.fluid_type)}</th>
-                    <td>
-                      {cap}{grade ? ` · ${grade}` : ""}
-                      {f.filter_part_no && <span className="alt"> · filter {f.filter_part_no}</span>}
-                      {f.source_count > 0 && (
-                        <sup className="cite">[{Array.from({ length: f.source_count }, (_, i) => i + 1).join("][")}]</sup>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })}
+              {(() => {
+                // Group fluids by fluid_type while preserving order.
+                const groups = new Map<string, typeof fluids>();
+                for (const f of fluids) {
+                  const arr = groups.get(f.fluid_type) ?? [];
+                  arr.push(f);
+                  groups.set(f.fluid_type, arr);
+                }
+                const out: React.ReactNode[] = [];
+                for (const [fluid_type, rows] of groups) {
+                  const isMulti = rows.length > 1 && rows.some((r) => r.engine_id != null);
+                  if (!isMulti) {
+                    // Single row — render as before
+                    const f = rows[0];
+                    const cap = f.capacity_qt && f.capacity_l
+                      ? `${Number(f.capacity_qt).toFixed(1)} qt · ${Number(f.capacity_l).toFixed(1)} L`
+                      : f.capacity_l ? `${Number(f.capacity_l).toFixed(1)} L` : "—";
+                    const grade = [f.viscosity, f.spec_standard].filter(Boolean).join(" · ");
+                    out.push(
+                      <tr key={f.id}>
+                        <th>{fluidLabel(f.fluid_type)}</th>
+                        <td>
+                          {cap}{grade ? ` · ${grade}` : ""}
+                          {f.filter_part_no && <span className="alt"> · filter {f.filter_part_no}</span>}
+                          {f.source_count > 0 && (
+                            <sup className="cite">[{Array.from({ length: f.source_count }, (_, i) => i + 1).join("][")}]</sup>
+                          )}
+                        </td>
+                      </tr>,
+                    );
+                  } else {
+                    // Multiple engine-scoped rows — render header + per-engine rows
+                    out.push(
+                      <tr key={`hdr-${fluid_type}`} className="fluid-group-hdr">
+                        <th colSpan={2} style={{ background: "var(--bg-alt)", fontSize: 12, fontWeight: 600, paddingTop: 12 }}>
+                          {fluidLabel(fluid_type)}
+                          <span className="alt" style={{ marginLeft: 8, fontWeight: 400 }}>varies by engine</span>
+                        </th>
+                      </tr>,
+                    );
+                    for (const f of rows) {
+                      const cap = f.capacity_qt && f.capacity_l
+                        ? `${Number(f.capacity_qt).toFixed(1)} qt · ${Number(f.capacity_l).toFixed(1)} L`
+                        : f.capacity_l ? `${Number(f.capacity_l).toFixed(1)} L` : "—";
+                      const grade = [f.viscosity, f.spec_standard].filter(Boolean).join(" · ");
+                      const engineLabel = f.engine_id
+                        ? (f.engine_display_name || f.engine_code || `engine #${f.engine_id}`)
+                        : "all engines";
+                      out.push(
+                        <tr key={f.id}>
+                          <th style={{ paddingLeft: 24, fontWeight: 400, color: "var(--ink-soft)" }}>
+                            {engineLabel}
+                          </th>
+                          <td>
+                            {cap}{grade ? ` · ${grade}` : ""}
+                            {f.filter_part_no && <span className="alt"> · filter {f.filter_part_no}</span>}
+                            {f.source_count > 0 && (
+                              <sup className="cite">[{Array.from({ length: f.source_count }, (_, i) => i + 1).join("][")}]</sup>
+                            )}
+                          </td>
+                        </tr>,
+                      );
+                    }
+                  }
+                }
+                return out;
+              })()}
             </tbody>
           </table>
         </section>
