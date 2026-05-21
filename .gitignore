@@ -20,6 +20,10 @@
 # scraper one-off JSON dumps
 /scrapers/output/
 
+# OEM owner-manual PDFs + text extractions (downloaded for offline parsing;
+# bulky and the upstream URLs are recorded in the migration headers)
+/scrapers/manuals/
+
 # production
 /build
 
