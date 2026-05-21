@@ -7,5 +7,6 @@
 ALTER TABLE fluid_specs   MODIFY notes TEXT;
 ALTER TABLE torque_specs  MODIFY notes TEXT;
 ALTER TABLE parts         MODIFY notes TEXT;
+ALTER TABLE sources       MODIFY notes TEXT;
 
 SELECT 'notes columns widened to TEXT' AS status;
