@@ -26,6 +26,31 @@ const GEN_SPLITS: GenSplit[] = [
   //   primarySlug: "3-series-f30-lci-sedan-2015-2019" },
 ];
 
+// Trim-level redirects for when a trim row gets renamed (typically during a
+// refactor that aligns a gen's trims with the powertrain-distinct convention
+// locked in STRUCTURE.md / herstructureringsplan). Each entry 301s the old
+// trim URL to the new one so accumulated link equity carries over.
+//
+// Use sparingly — only when the old slug shipped to production and may have
+// been indexed by search engines or linked externally. New gens added under
+// the powertrain-distinct convention from the start don't need these.
+type TrimRedirect = {
+  brand: string;
+  gen: string;
+  oldTrim: string;
+  newTrim: string;
+};
+const TRIM_REDIRECTS: TrimRedirect[] = [
+  // Camry XV70 marketing-trim → powertrain-distinct refactor (migration 155).
+  // LE / XLE / SE all share the A25A-FKS 4-cyl 203 hp 8-AT FWD powertrain;
+  // they fold into one row. LE Hybrid → hybrid row. XSE V6 → V6 row.
+  { brand: "toyota", gen: "camry-xv70-2018-2024", oldTrim: "le",        newTrim: "2-5-203-hp-automatic" },
+  { brand: "toyota", gen: "camry-xv70-2018-2024", oldTrim: "xle",       newTrim: "2-5-203-hp-automatic" },
+  { brand: "toyota", gen: "camry-xv70-2018-2024", oldTrim: "se",        newTrim: "2-5-203-hp-automatic" },
+  { brand: "toyota", gen: "camry-xv70-2018-2024", oldTrim: "le-hybrid", newTrim: "2-5-208-hp-hybrid-e-cvt" },
+  { brand: "toyota", gen: "camry-xv70-2018-2024", oldTrim: "xse-v6",    newTrim: "3-5-v6-301-hp-automatic" },
+];
+
 const nextConfig: NextConfig = {
   async redirects() {
     const out: Array<{ source: string; destination: string; permanent: true }> = [];
@@ -40,6 +65,13 @@ const nextConfig: NextConfig = {
       out.push({
         source: `/${s.brand}/${s.oldSlug}/:rest*`,
         destination: `/${s.brand}/${s.primarySlug}/:rest*`,
+        permanent: true,
+      });
+    }
+    for (const t of TRIM_REDIRECTS) {
+      out.push({
+        source: `/${t.brand}/${t.gen}/${t.oldTrim}`,
+        destination: `/${t.brand}/${t.gen}/${t.newTrim}`,
         permanent: true,
       });
     }
