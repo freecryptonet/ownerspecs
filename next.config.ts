@@ -49,6 +49,9 @@ const TRIM_REDIRECTS: TrimRedirect[] = [
   { brand: "toyota", gen: "camry-xv70-2018-2024", oldTrim: "se",        newTrim: "2-5-203-hp-automatic" },
   { brand: "toyota", gen: "camry-xv70-2018-2024", oldTrim: "le-hybrid", newTrim: "2-5-208-hp-hybrid-e-cvt" },
   { brand: "toyota", gen: "camry-xv70-2018-2024", oldTrim: "xse-v6",    newTrim: "3-5-v6-301-hp-automatic" },
+  // RAV4 XA50 AWD NA HP correction (migration 157). Old row had hp=200
+  // (off by 3 from Toyota's official 203 hp on the A25A-FKS).
+  { brand: "toyota", gen: "rav4-xa50-suv-2019-2021", oldTrim: "2-5-200-hp-awd-automatic", newTrim: "2-5-203-hp-awd-automatic" },
 ];
 
 const nextConfig: NextConfig = {
