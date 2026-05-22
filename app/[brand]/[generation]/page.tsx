@@ -546,7 +546,7 @@ export default async function Page({ params }: { params: Promise<Params> }) {
       <div className="tabs">
         <div className="tabs-inner">
           <a className="tab active" href={`/${make.slug}/${gen.slug}`}>Overview</a>
-          <a className="tab" href={`/${make.slug}/${gen.slug}/oil-capacity`}>Fluids <span className="count">{fluids.length}</span></a>
+          <a className="tab" href={`/${make.slug}/${gen.slug}/${fluids.some(f => f.fluid_type === "engine_oil") ? "oil-capacity" : "coolant"}`}>Fluids <span className="count">{fluids.length}</span></a>
           <a className="tab" href={`/${make.slug}/${gen.slug}/torque`}>Torque <span className="count">{torques.length}</span></a>
           <a className="tab" href={`/${make.slug}/${gen.slug}/maintenance-schedule`}>Maintenance <span className="count">{serviceIntervals.length}</span></a>
           <a className="tab" href={`/${make.slug}/${gen.slug}/electrical`}>Electrical <span className="count">{bulbCount + fuseCount + 1}</span></a>
@@ -984,16 +984,29 @@ export default async function Page({ params }: { params: Promise<Params> }) {
             </span>
           </h2>
           <div className="moat-list">
-            <a className="moat-row" href={`/${make.slug}/${gen.slug}/oil-capacity`}>
-              <svg className="icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5">
-                <path d="M10 2v5m0 0c-2.5 1.5-4 4-4 6.5a4 4 0 0 0 8 0c0-2.5-1.5-5-4-6.5z" />
-              </svg>
-              <span>
-                <span className="name">Engine oil — capacity, viscosity, spec, filter</span>
-                <span className="peek">Per-engine comparison across all {engines.length} engines</span>
-              </span>
-              <span className="arrow">→</span>
-            </a>
+            {fluids.some(f => f.fluid_type === "engine_oil") ? (
+              <a className="moat-row" href={`/${make.slug}/${gen.slug}/oil-capacity`}>
+                <svg className="icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <path d="M10 2v5m0 0c-2.5 1.5-4 4-4 6.5a4 4 0 0 0 8 0c0-2.5-1.5-5-4-6.5z" />
+                </svg>
+                <span>
+                  <span className="name">Engine oil — capacity, viscosity, spec, filter</span>
+                  <span className="peek">Per-engine comparison across all {engines.length} engines</span>
+                </span>
+                <span className="arrow">→</span>
+              </a>
+            ) : (
+              <a className="moat-row" href={`/${make.slug}/${gen.slug}/coolant`}>
+                <svg className="icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <path d="M10 2v5m0 0c-2.5 1.5-4 4-4 6.5a4 4 0 0 0 8 0c0-2.5-1.5-5-4-6.5z" />
+                </svg>
+                <span>
+                  <span className="name">HV battery + motor coolant — capacity, spec, change interval</span>
+                  <span className="peek">Long-life coolant for the high-voltage system (no engine oil on this BEV)</span>
+                </span>
+                <span className="arrow">→</span>
+              </a>
+            )}
             <a className="moat-row" href={`/${make.slug}/${gen.slug}/coolant`}>
               <svg className="icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="10" cy="10" r="6"/><path d="M10 4v12"/></svg>
               <span>
