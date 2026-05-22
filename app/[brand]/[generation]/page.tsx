@@ -1,3 +1,4 @@
+import { Fragment } from "react";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { query, queryOne } from "@/lib/db";
@@ -784,51 +785,100 @@ export default async function Page({ params }: { params: Promise<Params> }) {
                   </tr>
                 </thead>
                 <tbody>
-                  {trims.map((t) => {
-                    const oilFluid = trimFluid(t.engine_id, "engine_oil");
-                    const oilCap = oilFluid
-                      ? fmtCap(oilFluid.capacity_l, oilFluid.capacity_qt)
-                      : "—";
-                    return (
-                      <tr key={t.id} style={{ borderBottom: "1px solid var(--rule)" }}>
-                        <td style={{ padding: "10px 12px", fontWeight: 600 }}>
-                          <a href={`/${make.slug}/${gen.slug}/${t.slug}`} style={{ color: "var(--accent)" }}>
-                            {t.name}
-                          </a>
-                        </td>
-                        <td style={{ padding: "10px 12px", fontFamily: '"IBM Plex Mono", monospace', fontSize: 12 }}>
-                          {t.engine_code ?? "—"}
-                        </td>
-                        <td style={{ padding: "10px 12px", textAlign: "right" }}>
-                          {t.hp ? `${t.hp}` : "—"}
-                        </td>
-                        <td style={{ padding: "10px 12px", textAlign: "right" }}>
-                          {t.torque_nm ? `${t.torque_nm} N·m` : "—"}
-                        </td>
-                        <td style={{ padding: "10px 12px", fontSize: 12 }}>
-                          {t.transmission_name ?? "—"}
-                        </td>
-                        <td style={{ padding: "10px 12px", fontSize: 12 }}>
-                          {t.drive_wheel ?? "—"}
-                        </td>
-                        <td style={{ padding: "10px 12px", textAlign: "right" }}>
-                          {t.zero_100_kmh_s ? `${t.zero_100_kmh_s} s` : "—"}
-                        </td>
-                        <td style={{ padding: "10px 12px", textAlign: "right" }}>
-                          {t.top_speed_kmh ? `${t.top_speed_kmh} km/h` : "—"}
-                        </td>
-                        <td style={{ padding: "10px 12px", textAlign: "right" }}>
-                          {t.fuel_combined_l_100km ? `${t.fuel_combined_l_100km} L/100` : "—"}
-                        </td>
-                        <td style={{ padding: "10px 12px", textAlign: "right" }}>
-                          {t.co2_g_km ? `${t.co2_g_km} g/km` : "—"}
-                        </td>
-                        <td style={{ padding: "10px 12px", textAlign: "right", fontSize: 12 }}>
-                          {oilCap}
-                        </td>
-                      </tr>
-                    );
-                  })}
+                  {(() => {
+                    // Group trims that share the same base nameplate + engine + hp
+                    // (e.g. 335i (306 Hp) manual / Steptronic / xDrive / xDrive
+                    // Steptronic) so the table shows ONE header row per
+                    // powertrain with sub-rows for each transmission / drive
+                    // variant. Avoids the visual "duplicate rows" impression that
+                    // Tim flagged 2026-05-22.
+                    const baseName = (n: string) =>
+                      n
+                        .replace(/\s+xDrive\s+Steptronic\s*$/i, "")
+                        .replace(/\s+Steptronic\s*$/i, "")
+                        .replace(/\s+xDrive\s*$/i, "");
+                    const variantSuffix = (n: string, base: string) =>
+                      n.slice(base.length).trim() || "Base · manual RWD";
+                    type Group = { base: string; rep: Trim; rows: Trim[] };
+                    const groups: Group[] = [];
+                    const gmap = new Map<string, Group>();
+                    for (const t of trims) {
+                      const key = `${baseName(t.name)}|${t.hp ?? ""}|${t.engine_code ?? ""}`;
+                      let g = gmap.get(key);
+                      if (!g) {
+                        g = { base: baseName(t.name), rep: t, rows: [] };
+                        gmap.set(key, g);
+                        groups.push(g);
+                      }
+                      g.rows.push(t);
+                    }
+                    return groups.map((g, gi) => {
+                      const oilFluid = trimFluid(g.rep.engine_id, "engine_oil");
+                      const oilCap = oilFluid
+                        ? fmtCap(oilFluid.capacity_l, oilFluid.capacity_qt)
+                        : "—";
+                      if (g.rows.length === 1) {
+                        const t = g.rows[0];
+                        return (
+                          <tr key={`g-${gi}`} style={{ borderBottom: "1px solid var(--rule)" }}>
+                            <td style={{ padding: "10px 12px", fontWeight: 600 }}>
+                              <a href={`/${make.slug}/${gen.slug}/${t.slug}`} style={{ color: "var(--accent)" }}>
+                                {t.name}
+                              </a>
+                            </td>
+                            <td style={{ padding: "10px 12px", fontFamily: '"IBM Plex Mono", monospace', fontSize: 12 }}>{t.engine_code ?? "—"}</td>
+                            <td style={{ padding: "10px 12px", textAlign: "right" }}>{t.hp ?? "—"}</td>
+                            <td style={{ padding: "10px 12px", textAlign: "right" }}>{t.torque_nm ? `${t.torque_nm} N·m` : "—"}</td>
+                            <td style={{ padding: "10px 12px", fontSize: 12 }}>{t.transmission_name ?? "—"}</td>
+                            <td style={{ padding: "10px 12px", fontSize: 12 }}>{t.drive_wheel ?? "—"}</td>
+                            <td style={{ padding: "10px 12px", textAlign: "right" }}>{t.zero_100_kmh_s ? `${t.zero_100_kmh_s} s` : "—"}</td>
+                            <td style={{ padding: "10px 12px", textAlign: "right" }}>{t.top_speed_kmh ? `${t.top_speed_kmh} km/h` : "—"}</td>
+                            <td style={{ padding: "10px 12px", textAlign: "right" }}>{t.fuel_combined_l_100km ? `${t.fuel_combined_l_100km} L/100` : "—"}</td>
+                            <td style={{ padding: "10px 12px", textAlign: "right" }}>{t.co2_g_km ? `${t.co2_g_km} g/km` : "—"}</td>
+                            <td style={{ padding: "10px 12px", textAlign: "right", fontSize: 12 }}>{oilCap}</td>
+                          </tr>
+                        );
+                      }
+                      // Multi-variant group: header row + sub-rows
+                      const rep = g.rep;
+                      return (
+                        <Fragment key={`g-${gi}`}>
+                          <tr style={{ borderTop: gi === 0 ? "none" : "2px solid var(--rule)", borderBottom: "1px solid var(--rule)", background: "var(--bg-alt)" }}>
+                            <td style={{ padding: "10px 12px", fontWeight: 600 }}>
+                              {g.base}
+                              <span className="muted" style={{ marginLeft: 8, fontSize: 11, fontWeight: 400 }}>
+                                — {g.rows.length} variants
+                              </span>
+                            </td>
+                            <td style={{ padding: "10px 12px", fontFamily: '"IBM Plex Mono", monospace', fontSize: 12 }}>{rep.engine_code ?? "—"}</td>
+                            <td style={{ padding: "10px 12px", textAlign: "right" }}>{rep.hp ?? "—"}</td>
+                            <td style={{ padding: "10px 12px", textAlign: "right" }}>{rep.torque_nm ? `${rep.torque_nm} N·m` : "—"}</td>
+                            <td colSpan={4} style={{ padding: "10px 12px", fontSize: 11, color: "var(--ink-mute)" }}>
+                              variants below ↓
+                            </td>
+                            <td style={{ padding: "10px 12px", textAlign: "right" }}>{rep.fuel_combined_l_100km ? `${rep.fuel_combined_l_100km} L/100` : "—"}</td>
+                            <td style={{ padding: "10px 12px", textAlign: "right" }}>{rep.co2_g_km ? `${rep.co2_g_km} g/km` : "—"}</td>
+                            <td style={{ padding: "10px 12px", textAlign: "right", fontSize: 12 }}>{oilCap}</td>
+                          </tr>
+                          {g.rows.map((t) => (
+                            <tr key={`v-${t.id}`} style={{ borderBottom: "1px solid var(--rule)" }}>
+                              <td style={{ padding: "8px 12px 8px 28px", fontSize: 13 }}>
+                                <a href={`/${make.slug}/${gen.slug}/${t.slug}`} style={{ color: "var(--accent)" }}>
+                                  ↳ {variantSuffix(t.name, g.base)}
+                                </a>
+                              </td>
+                              <td colSpan={3}></td>
+                              <td style={{ padding: "8px 12px", fontSize: 12 }}>{t.transmission_name ?? "—"}</td>
+                              <td style={{ padding: "8px 12px", fontSize: 12 }}>{t.drive_wheel ?? "—"}</td>
+                              <td style={{ padding: "8px 12px", textAlign: "right" }}>{t.zero_100_kmh_s ? `${t.zero_100_kmh_s} s` : "—"}</td>
+                              <td style={{ padding: "8px 12px", textAlign: "right" }}>{t.top_speed_kmh ? `${t.top_speed_kmh} km/h` : "—"}</td>
+                              <td colSpan={3}></td>
+                            </tr>
+                          ))}
+                        </Fragment>
+                      );
+                    });
+                  })()}
                 </tbody>
               </table>
             </div>
