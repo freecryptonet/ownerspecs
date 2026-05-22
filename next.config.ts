@@ -26,6 +26,36 @@ type GenSplit = {
   trimOverrides?: Record<string, string>;
 };
 const GEN_SPLITS: GenSplit[] = [
+  // G20 sedan split into pre-LCI (2019-2022) + LCI (2022-present) — mig 169.
+  // The old combined slug used "present" as the end-year sentinel. After the
+  // split the original gen was renamed to end in 2022; the LCI gen took the
+  // "present" suffix. Trims were cloned from pre-LCI to LCI, so any trim
+  // slug from the old combined gen resolves on the LCI half too — no
+  // per-trim overrides needed.
+  {
+    brand: "bmw",
+    oldSlug: "3-series-sedan-g20-2019-present",
+    primarySlug: "3-series-sedan-g20-lci-2022-present",
+  },
+
+  // G30 sedan split into pre-LCI (2017-2020) + LCI (2020-2023) — mig 172.
+  // Same pattern as G20; full trim clone means no overrides needed.
+  {
+    brand: "bmw",
+    oldSlug: "5-series-g30-sedan-2017-present",
+    primarySlug: "5-series-g30-lci-sedan-2020-2023",
+  },
+
+  // A6 C8 sedan slug shortened from 2018-present → 2018-2023 + LCI sedan
+  // added — mig 195. Pre-LCI sedan trims cloned to LCI sedan, so trim
+  // URLs land on real data either way; redirect to LCI as the SEO-current
+  // primary.
+  {
+    brand: "audi",
+    oldSlug: "a6-c8-sedan-2018-present",
+    primarySlug: "a6-c8-lci-sedan-2023-present",
+  },
+
   // F30 sedan split into pre-LCI (2012-2015) + LCI (2015-2018) — mig 161.
   // Primary destination is LCI (newer, more SEO-current "F30" search intent).
   // Per-trim overrides redirect pre-LCI trim URLs to the pre-LCI gen
