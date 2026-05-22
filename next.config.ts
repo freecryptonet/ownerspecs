@@ -19,11 +19,52 @@ type GenSplit = {
   brand: string;
   oldSlug: string;
   primarySlug: string;
+  // Per-trim overrides for trims that moved to a different new gen than
+  // the primary. Keyed by old trim slug, value is the destination gen slug.
+  // Used when an old combined-gen URL needs to land on the non-primary new
+  // gen because that's where the trim lives now.
+  trimOverrides?: Record<string, string>;
 };
 const GEN_SPLITS: GenSplit[] = [
-  // example pending data:
-  // { brand: "bmw", oldSlug: "3-series-f30-sedan-2012-2018",
-  //   primarySlug: "3-series-f30-lci-sedan-2015-2019" },
+  // F30 sedan split into pre-LCI (2012-2015) + LCI (2015-2018) — mig 161.
+  // Primary destination is LCI (newer, more SEO-current "F30" search intent).
+  // Per-trim overrides redirect pre-LCI trim URLs to the pre-LCI gen
+  // because those trims moved with the original gen row when it was renamed.
+  {
+    brand: "bmw",
+    oldSlug: "3-series-f30-sedan-2012-2018",
+    primarySlug: "3-series-f30-lci-sedan-2015-2018",
+    trimOverrides: {
+      // 5 original 335i / ActiveHybrid trims (N55, pre-LCI only)
+      "335i-306-hp":                       "3-series-f30-sedan-2012-2015",
+      "335i-306-hp-steptronic":            "3-series-f30-sedan-2012-2015",
+      "335i-306-hp-xdrive":                "3-series-f30-sedan-2012-2015",
+      "335i-306-hp-xdrive-steptronic":     "3-series-f30-sedan-2012-2015",
+      "activehybrid-3-0-340-hp-steptronic":"3-series-f30-sedan-2012-2015",
+      // 19 pre-LCI trims added in mig 152 (N20 / N13 / N47 / N57)
+      "316i-136-hp":                       "3-series-f30-sedan-2012-2015",
+      "316i-136-hp-steptronic":            "3-series-f30-sedan-2012-2015",
+      "320i-184-hp":                       "3-series-f30-sedan-2012-2015",
+      "320i-184-hp-steptronic":            "3-series-f30-sedan-2012-2015",
+      "320i-184-hp-xdrive-steptronic":     "3-series-f30-sedan-2012-2015",
+      "328i-245-hp":                       "3-series-f30-sedan-2012-2015",
+      "328i-245-hp-steptronic":            "3-series-f30-sedan-2012-2015",
+      "328i-245-hp-xdrive-steptronic":     "3-series-f30-sedan-2012-2015",
+      "316d-116-hp":                       "3-series-f30-sedan-2012-2015",
+      "316d-116-hp-steptronic":            "3-series-f30-sedan-2012-2015",
+      "318d-143-hp":                       "3-series-f30-sedan-2012-2015",
+      "318d-143-hp-steptronic":            "3-series-f30-sedan-2012-2015",
+      "320d-184-hp":                       "3-series-f30-sedan-2012-2015",
+      "320d-184-hp-steptronic":            "3-series-f30-sedan-2012-2015",
+      "320d-184-hp-xdrive-steptronic":     "3-series-f30-sedan-2012-2015",
+      "325d-218-hp-steptronic":            "3-series-f30-sedan-2012-2015",
+      "330d-258-hp-steptronic":            "3-series-f30-sedan-2012-2015",
+      "330d-258-hp-xdrive-steptronic":     "3-series-f30-sedan-2012-2015",
+      "335d-313-hp-xdrive-steptronic":     "3-series-f30-sedan-2012-2015",
+      // 14 LCI trims (mig 153) are NOT in this map — they fall through to
+      // the primary (LCI) destination via the catch-all rule.
+    },
+  },
 ];
 
 // Trim-level redirects for when a trim row gets renamed (typically during a
@@ -64,7 +105,18 @@ const nextConfig: NextConfig = {
         destination: `/${s.brand}/${s.primarySlug}`,
         permanent: true,
       });
-      // 2) any sub-page (topic or trim) — catch-all with parameter pass-through
+      // 2) per-trim overrides — must come BEFORE the catch-all so they
+      //    take precedence in Next.js's first-match-wins ordering.
+      if (s.trimOverrides) {
+        for (const [oldTrim, destGen] of Object.entries(s.trimOverrides)) {
+          out.push({
+            source: `/${s.brand}/${s.oldSlug}/${oldTrim}`,
+            destination: `/${s.brand}/${destGen}/${oldTrim}`,
+            permanent: true,
+          });
+        }
+      }
+      // 3) catch-all for everything else (topic pages + non-overridden trims)
       out.push({
         source: `/${s.brand}/${s.oldSlug}/:rest*`,
         destination: `/${s.brand}/${s.primarySlug}/:rest*`,
