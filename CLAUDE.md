@@ -81,7 +81,7 @@ ssh -i ~/.ssh/autodtcs_key root@72.62.154.119 'sudo -u deploy pm2 restart os'
 
 ## Deployment quirks (each cost 5–15 min before being captured)
 
-- **Always `rm -rf .next/cache` before `npm run build` after schema or code changes.** Next.js incremental builds cache prerendered SSG output and silently serve stale HTML otherwise. pm2 restart alone does NOT force regen — without this, deploys look successful but pages don't change.
+- **`rm -rf .next` (not just `.next/cache`) before `npm run build`.** Cache-only clean intermittently fails with `ENOTEMPTY: rmdir '.next/server/app/<brand>'` on multi-brand rebuilds. Full clean is reliable. pm2 restart alone does NOT force regen — without it deploys look successful but SSG pages don't change.
 - **`scp` only to `root@72.62.154.119`**, never `deploy@`. The `deploy` user has no `authorized_keys` for `autodtcs_key`. Then `ssh root@... 'sudo -u deploy install -m 644 /tmp/x /home/deploy/ownerspecs/path'` to land it as deploy.
 - **No `db/migrations/` dir on VPS.** Migrations are scp'd to `/tmp/NNN.sql` and piped: `mariadb ownerspecs < /tmp/NNN.sql`. Don't try to `install` into a migrations dir — it doesn't exist on prod.
 - **Files can drift VPS-only.** `app/globals.css` was only on VPS at one point. Before editing anything you suspect is VPS-only, `scp root@...:/home/deploy/ownerspecs/<path> <local-path>` first to seed local.
@@ -110,6 +110,12 @@ ssh -i ~/.ssh/autodtcs_key root@72.62.154.119 'sudo -u deploy pm2 restart os'
 ## Schema column widths that bite during seeding
 
 `electrical_specs.battery_group` 24, `bulbs.bulb_code` 24, `tire_pressures.tire_size` 48, `generations.layout` 16, `generations.front_suspension` / `rear_suspension` 128, `generations.front_brakes` / `rear_brakes` 96. ERROR 1406 (22001) aborts the migration mid-way — anything inserted AFTER the failing row (often `service_intervals` + `tire_pressures`) will be missing on the post-build pages. Re-insert manually with shorter strings if it happens.
+
+## Schema column names that get misnamed
+
+- **`engines` table columns are easy to misname.** Actual: `code` (UNIQUE) · `display_name` (NOT NULL) · `displacement_cc` · `fuel` (not `fuel_type`) · `aspiration` · `valvetrain` · `cylinders` (not `valves_per_cyl`) · `bore_mm` · `stroke_mm` · `compression`. Always supply `display_name` on `INSERT IGNORE INTO engines`.
+- **`generations.layout` is varchar(16) drivetrain, not engine layout.** Existing convention: `'RWD'` / `'AWD'` / `'FWD'`. Don't write `'Front engine, longitudinal'` — overflows + breaks the rendering convention.
+- **Mixed `fluid_specs` multi-row INSERTs need consistent column counts.** Engine_oil rows usually supply `viscosity` + `drain_interval_mi` + `drain_interval_km`; coolant rows don't. If you bundle both in one VALUES clause, supply `NULL` placeholders for the missing columns on coolant rows — otherwise ERROR 1136 aborts the whole migration.
 
 ## Recurring data-quality patterns
 
@@ -171,13 +177,35 @@ Full recipe in memory: `reference_nameplate_add_workflow.md`. Short form:
 Real sources beat lore. See `feedback_data_sources_hierarchy.md`.
 
 1. **HaynesPro WorkshopData** — Tim has it pre-logged-in. Switch via `mcp__playwright__browser_tabs select 1`. Six-step nav walk-through in `docs/sources-haynespro.md`.
-2. **startmycar.com/{brand}/{model}/info/fusebox/{year}/{gencode}** — clean HTML fuse tables, generation-aware. Best for fuses.
-3. **OEM owner manuals** (BMW, VW, Audi, Toyota, Honda all host PDFs publicly).
-4. **manualslib.com source PDFs** (captcha-walled but downloaded file is a real text PDF, not the rasterized in-browser viewer). Tim has a session.
-5. **Dealer FSM** (BMW TIS, VW erWin, GM Service Information).
-6. **General automotive knowledge** — last resort, only for well-known constants (DOT 3 vs DOT 4, lug-nut JIS standards). Never for OE part numbers, with-filter capacities, or chassis-specific fuse layouts.
+2. **OEM owner manuals via ownersmanuals2.com / ManualsLib** — immutable PDFs published by the manufacturer. Download via Playwright fetch + base64 + Python decode pattern. Cite at least one per gen; for long-running gens cite 2-3 years apart to catch mid-cycle spec migrations (BMW LC-18 coolant MY2023, VW 508.00 LL IV FE 2019).
+3. **OEM Factory Service Manuals** — BMW TIS, VW erWin, GM Service Information, Toyota TIS. Gold standard for torques/alignments/calibrations where accessible.
+4. **startmycar.com/{brand}/{model}/info/fusebox/{year}/{gencode}** — clean HTML fuse tables, generation-aware. Best for fuses.
+5. **General automotive knowledge** — last resort, only for well-known constants (DOT 3 vs DOT 4, lug-nut JIS standards). Never for OE part numbers, with-filter capacities, or chassis-specific fuse layouts.
 
 Why this matters: the whole moat is data the incumbents miss. If the moat tables are filled from training-data lore, we have plausible numbers but no real differentiation — and we'd be wrong on chassis-specific values (caliper carrier bolt torque varies wildly between chassis even within one maker).
+
+## Source citations: link-gating policy (mig 194)
+
+`sources.public_link` (tinyint(1), default 0) controls whether the Sources block renders the citation as a clickable link or as text-only. Set deliberately at source-row creation time.
+
+- **`public_link = 1`**: rendered as `<a href="..." rel="nofollow noopener noreferrer" target="_blank">`. Use only for manufacturer-owned domains (bmw.com/owner-info, audi.com/owner-resources, owners.honda.com, mazdausa.com, etc.), NHTSA / vPIC, EPA / fueleconomy.gov, SAE.
+- **`public_link = 0`** (default): rendered as text-only `<cite>{citation}</cite>`. **All** HaynesPro / ownersmanuals2 / ManualsLib / auto-data.net / ultimatespecs.com / startmycar / Wikipedia rows get this. URL stays in DB for internal audit, never exposed in rendered HTML.
+
+Why: (1) stop SEO link-equity leakage to top-3 competitors (auto-data / ultimatespecs / startmycar), (2) avoid copyright invitations from paid datasets like HaynesPro — a live link to `workshopdata.com/.../storyId=N` is the easiest argument for "you republished our content" in a DMCA notice. Restated procedures per Feist v. Rural are defensible; an explicit source link weakens that posture.
+
+When adding a new source row in a migration, decide `public_link` deliberately. Default to 0 unless you have a specific reason it should be 1.
+
+## Aggregators are research aids, NOT citation sources
+
+**Auto-data.net and ultimatespecs.com are NOT primary sources.** Use them to discover trim lineups, dimensions, and HaynesPro typeIds — then find the same fact on HaynesPro or an OEM manual and cite **that**. Three reasons aggregators fail the citation bar:
+
+1. **Cache poisoning** — direct numeric URLs (e.g. `/en/bmw-5-series-sedan-g60-29388`) regularly serve content for an unrelated vehicle. An audit click on the cited URL months later may show different content.
+2. **Second-hand data** — aggregators scrape OEM material and other aggregators with no verification step.
+3. **No version pinning** — unlike PDFs or HaynesPro story IDs, aggregator pages mutate. We have no way to anchor what we saw at citation time.
+
+**Tertiary fallback for marketing numbers:** 0-100 km/h, top speed (electronically limited), WLTP / EPA range claims rarely appear in workshop manuals. For these specific facts citing auto-data is acceptable provided the source `notes` field says explicitly *"marketing number — secondary aggregator, no workshop-grade source available."* Honest audit trail.
+
+**Existing rows that cite auto-data:** ~hundreds. Don't bulk-backfill. When touching a gen for any reason, replace auto-data citations on that gen's spec rows with HaynesPro + OEM manual citations. New gens MUST default to HaynesPro + OEM manual as the citation pair.
 
 ## Known scraper/page bug patterns (do not regress)
 
@@ -197,6 +225,16 @@ These were each discovered in production and fixed. Future Claude — read these
 | `app/globals.css .tabs-inner` | `overflow-x: auto` rendered a thin cosmetic scrollbar on desktop. | Add `scrollbar-width: none` + `::-webkit-scrollbar { display: none }`. |
 | `db/migrations/*_seed_*.sql` | `tire_size varchar(48)` and `battery_group varchar(24)` overflow on long descriptors. | Trim to fit. |
 | Older migrations | `capacity_qt` left NULL when `capacity_l` was populated. | Backfill: `UPDATE fluid_specs SET capacity_qt = ROUND(capacity_l * 1.05669, 2) WHERE capacity_l IS NOT NULL AND capacity_qt IS NULL`. |
+
+## Family umbrella layer (`family_slug` / `family_label`)
+
+Gens sharing a chassis platform (sedan + LCI + Touring + M-variant + BEV sibling) are grouped via `generations.family_slug` (varchar 96, indexed). The `/family/[slug]` route renders a side-by-side comparison. Per-gen pages auto-show a "Related on same chassis" pill bar + family breadcrumb. Set `family_slug` + `family_label` when inserting any new gen on an existing platform.
+
+Naming: `<brand>-<model-line>-<base-chassis-code>-<years>` (e.g. `bmw-5-series-g30-2017-2024`, `audi-a4-b9-2015-2025`).
+
+## Cloning a gen from a sibling (Touring/LCI/M-variant)
+
+When cloning gen-wide spec data from a sibling gen via content-matching JOINs into `spec_sources`, **use `INSERT IGNORE`**. Multiple sibling rows can match the same new row on `(fluid_type, engine_id, capacity_l, viscosity)` and cause duplicate-key violations on `uk_spec_sources`. Same applies to bulbs/torques/tires JOINs. Always `UPDATE procedures SET title = REPLACE(...)` immediately after the procedure clone — skipping it leaves stale codename labels (G30→G60 contamination lesson, fixed in mig 181).
 
 ## Pending
 

@@ -1143,9 +1143,9 @@ export default async function Page({ params }: { params: Promise<Params> }) {
               <li key={s.id} id={`src-${i + 1}`}>
                 <span>
                   <span className="who">
-                    {s.url ? (
-                      <a href={s.url} rel="noopener nofollow" target="_blank">{s.citation}</a>
-                    ) : s.citation}
+                    {s.public_link === 1 && s.url ? (
+                      <a href={s.url} rel="nofollow noopener noreferrer" target="_blank">{s.citation}</a>
+                    ) : <cite>{s.citation}</cite>}
                   </span>
                   {s.notes && <span className="what">{s.notes}</span>}
                 </span>

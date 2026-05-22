@@ -48,6 +48,10 @@ export type SourceRow = {
   type: string;
   citation: string;
   url: string | null;
+  /** 0 = render as text-only `<cite>` (HaynesPro, PDF hosts, aggregators);
+   *  1 = render as link with rel="nofollow noopener noreferrer"
+   *      (manufacturer-owned domains, NHTSA, SAE, gov data). */
+  public_link: 0 | 1;
   retrieved_at: string;
   notes: string | null;
 };
@@ -125,7 +129,7 @@ export async function getGenerationSources(
   generationId: number,
 ): Promise<SourceRow[]> {
   return query<SourceRow>(
-    `SELECT DISTINCT s.id, s.type, s.citation, s.url, s.retrieved_at, s.notes
+    `SELECT DISTINCT s.id, s.type, s.citation, s.url, s.public_link, s.retrieved_at, s.notes
      FROM sources s
      JOIN spec_sources ss ON ss.source_id = s.id
      WHERE s.is_public = 1 AND (
@@ -154,7 +158,7 @@ export async function getSourcesFor(
   specTable: string,
 ): Promise<SourceRow[]> {
   return query<SourceRow>(
-    `SELECT DISTINCT s.id, s.type, s.citation, s.url, s.retrieved_at, s.notes
+    `SELECT DISTINCT s.id, s.type, s.citation, s.url, s.public_link, s.retrieved_at, s.notes
      FROM sources s
      JOIN spec_sources ss ON ss.source_id = s.id
      WHERE s.is_public = 1

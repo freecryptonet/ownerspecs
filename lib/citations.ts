@@ -30,7 +30,7 @@ export async function buildCitationIndex(
 ): Promise<CitationIndex> {
   // Step 1 — all public sources linked to any spec row in this gen.
   const sources = await query<SourceRow>(
-    `SELECT DISTINCT s.id, s.type, s.citation, s.url, s.retrieved_at, s.notes
+    `SELECT DISTINCT s.id, s.type, s.citation, s.url, s.public_link, s.retrieved_at, s.notes
      FROM sources s
      JOIN spec_sources ss ON ss.source_id = s.id
      WHERE s.is_public = 1 AND (

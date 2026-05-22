@@ -10,12 +10,12 @@ export function SourcesBlock({ sources }: { sources: SourceRow[] }) {
           <li key={s.id}>
             <span>
               <span className="who">
-                {s.url ? (
-                  <a href={s.url} rel="noopener" target="_blank">
+                {s.public_link === 1 && s.url ? (
+                  <a href={s.url} rel="nofollow noopener noreferrer" target="_blank">
                     {s.citation}
                   </a>
                 ) : (
-                  s.citation
+                  <cite>{s.citation}</cite>
                 )}
               </span>
               {s.notes && <span className="what">{s.notes}</span>}
