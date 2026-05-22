@@ -36,6 +36,7 @@ type Generation = {
   end_year: number | null;
   layout: string | null;
   platform: string | null;
+  editorial_intro: string | null;
   length_mm: number | null;
   width_mm: number | null;
   height_mm: number | null;
@@ -84,6 +85,10 @@ type Trim = {
   drive_wheel: string | null;
   tire_size: string | null;
   rim_size: string | null;
+  length_mm: number | null;
+  width_mm: number | null;
+  height_mm: number | null;
+  wheelbase_mm: number | null;
 };
 type FluidSpec = {
   id: number;
@@ -155,6 +160,7 @@ async function getGenerationData(brand: string, generation: string) {
   const gen = await queryOne<Generation & { model_id: number }>(
     `SELECT g.id, g.model_id, g.slug, g.ordinal, g.codename, g.display_name,
             g.body_type, g.start_year, g.end_year, g.layout, g.platform,
+            g.editorial_intro,
             g.length_mm, g.width_mm, g.height_mm, g.wheelbase_mm,
             g.front_track_mm, g.rear_track_mm, g.fuel_tank_l, g.cargo_l,
             g.front_suspension, g.rear_suspension, g.front_brakes, g.rear_brakes
@@ -198,7 +204,8 @@ async function getGenerationData(brand: string, generation: string) {
             t.zero_100_kmh_s, t.top_speed_kmh, t.fuel_combined_l_100km,
             t.co2_g_km, t.curb_weight_kg,
             t.max_weight_kg, t.trailer_braked_kg, t.trailer_unbraked_kg,
-            t.drive_wheel, t.tire_size, t.rim_size
+            t.drive_wheel, t.tire_size, t.rim_size,
+            t.length_mm, t.width_mm, t.height_mm, t.wheelbase_mm
      FROM trims t
      LEFT JOIN markets mk        ON mk.id = t.market_id
      LEFT JOIN engines e         ON e.id  = t.engine_id
@@ -271,6 +278,29 @@ async function getGenerationData(brand: string, generation: string) {
     [gen.id],
   );
 
+  // Other bodystyles of the same model that overlap in production years —
+  // herstructureringsplan §3 Niveau 4: "Looking for the Touring? F31 (2012-2015)".
+  // Year overlap: their start <= our end (or our end is open) AND their end >= our start.
+  const bodystyleSiblings = await query<{
+    slug: string;
+    codename: string | null;
+    display_name: string;
+    body_type: string;
+    start_year: number;
+    end_year: number | null;
+  }>(
+    `SELECT slug, codename, display_name, body_type, start_year, end_year
+     FROM generations
+     WHERE model_id = ?
+       AND id != ?
+       AND body_type != ?
+       AND is_active = 1
+       AND (? IS NULL OR start_year <= ?)
+       AND (end_year IS NULL OR end_year >= ?)
+     ORDER BY start_year DESC`,
+    [gen.model_id, gen.id, gen.body_type, gen.end_year, gen.end_year, gen.start_year],
+  );
+
   return {
     make,
     model,
@@ -286,6 +316,7 @@ async function getGenerationData(brand: string, generation: string) {
     partCount: partCount?.n ?? 0,
     serviceIntervals,
     heroImage,
+    bodystyleSiblings,
   };
 }
 
@@ -309,7 +340,7 @@ export async function generateStaticParams(): Promise<Params[]> {
 
 type ModelData = {
   make: { id: number; slug: string; name: string };
-  model: { id: number; slug: string; name: string };
+  model: { id: number; slug: string; name: string; bio: string | null };
   generations: Array<{
     generation_slug: string;
     display_name: string;
@@ -328,8 +359,8 @@ async function getModelData(brand: string, modelSlug: string): Promise<ModelData
     [brand],
   );
   if (!make) return null;
-  const model = await queryOne<{ id: number; slug: string; name: string }>(
-    "SELECT id, slug, name FROM models WHERE slug = ? AND make_id = ? LIMIT 1",
+  const model = await queryOne<{ id: number; slug: string; name: string; bio: string | null }>(
+    "SELECT id, slug, name, bio FROM models WHERE slug = ? AND make_id = ? LIMIT 1",
     [modelSlug, make.id],
   );
   if (!model) return null;
@@ -408,6 +439,7 @@ export default async function Page({ params }: { params: Promise<Params> }) {
     partCount,
     serviceIntervals,
     heroImage,
+    bodystyleSiblings,
   } = data;
 
   const yrs = yearRange(gen.start_year, gen.end_year);
@@ -620,24 +652,87 @@ export default async function Page({ params }: { params: Promise<Params> }) {
           </div>
         </section>
 
-        {/* DIMENSIONS & CAPACITIES (gen-wide only) */}
-        {(gen.length_mm || gen.wheelbase_mm || gen.fuel_tank_l) && (
+        {/* EDITORIAL INTRO — herstructureringsplan §3 Niveau 4 #2: per-gen
+            E-E-A-T overview (history, market differences, facelift notes).
+            Renders only when present so we never publish empty sections.
+            Paragraphs split on blank lines so authors can compose multi-para
+            text without HTML. */}
+        {gen.editorial_intro && (
           <section>
-            <h2 className="section-h">Dimensions &amp; capacities</h2>
-            <table className="spec-table">
-              <tbody>
-                {gen.length_mm && <tr><th>Length</th><td>{mmDual(gen.length_mm)}</td></tr>}
-                {gen.width_mm && <tr><th>Width</th><td>{mmDual(gen.width_mm)}</td></tr>}
-                {gen.height_mm && <tr><th>Height</th><td>{mmDual(gen.height_mm)}</td></tr>}
-                {gen.wheelbase_mm && <tr><th>Wheelbase</th><td>{mmDual(gen.wheelbase_mm)}</td></tr>}
-                {gen.front_track_mm && <tr><th>Front track</th><td>{mmDual(gen.front_track_mm)}</td></tr>}
-                {gen.rear_track_mm && <tr><th>Rear track</th><td>{mmDual(gen.rear_track_mm)}</td></tr>}
-                {gen.fuel_tank_l && <tr><th>Fuel tank</th><td>{litreDual(gen.fuel_tank_l)}</td></tr>}
-                {gen.cargo_l && <tr><th>Cargo capacity</th><td>{litreCargoDual(gen.cargo_l)}</td></tr>}
-              </tbody>
-            </table>
+            <h2 className="section-h">About this generation</h2>
+            <div style={{ maxWidth: "68ch" }}>
+              {gen.editorial_intro.split(/\n\s*\n/).map((p, i) => (
+                <p key={i} style={{ marginTop: i === 0 ? 0 : "var(--s-3)" }}>
+                  {p.trim()}
+                </p>
+              ))}
+            </div>
           </section>
         )}
+
+        {/* DIMENSIONS & CAPACITIES — herstructureringsplan Fase 1.3: when trims
+            disagree on a dimension (e.g. M-package width vs base width, xDrive
+            height vs RWD height) render the range and link to the trim page for
+            the exact value. Falls back to the gen-level value when all trims
+            agree or trim-level data is missing. */}
+        {(gen.length_mm || gen.wheelbase_mm || gen.fuel_tank_l) && (() => {
+          const dimRange = (
+            getter: (t: Trim) => number | null,
+            genValue: number | null,
+          ): { display: string | null; varies: boolean } => {
+            const values = trims
+              .map(getter)
+              .filter((v): v is number => v != null);
+            if (values.length === 0) {
+              return { display: genValue != null ? mmDual(genValue) : null, varies: false };
+            }
+            const min = Math.min(...values);
+            const max = Math.max(...values);
+            if (min === max) {
+              return { display: mmDual(min), varies: false };
+            }
+            return { display: `${min}–${max} mm`, varies: true };
+          };
+          const lengthR = dimRange((t) => t.length_mm, gen.length_mm);
+          const widthR  = dimRange((t) => t.width_mm,  gen.width_mm);
+          const heightR = dimRange((t) => t.height_mm, gen.height_mm);
+          const wheelR  = dimRange((t) => t.wheelbase_mm, gen.wheelbase_mm);
+          const anyVaries = [lengthR, widthR, heightR, wheelR].some((r) => r.varies);
+          const dimCell = (r: { display: string | null; varies: boolean }) =>
+            r.display == null ? null : (
+              <td>
+                {r.display}
+                {r.varies && (
+                  <span className="muted" style={{ marginLeft: 8, fontSize: 11 }}>
+                    varies by trim
+                  </span>
+                )}
+              </td>
+            );
+          return (
+            <section>
+              <h2 className="section-h">Dimensions &amp; capacities</h2>
+              {anyVaries && (
+                <p className="muted" style={{ fontSize: 12, marginBottom: 8 }}>
+                  Some dimensions vary across trims in this generation (option packages,
+                  drivetrain, wheel size). See the trim page for the exact value of your variant.
+                </p>
+              )}
+              <table className="spec-table">
+                <tbody>
+                  {lengthR.display && <tr><th>Length</th>{dimCell(lengthR)}</tr>}
+                  {widthR.display  && <tr><th>Width</th>{dimCell(widthR)}</tr>}
+                  {heightR.display && <tr><th>Height</th>{dimCell(heightR)}</tr>}
+                  {wheelR.display  && <tr><th>Wheelbase</th>{dimCell(wheelR)}</tr>}
+                  {gen.front_track_mm && <tr><th>Front track</th><td>{mmDual(gen.front_track_mm)}</td></tr>}
+                  {gen.rear_track_mm  && <tr><th>Rear track</th><td>{mmDual(gen.rear_track_mm)}</td></tr>}
+                  {gen.fuel_tank_l    && <tr><th>Fuel tank</th><td>{litreDual(gen.fuel_tank_l)}</td></tr>}
+                  {gen.cargo_l        && <tr><th>Cargo capacity</th><td>{litreCargoDual(gen.cargo_l)}</td></tr>}
+                </tbody>
+              </table>
+            </section>
+          );
+        })()}
 
         {/* DRIVETRAIN & CHASSIS (gen-wide) */}
         {(gen.front_suspension || gen.front_brakes) && (
@@ -655,49 +750,88 @@ export default async function Page({ params }: { params: Promise<Params> }) {
           </section>
         )}
 
-        {/* TRIM GRID — primary "pick your car" affordance. The gen overview
-            no longer renders per-trim data inline; each trim's full spec
-            sheet (fluids, torques, parts, maintenance) lives on its own
-            page. This is the IA pattern competitors use and matches owner
-            search intent — visitors arrive looking for THEIR trim. */}
+        {/* VARIANT COMPARISON TABLE — STRUCTURE.md §Tier 1 + herstructureringsplan §3 Niveau 4.
+            One row per trim with the perf-spec key fields side-by-side. This is the
+            "middle-tier SEO machine" — ranked on "{model} {gen-code} specs" queries.
+            Plain SSR table for now; filter chips (fuel/trans/drive) can come later
+            when data widens past ~15 trims/gen and they actually matter. */}
         {trims.length > 0 ? (
           <section>
             <h2 className="section-h">
-              Pick your trim
+              Pick your trim — compare all variants
               <span className="count">{trims.length} {trims.length === 1 ? "trim" : "trims"}</span>
             </h2>
             <p className="muted" style={{ fontSize: 12, marginBottom: 8 }}>
-              Each trim has its own page with full fluids, torque values,
-              parts numbers and a maintenance schedule filtered to that
-              engine. No data from other trims — you only see what applies
-              to your car.
+              Side-by-side specs for every {gen.display_name} variant. Click a row for
+              the full spec sheet (fluids, torques, parts, maintenance) filtered to that
+              engine.
             </p>
-            <ul
-              style={{
-                listStyle: "none",
-                padding: 0,
-                margin: 0,
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
-                gap: 0,
-                border: "1px solid var(--rule)",
-              }}
-            >
-              {trims.map((t) => (
-                <li key={t.id} style={{ borderRight: "1px solid var(--rule)", borderBottom: "1px solid var(--rule)" }}>
-                  <a
-                    href={`/${make.slug}/${gen.slug}/${t.slug}`}
-                    style={{ display: "block", padding: "12px 16px", color: "var(--ink)" }}
-                  >
-                    <div style={{ fontSize: 14, fontWeight: 600 }}>{t.name}</div>
-                    <div className="muted" style={{ fontSize: 12, marginTop: 2 }}>
-                      {[t.engine_code, t.transmission_name, t.hp ? `${t.hp} Hp` : null, t.drive_wheel]
-                        .filter(Boolean).join(" · ")}
-                    </div>
-                  </a>
-                </li>
-              ))}
-            </ul>
+            <div style={{ overflowX: "auto", border: "1px solid var(--rule)" }}>
+              <table className="spec-table" style={{ minWidth: 900, borderCollapse: "collapse", width: "100%" }}>
+                <thead>
+                  <tr style={{ background: "var(--bg-alt)", borderBottom: "1px solid var(--rule)" }}>
+                    <th style={{ textAlign: "left", padding: "10px 12px", fontSize: 11, letterSpacing: "0.06em", textTransform: "uppercase" }}>Trim</th>
+                    <th style={{ textAlign: "left", padding: "10px 12px", fontSize: 11, letterSpacing: "0.06em", textTransform: "uppercase" }}>Engine</th>
+                    <th style={{ textAlign: "right", padding: "10px 12px", fontSize: 11, letterSpacing: "0.06em", textTransform: "uppercase" }}>Hp</th>
+                    <th style={{ textAlign: "right", padding: "10px 12px", fontSize: 11, letterSpacing: "0.06em", textTransform: "uppercase" }}>Torque</th>
+                    <th style={{ textAlign: "left", padding: "10px 12px", fontSize: 11, letterSpacing: "0.06em", textTransform: "uppercase" }}>Trans</th>
+                    <th style={{ textAlign: "left", padding: "10px 12px", fontSize: 11, letterSpacing: "0.06em", textTransform: "uppercase" }}>Drive</th>
+                    <th style={{ textAlign: "right", padding: "10px 12px", fontSize: 11, letterSpacing: "0.06em", textTransform: "uppercase" }}>0-100</th>
+                    <th style={{ textAlign: "right", padding: "10px 12px", fontSize: 11, letterSpacing: "0.06em", textTransform: "uppercase" }}>Top</th>
+                    <th style={{ textAlign: "right", padding: "10px 12px", fontSize: 11, letterSpacing: "0.06em", textTransform: "uppercase" }}>Fuel</th>
+                    <th style={{ textAlign: "right", padding: "10px 12px", fontSize: 11, letterSpacing: "0.06em", textTransform: "uppercase" }}>CO₂</th>
+                    <th style={{ textAlign: "right", padding: "10px 12px", fontSize: 11, letterSpacing: "0.06em", textTransform: "uppercase" }}>Oil</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {trims.map((t) => {
+                    const oilFluid = trimFluid(t.engine_id, "engine_oil");
+                    const oilCap = oilFluid
+                      ? fmtCap(oilFluid.capacity_l, oilFluid.capacity_qt)
+                      : "—";
+                    return (
+                      <tr key={t.id} style={{ borderBottom: "1px solid var(--rule)" }}>
+                        <td style={{ padding: "10px 12px", fontWeight: 600 }}>
+                          <a href={`/${make.slug}/${gen.slug}/${t.slug}`} style={{ color: "var(--accent)" }}>
+                            {t.name}
+                          </a>
+                        </td>
+                        <td style={{ padding: "10px 12px", fontFamily: '"IBM Plex Mono", monospace', fontSize: 12 }}>
+                          {t.engine_code ?? "—"}
+                        </td>
+                        <td style={{ padding: "10px 12px", textAlign: "right" }}>
+                          {t.hp ? `${t.hp}` : "—"}
+                        </td>
+                        <td style={{ padding: "10px 12px", textAlign: "right" }}>
+                          {t.torque_nm ? `${t.torque_nm} N·m` : "—"}
+                        </td>
+                        <td style={{ padding: "10px 12px", fontSize: 12 }}>
+                          {t.transmission_name ?? "—"}
+                        </td>
+                        <td style={{ padding: "10px 12px", fontSize: 12 }}>
+                          {t.drive_wheel ?? "—"}
+                        </td>
+                        <td style={{ padding: "10px 12px", textAlign: "right" }}>
+                          {t.zero_100_kmh_s ? `${t.zero_100_kmh_s} s` : "—"}
+                        </td>
+                        <td style={{ padding: "10px 12px", textAlign: "right" }}>
+                          {t.top_speed_kmh ? `${t.top_speed_kmh} km/h` : "—"}
+                        </td>
+                        <td style={{ padding: "10px 12px", textAlign: "right" }}>
+                          {t.fuel_combined_l_100km ? `${t.fuel_combined_l_100km} L/100` : "—"}
+                        </td>
+                        <td style={{ padding: "10px 12px", textAlign: "right" }}>
+                          {t.co2_g_km ? `${t.co2_g_km} g/km` : "—"}
+                        </td>
+                        <td style={{ padding: "10px 12px", textAlign: "right", fontSize: 12 }}>
+                          {oilCap}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           </section>
         ) : null}
 
@@ -883,6 +1017,74 @@ export default async function Page({ params }: { params: Promise<Params> }) {
             ))}
           </ol>
         </section>
+        )}
+
+        {/* BODYSTYLE SIBLINGS — herstructureringsplan §3 Niveau 4: "Looking for the
+            Touring? F31 (2012-2015)". Other generations of the same model that
+            overlap in production years with a different body type. Distinct from
+            NameplateRail (which lists all generations across time) — this targets
+            the visitor who is on the wrong bodystyle of the right era. */}
+        {bodystyleSiblings.length > 0 && (
+          <section style={{ marginTop: "var(--s-5)" }}>
+            <h2 className="section-h">
+              Looking for a different body style?
+              <span className="count">{bodystyleSiblings.length}</span>
+            </h2>
+            <p className="muted" style={{ fontSize: 12, marginBottom: 8 }}>
+              Same era of the {model.name} in another body type.
+            </p>
+            <ul
+              style={{
+                listStyle: "none",
+                padding: 0,
+                margin: 0,
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))",
+                gap: 0,
+                border: "1px solid var(--rule)",
+              }}
+            >
+              {bodystyleSiblings.map((b) => {
+                const byrs = b.end_year
+                  ? `${b.start_year}–${b.end_year}`
+                  : `${b.start_year}–present`;
+                return (
+                  <li
+                    key={b.slug}
+                    style={{ borderRight: "1px solid var(--rule)", borderBottom: "1px solid var(--rule)" }}
+                  >
+                    <a
+                      href={`/${make.slug}/${b.slug}`}
+                      style={{ display: "block", padding: "10px 14px", fontSize: 13, color: "var(--ink)" }}
+                    >
+                      <div
+                        style={{
+                          fontSize: 10,
+                          fontWeight: 600,
+                          letterSpacing: "0.08em",
+                          textTransform: "uppercase",
+                          color: "var(--ink-soft)",
+                          marginBottom: 2,
+                        }}
+                      >
+                        {b.body_type}{b.codename ? ` · ${b.codename}` : ""}
+                      </div>
+                      <div style={{ fontWeight: 500 }}>{b.display_name}</div>
+                      <div
+                        style={{
+                          fontFamily: "var(--font-mono)",
+                          fontSize: 11,
+                          color: "var(--ink-mute)",
+                        }}
+                      >
+                        {byrs}
+                      </div>
+                    </a>
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
         )}
 
         <NameplateRail

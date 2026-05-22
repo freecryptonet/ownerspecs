@@ -41,6 +41,18 @@ const GUIDES = [
     excerpt:
       "Modern serpentine belts last 60,000-100,000 mi. The replacement window is wide, but the failure mode is catastrophic on engines with belt-driven water pumps. Inspection method + per-OEM intervals.",
   },
+  {
+    slug: "severe-duty-vs-normal-duty",
+    title: "Severe duty vs normal duty maintenance: when each applies",
+    excerpt:
+      "Most owners qualify as severe duty without realising it. Here's the trigger list, what gets shortened (and what doesn't), and how to read your specific car's split schedule.",
+  },
+  {
+    slug: "engines-shared-across-vehicles",
+    title: "How to find every vehicle that uses your engine",
+    excerpt:
+      "BMW's N55, Toyota's 2GR, Honda's K20C — modern engines often serve five or ten different vehicles. Here's why, how to look up your engine code, and which parts and intervals actually carry over.",
+  },
 ];
 
 export default function GuidesIndex() {

@@ -20,7 +20,7 @@ export function ModelView({
   generations,
 }: {
   make: { slug: string; name: string };
-  model: { slug: string; name: string };
+  model: { slug: string; name: string; bio?: string | null };
   generations: GenerationRow[];
 }) {
   const earliest = generations[generations.length - 1]?.start_year;
@@ -56,6 +56,22 @@ export function ModelView({
       </div>
 
       <main className="shell">
+        {/* MODEL BIO — herstructureringsplan §3 Niveau 3. 100-200 word
+            historical / positioning intro lifts this above a "thin hub" page.
+            Renders only when content is present; paragraphs split on blank lines. */}
+        {model.bio && (
+          <section style={{ paddingTop: "var(--s-5)" }}>
+            <h2 className="section-h">About the {make.name} {model.name}</h2>
+            <div style={{ maxWidth: "68ch" }}>
+              {model.bio.split(/\n\s*\n/).map((p, i) => (
+                <p key={i} style={{ marginTop: i === 0 ? 0 : "var(--s-3)" }}>
+                  {p.trim()}
+                </p>
+              ))}
+            </div>
+          </section>
+        )}
+
         <section style={{ paddingTop: "var(--s-5)" }}>
           <h2 className="section-h">
             All {make.name} {model.name} generations

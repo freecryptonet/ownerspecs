@@ -28,6 +28,7 @@ type ServiceRow = {
   km_severe: number | null;
   months: number | null;
   notes: string | null;
+  engine_id: number | null;
 };
 
 // serviceLabel imported from @/lib/labels
@@ -61,7 +62,7 @@ export default async function Page({ params }: { params: Promise<Params> }) {
   const { make, model, gen } = base;
 
   const services = await query<ServiceRow>(
-    `SELECT id, service, miles_normal, miles_severe, km_normal, km_severe, months, notes
+    `SELECT id, service, miles_normal, miles_severe, km_normal, km_severe, months, notes, engine_id
      FROM service_intervals
      WHERE generation_id = ?
      ORDER BY COALESCE(miles_normal, miles_severe, 999999), service`,
@@ -73,6 +74,50 @@ export default async function Page({ params }: { params: Promise<Params> }) {
   const sources = await getSourcesFor(gen.id, "service_intervals");
   const rev = reviewDate(sources);
   const yrs = yearRange(gen.start_year, gen.end_year);
+
+  // Cross-vehicle engine matches — herstructureringsplan §4. Engine-scoped
+  // service items (spark plug interval, timing belt, accessory belt, valve
+  // adjustment) carry the same value across vehicles with the same engine.
+  const distinctEngineIds = [
+    ...new Set(services.map((s) => s.engine_id).filter((id): id is number => id != null)),
+  ];
+  type CrossEngineGen = {
+    engine_id: number;
+    engine_code: string;
+    engine_display: string | null;
+    brand_slug: string;
+    brand_name: string;
+    model_name: string;
+    gen_slug: string;
+    gen_display: string;
+    start_year: number;
+    end_year: number | null;
+  };
+  const crossEngineGens: CrossEngineGen[] =
+    distinctEngineIds.length > 0
+      ? await query<CrossEngineGen>(
+          `SELECT DISTINCT e.id AS engine_id, e.code AS engine_code, e.display_name AS engine_display,
+                  mk.slug AS brand_slug, mk.name AS brand_name, mdl.name AS model_name,
+                  g.slug AS gen_slug, g.display_name AS gen_display,
+                  g.start_year, g.end_year
+           FROM trims t
+           JOIN engines e         ON e.id = t.engine_id
+           JOIN generations g     ON g.id = t.generation_id
+           JOIN models mdl        ON mdl.id = g.model_id
+           JOIN makes mk          ON mk.id = mdl.make_id
+           WHERE t.engine_id IN (${distinctEngineIds.map(() => "?").join(",")})
+             AND t.generation_id != ?
+             AND g.is_active = 1
+           ORDER BY e.code, g.start_year DESC
+           LIMIT 24`,
+          [...distinctEngineIds, gen.id],
+        )
+      : [];
+  const crossByEngine = new Map<string, CrossEngineGen[]>();
+  for (const c of crossEngineGens) {
+    if (!crossByEngine.has(c.engine_code)) crossByEngine.set(c.engine_code, []);
+    crossByEngine.get(c.engine_code)!.push(c);
+  }
 
   // Build column headers from union of normal-duty mileages
   const milestones = Array.from(
@@ -283,6 +328,77 @@ export default async function Page({ params }: { params: Promise<Params> }) {
           </section>
         )}
 
+        {crossByEngine.size > 0 && (
+          <section>
+            <h2 className="section-h">
+              Same engine, other vehicles
+              <span className="count">{crossEngineGens.length}</span>
+            </h2>
+            <p className="muted" style={{ fontSize: 12, marginBottom: 8 }}>
+              Engines shared with other vehicles. Engine-scoped service intervals
+              (spark plugs, timing belt, valve adjustment) are identical because
+              they depend on the engine, not the chassis.
+            </p>
+            {Array.from(crossByEngine.entries()).map(([engineCode, gens]) => (
+              <div key={engineCode} style={{ marginBottom: 12 }}>
+                <div
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 600,
+                    letterSpacing: "0.08em",
+                    textTransform: "uppercase",
+                    color: "var(--ink-soft)",
+                    marginBottom: 6,
+                    fontFamily: "var(--font-mono)",
+                  }}
+                >
+                  {engineCode}
+                  {gens[0].engine_display && (
+                    <span style={{ color: "var(--ink-mute)", marginLeft: 8, fontWeight: 400, textTransform: "none", letterSpacing: 0 }}>
+                      {gens[0].engine_display}
+                    </span>
+                  )}
+                </div>
+                <ul
+                  style={{
+                    listStyle: "none",
+                    padding: 0,
+                    margin: 0,
+                    display: "grid",
+                    gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
+                    gap: 0,
+                    border: "1px solid var(--rule)",
+                  }}
+                >
+                  {gens.map((g) => {
+                    const gyrs = g.end_year
+                      ? `${g.start_year}–${g.end_year}`
+                      : `${g.start_year}–present`;
+                    return (
+                      <li
+                        key={`${g.brand_slug}/${g.gen_slug}`}
+                        style={{ borderRight: "1px solid var(--rule)", borderBottom: "1px solid var(--rule)" }}
+                      >
+                        <a
+                          href={`/${g.brand_slug}/${g.gen_slug}/maintenance-schedule`}
+                          style={{ display: "block", padding: "10px 14px", fontSize: 13, color: "var(--ink)" }}
+                        >
+                          <div style={{ fontWeight: 500 }}>
+                            {g.brand_name} {g.gen_display}
+                          </div>
+                          <div className="muted" style={{ fontSize: 11, marginTop: 2, fontFamily: "var(--font-mono)" }}>
+                            {gyrs} · maintenance →
+                          </div>
+                        </a>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            ))}
+          </section>
+        )}
+
         <section>
           <h2 className="section-h">Related</h2>
           <ul
@@ -313,6 +429,11 @@ export default async function Page({ params }: { params: Promise<Params> }) {
                 href: `/${make.slug}/${gen.slug}/procedures`,
                 name: "Service procedures",
                 peek: "Oil reset · TPMS · battery · jump-start",
+              },
+              {
+                href: `/guides/severe-duty-vs-normal-duty`,
+                name: "Severe duty vs normal duty",
+                peek: "When the shorter schedule applies to your car",
               },
             ].map((l) => (
               <li

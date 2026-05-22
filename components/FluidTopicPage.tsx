@@ -172,6 +172,52 @@ export async function FluidTopicPage({
   const sources = citations.sources;
   const rev = reviewDate(sources);
 
+  // Cross-vehicle engine matches — herstructureringsplan §4. Links to OTHER
+  // generations that share an engine with this gen, pointing at their SAME
+  // topic page (config.slug). Engine-scoped fluids (oil, coolant, trans)
+  // share values across vehicles with the same engine, so this routes the
+  // SEO signal of "N55 oil capacity" / "B58 coolant" topical queries.
+  const distinctEngineIds = [
+    ...new Set(rendered.map((r) => r.engine_id).filter((id): id is number => id != null)),
+  ];
+  type CrossEngineGen = {
+    engine_id: number;
+    engine_code: string;
+    engine_display: string | null;
+    brand_slug: string;
+    brand_name: string;
+    model_name: string;
+    gen_slug: string;
+    gen_display: string;
+    start_year: number;
+    end_year: number | null;
+  };
+  const crossEngineGens: CrossEngineGen[] =
+    distinctEngineIds.length > 0
+      ? await query<CrossEngineGen>(
+          `SELECT DISTINCT e.id AS engine_id, e.code AS engine_code, e.display_name AS engine_display,
+                  mk.slug AS brand_slug, mk.name AS brand_name, mdl.name AS model_name,
+                  g.slug AS gen_slug, g.display_name AS gen_display,
+                  g.start_year, g.end_year
+           FROM trims t
+           JOIN engines e         ON e.id = t.engine_id
+           JOIN generations g     ON g.id = t.generation_id
+           JOIN models mdl        ON mdl.id = g.model_id
+           JOIN makes mk          ON mk.id = mdl.make_id
+           WHERE t.engine_id IN (${distinctEngineIds.map(() => "?").join(",")})
+             AND t.generation_id != ?
+             AND g.is_active = 1
+           ORDER BY e.code, g.start_year DESC
+           LIMIT 24`,
+          [...distinctEngineIds, gen.id],
+        )
+      : [];
+  const crossByEngine = new Map<string, CrossEngineGen[]>();
+  for (const c of crossEngineGens) {
+    if (!crossByEngine.has(c.engine_code)) crossByEngine.set(c.engine_code, []);
+    crossByEngine.get(c.engine_code)!.push(c);
+  }
+
   const primary = rendered[0] ?? rows[0];
   const faqs = config.buildFaq({
     make: make.name,
@@ -364,6 +410,76 @@ export async function FluidTopicPage({
                 </div>
               ))}
             </dl>
+          </section>
+        )}
+
+        {crossByEngine.size > 0 && (
+          <section>
+            <h2 className="section-h">
+              Same engine, other vehicles
+              <span className="count">{crossEngineGens.length}</span>
+            </h2>
+            <p className="muted" style={{ fontSize: 12, marginBottom: 8 }}>
+              Engines shared with other vehicles. {config.label} values are identical
+              because they are engine-scoped specs — only the chassis differs.
+            </p>
+            {Array.from(crossByEngine.entries()).map(([engineCode, gens]) => (
+              <div key={engineCode} style={{ marginBottom: 12 }}>
+                <div
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 600,
+                    letterSpacing: "0.08em",
+                    textTransform: "uppercase",
+                    color: "var(--ink-soft)",
+                    marginBottom: 6,
+                    fontFamily: "var(--font-mono)",
+                  }}
+                >
+                  {engineCode}
+                  {gens[0].engine_display && (
+                    <span style={{ color: "var(--ink-mute)", marginLeft: 8, fontWeight: 400, textTransform: "none", letterSpacing: 0 }}>
+                      {gens[0].engine_display}
+                    </span>
+                  )}
+                </div>
+                <ul
+                  style={{
+                    listStyle: "none",
+                    padding: 0,
+                    margin: 0,
+                    display: "grid",
+                    gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
+                    gap: 0,
+                    border: "1px solid var(--rule)",
+                  }}
+                >
+                  {gens.map((g) => {
+                    const gyrs = g.end_year
+                      ? `${g.start_year}–${g.end_year}`
+                      : `${g.start_year}–present`;
+                    return (
+                      <li
+                        key={`${g.brand_slug}/${g.gen_slug}`}
+                        style={{ borderRight: "1px solid var(--rule)", borderBottom: "1px solid var(--rule)" }}
+                      >
+                        <a
+                          href={`/${g.brand_slug}/${g.gen_slug}/${config.slug}`}
+                          style={{ display: "block", padding: "10px 14px", fontSize: 13, color: "var(--ink)" }}
+                        >
+                          <div style={{ fontWeight: 500 }}>
+                            {g.brand_name} {g.gen_display}
+                          </div>
+                          <div className="muted" style={{ fontSize: 11, marginTop: 2, fontFamily: "var(--font-mono)" }}>
+                            {gyrs} · {config.label.toLowerCase()} →
+                          </div>
+                        </a>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            ))}
           </section>
         )}
 

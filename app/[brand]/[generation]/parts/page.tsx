@@ -26,6 +26,7 @@ type Part = {
   gap_mm: string | null;
   size: string | null;
   notes: string | null;
+  engine_id: number | null;
 };
 
 const PART_LABEL: Record<string, string> = {
@@ -87,7 +88,7 @@ export default async function Page({ params }: { params: Promise<Params> }) {
   const { make, model, gen } = base;
 
   const parts = await query<Part>(
-    `SELECT id, part_type, part_number, source_brand, gap_mm, size, notes
+    `SELECT id, part_type, part_number, source_brand, gap_mm, size, notes, engine_id
      FROM parts WHERE generation_id = ?
      ORDER BY FIELD(part_type,
        'spark_plug',
@@ -103,6 +104,51 @@ export default async function Page({ params }: { params: Promise<Params> }) {
   const sources = await getSourcesFor(gen.id, "parts");
   const rev = reviewDate(sources);
   const yrs = yearRange(gen.start_year, gen.end_year);
+
+  // Cross-vehicle engine matches — herstructureringsplan §4. Oil filter PN,
+  // spark plug PN and air filter PN are engine-scoped: a 535i F10 with N55
+  // takes the same oil filter as a 335i F30 with N55. Routes engine-code
+  // topical SEO ("N55 oil filter", "B58 spark plug").
+  const distinctEngineIds = [
+    ...new Set(parts.map((p) => p.engine_id).filter((id): id is number => id != null)),
+  ];
+  type CrossEngineGen = {
+    engine_id: number;
+    engine_code: string;
+    engine_display: string | null;
+    brand_slug: string;
+    brand_name: string;
+    model_name: string;
+    gen_slug: string;
+    gen_display: string;
+    start_year: number;
+    end_year: number | null;
+  };
+  const crossEngineGens: CrossEngineGen[] =
+    distinctEngineIds.length > 0
+      ? await query<CrossEngineGen>(
+          `SELECT DISTINCT e.id AS engine_id, e.code AS engine_code, e.display_name AS engine_display,
+                  mk.slug AS brand_slug, mk.name AS brand_name, mdl.name AS model_name,
+                  g.slug AS gen_slug, g.display_name AS gen_display,
+                  g.start_year, g.end_year
+           FROM trims t
+           JOIN engines e         ON e.id = t.engine_id
+           JOIN generations g     ON g.id = t.generation_id
+           JOIN models mdl        ON mdl.id = g.model_id
+           JOIN makes mk          ON mk.id = mdl.make_id
+           WHERE t.engine_id IN (${distinctEngineIds.map(() => "?").join(",")})
+             AND t.generation_id != ?
+             AND g.is_active = 1
+           ORDER BY e.code, g.start_year DESC
+           LIMIT 24`,
+          [...distinctEngineIds, gen.id],
+        )
+      : [];
+  const crossByEngine = new Map<string, CrossEngineGen[]>();
+  for (const c of crossEngineGens) {
+    if (!crossByEngine.has(c.engine_code)) crossByEngine.set(c.engine_code, []);
+    crossByEngine.get(c.engine_code)!.push(c);
+  }
 
   const groups = GROUPS.map((g) => ({
     ...g,
@@ -286,6 +332,77 @@ export default async function Page({ params }: { params: Promise<Params> }) {
                 </div>
               ))}
             </dl>
+          </section>
+        )}
+
+        {crossByEngine.size > 0 && (
+          <section>
+            <h2 className="section-h">
+              Same engine, other vehicles
+              <span className="count">{crossEngineGens.length}</span>
+            </h2>
+            <p className="muted" style={{ fontSize: 12, marginBottom: 8 }}>
+              Engines shared with other vehicles. Engine-scoped part numbers
+              (oil filter, spark plug, air filter) are identical because they
+              depend on the engine, not the chassis.
+            </p>
+            {Array.from(crossByEngine.entries()).map(([engineCode, gens]) => (
+              <div key={engineCode} style={{ marginBottom: 12 }}>
+                <div
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 600,
+                    letterSpacing: "0.08em",
+                    textTransform: "uppercase",
+                    color: "var(--ink-soft)",
+                    marginBottom: 6,
+                    fontFamily: "var(--font-mono)",
+                  }}
+                >
+                  {engineCode}
+                  {gens[0].engine_display && (
+                    <span style={{ color: "var(--ink-mute)", marginLeft: 8, fontWeight: 400, textTransform: "none", letterSpacing: 0 }}>
+                      {gens[0].engine_display}
+                    </span>
+                  )}
+                </div>
+                <ul
+                  style={{
+                    listStyle: "none",
+                    padding: 0,
+                    margin: 0,
+                    display: "grid",
+                    gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
+                    gap: 0,
+                    border: "1px solid var(--rule)",
+                  }}
+                >
+                  {gens.map((g) => {
+                    const gyrs = g.end_year
+                      ? `${g.start_year}–${g.end_year}`
+                      : `${g.start_year}–present`;
+                    return (
+                      <li
+                        key={`${g.brand_slug}/${g.gen_slug}`}
+                        style={{ borderRight: "1px solid var(--rule)", borderBottom: "1px solid var(--rule)" }}
+                      >
+                        <a
+                          href={`/${g.brand_slug}/${g.gen_slug}/parts`}
+                          style={{ display: "block", padding: "10px 14px", fontSize: 13, color: "var(--ink)" }}
+                        >
+                          <div style={{ fontWeight: 500 }}>
+                            {g.brand_name} {g.gen_display}
+                          </div>
+                          <div className="muted" style={{ fontSize: 11, marginTop: 2, fontFamily: "var(--font-mono)" }}>
+                            {gyrs} · part numbers →
+                          </div>
+                        </a>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            ))}
           </section>
         )}
 

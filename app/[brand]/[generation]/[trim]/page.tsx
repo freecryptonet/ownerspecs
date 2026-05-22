@@ -21,6 +21,7 @@ import {
   speedDual,
   boreStrokeDual,
   displacementDual,
+  mmDual,
 } from "@/lib/units";
 
 const SITE = "https://ownerspecs.com";
@@ -44,6 +45,15 @@ type Trim = {
   drive_wheel: string | null;
   tire_size: string | null;
   rim_size: string | null;
+  length_mm: number | null;
+  width_mm: number | null;
+  height_mm: number | null;
+  wheelbase_mm: number | null;
+  front_track_mm: number | null;
+  rear_track_mm: number | null;
+  ground_clearance_mm: number | null;
+  drag_coefficient: string | null;
+  turning_circle_m: string | null;
   engine_id: number | null;
   engine_code: string | null;
   engine_display: string | null;
@@ -201,6 +211,8 @@ export default async function Page({ params }: { params: Promise<Params> }) {
        t.id, t.slug, t.name, t.hp, t.torque_nm, t.zero_100_kmh_s, t.top_speed_kmh,
        t.fuel_combined_l_100km, t.co2_g_km, t.curb_weight_kg, t.max_weight_kg,
        t.trailer_braked_kg, t.trailer_unbraked_kg, t.drive_wheel, t.tire_size, t.rim_size,
+       t.length_mm, t.width_mm, t.height_mm, t.wheelbase_mm, t.front_track_mm, t.rear_track_mm,
+       t.ground_clearance_mm, t.drag_coefficient, t.turning_circle_m,
        t.engine_id,
        e.code AS engine_code, e.display_name AS engine_display, e.displacement_cc AS engine_displacement_cc,
        e.aspiration AS engine_aspiration, e.cylinders AS engine_cylinders,
@@ -219,13 +231,56 @@ export default async function Page({ params }: { params: Promise<Params> }) {
 
   const yrs = yearRange(gen.start_year, gen.end_year);
 
-  // Sibling trims for the bottom nav.
-  const siblings = await query<{ slug: string; name: string }>(
-    `SELECT slug, name FROM trims
-     WHERE generation_id = ? AND slug != ?
-     ORDER BY hp ASC, name LIMIT 12`,
+  // Sibling trims for the bottom nav. No LIMIT — herstructureringsplan §4
+  // calls for the full list (competitors render 20-35+ siblings per page) so
+  // every variant in the gen is one click away. Pulls minimal columns to keep
+  // the row hint useful without ballooning the SELECT.
+  const siblings = await query<{
+    slug: string;
+    name: string;
+    hp: number | null;
+    engine_code: string | null;
+  }>(
+    `SELECT t.slug, t.name, t.hp, e.code AS engine_code
+     FROM trims t
+     LEFT JOIN engines e ON e.id = t.engine_id
+     WHERE t.generation_id = ? AND t.slug != ?
+     ORDER BY t.hp ASC, t.name`,
     [gen.id, trim],
   );
+
+  // Common-engine cross-vehicle suggestions — herstructureringsplan §4 "common-engine
+  // block": on each trim page, list other vehicles in the catalogue that use the same
+  // engine_id (e.g. BMW 335i F30 N55 → BMW 535i F10, X3 35i F25). Skipped when the
+  // trim has no engine_id or no cross-vehicle matches exist.
+  const commonEngineTrims = trimRow.engine_id
+    ? await query<{
+        brand_slug: string;
+        brand_name: string;
+        gen_slug: string;
+        gen_display: string;
+        gen_start: number;
+        gen_end: number | null;
+        trim_slug: string;
+        trim_name: string;
+        hp: number | null;
+      }>(
+        `SELECT mk.slug AS brand_slug, mk.name AS brand_name,
+                g.slug AS gen_slug, g.display_name AS gen_display,
+                g.start_year AS gen_start, g.end_year AS gen_end,
+                t.slug AS trim_slug, t.name AS trim_name, t.hp
+         FROM trims t
+         JOIN generations g ON g.id = t.generation_id
+         JOIN models mdl    ON mdl.id = g.model_id
+         JOIN makes mk      ON mk.id = mdl.make_id
+         WHERE t.engine_id = ?
+           AND t.generation_id != ?
+           AND g.is_active = 1
+         ORDER BY mk.name, g.start_year DESC, t.hp ASC
+         LIMIT 12`,
+        [trimRow.engine_id, gen.id],
+      )
+    : [];
 
   // Multi-engine signal for the data-grain rule (mirrors gen + topic pages).
   const engineList = await query<{ id: number }>(
@@ -555,6 +610,62 @@ export default async function Page({ params }: { params: Promise<Params> }) {
           </section>
         )}
 
+        {/* DIMENSIONS — herstructureringsplan Fase 1.3. Renders the trim's own
+            measurements when present (M-package width, xDrive height, etc.); falls
+            back to the gen-level value with a "generation-typical" note so that the
+            section is always informative even before trim-level data is scraped. */}
+        {((trimRow.length_mm || trimRow.width_mm || trimRow.height_mm || trimRow.wheelbase_mm ||
+          trimRow.ground_clearance_mm || trimRow.drag_coefficient || trimRow.turning_circle_m) ||
+          (gen.length_mm || gen.width_mm || gen.height_mm || gen.wheelbase_mm)) && (() => {
+          const trimHasOwn =
+            trimRow.length_mm != null ||
+            trimRow.width_mm != null ||
+            trimRow.height_mm != null ||
+            trimRow.wheelbase_mm != null;
+          const dimRow = (label: string, trimV: number | null, genV: number | null) => {
+            const v = trimV ?? genV;
+            if (v == null) return null;
+            const isFallback = trimV == null && genV != null;
+            return (
+              <tr>
+                <th>{label}</th>
+                <td>
+                  {mmDual(v)}
+                  {isFallback && trimHasOwn && (
+                    <span className="muted" style={{ marginLeft: 8, fontSize: 11 }}>
+                      generation-typical
+                    </span>
+                  )}
+                </td>
+              </tr>
+            );
+          };
+          return (
+            <section>
+              <h2 className="section-h">Dimensions</h2>
+              <table className="spec-table">
+                <tbody>
+                  {dimRow("Length", trimRow.length_mm, gen.length_mm)}
+                  {dimRow("Width", trimRow.width_mm, gen.width_mm)}
+                  {dimRow("Height", trimRow.height_mm, gen.height_mm)}
+                  {dimRow("Wheelbase", trimRow.wheelbase_mm, gen.wheelbase_mm)}
+                  {dimRow("Front track", trimRow.front_track_mm, gen.front_track_mm)}
+                  {dimRow("Rear track", trimRow.rear_track_mm, gen.rear_track_mm)}
+                  {trimRow.ground_clearance_mm && (
+                    <tr><th>Ground clearance</th><td>{mmDual(trimRow.ground_clearance_mm)}</td></tr>
+                  )}
+                  {trimRow.drag_coefficient && (
+                    <tr><th>Drag coefficient</th><td>Cd {trimRow.drag_coefficient}</td></tr>
+                  )}
+                  {trimRow.turning_circle_m && (
+                    <tr><th>Turning circle</th><td>{Number(trimRow.turning_circle_m).toFixed(1)} m (curb to curb)</td></tr>
+                  )}
+                </tbody>
+              </table>
+            </section>
+          );
+        })()}
+
         {/* WEIGHT + TOWING */}
         {(trimRow.curb_weight_kg || trimRow.trailer_braked_kg) && (
           <section>
@@ -737,6 +848,73 @@ export default async function Page({ params }: { params: Promise<Params> }) {
           </section>
         )}
 
+        {/* COMPARE CTA — herstructureringsplan §5 "Vergelijk-CTA: Vergelijk 320i met 320d".
+            Picks the sibling closest in HP to this trim so the side-by-side is meaningful
+            (comparing a 184 hp trim against a 450 hp trim has little purchase intent). */}
+        {(() => {
+          if (!trimRow.hp || siblings.length === 0) return null;
+          const closest = siblings
+            .filter((s) => s.hp != null)
+            .map((s) => ({ s, delta: Math.abs((s.hp as number) - (trimRow.hp as number)) }))
+            .sort((x, y) => x.delta - y.delta)[0];
+          if (!closest) return null;
+          const compareHref = `/compare/trims/${make.slug}/${gen.slug}/${
+            // Canonical pair order: lower-HP trim first (matches generateStaticParams).
+            (closest.s.hp as number) < (trimRow.hp as number)
+              ? `${closest.s.slug}/vs/${make.slug}/${gen.slug}/${trim}`
+              : `${trim}/vs/${make.slug}/${gen.slug}/${closest.s.slug}`
+          }`;
+          return (
+            <section>
+              <div
+                style={{
+                  border: "1px solid var(--rule)",
+                  background: "var(--bg-alt)",
+                  padding: "14px 18px",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  gap: 12,
+                  flexWrap: "wrap",
+                }}
+              >
+                <div>
+                  <div
+                    style={{
+                      fontSize: 11,
+                      fontWeight: 600,
+                      letterSpacing: "0.08em",
+                      textTransform: "uppercase",
+                      color: "var(--ink-soft)",
+                      marginBottom: 2,
+                    }}
+                  >
+                    Side-by-side
+                  </div>
+                  <div style={{ fontSize: 14 }}>
+                    Compare <strong>{trimRow.name}</strong> with <strong>{closest.s.name}</strong>
+                    <span className="muted" style={{ marginLeft: 8, fontSize: 12 }}>
+                      ({trimRow.hp} hp vs {closest.s.hp} hp)
+                    </span>
+                  </div>
+                </div>
+                <a
+                  href={compareHref}
+                  style={{
+                    fontSize: 13,
+                    padding: "8px 14px",
+                    border: "1px solid var(--accent)",
+                    color: "var(--accent)",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  Compare →
+                </a>
+              </div>
+            </section>
+          );
+        })()}
+
         {/* OTHER TRIMS */}
         {siblings.length > 0 && (
           <section>
@@ -761,10 +939,85 @@ export default async function Page({ params }: { params: Promise<Params> }) {
                     href={`/${make.slug}/${gen.slug}/${s.slug}`}
                     style={{ display: "block", padding: "10px 14px", fontSize: 13, color: "var(--ink)" }}
                   >
-                    {s.name}
+                    <div style={{ fontWeight: 500 }}>{s.name}</div>
+                    {(s.engine_code || s.hp) && (
+                      <div className="muted" style={{ fontSize: 11, marginTop: 2 }}>
+                        {[s.engine_code, s.hp ? `${s.hp} hp` : null].filter(Boolean).join(" · ")}
+                      </div>
+                    )}
                   </a>
                 </li>
               ))}
+            </ul>
+          </section>
+        )}
+
+        {/* COMMON-ENGINE CROSS-VEHICLE BLOCK — herstructureringsplan §4 "common-engine
+            block": other vehicles in the catalogue that share this trim's engine.
+            Drives long-tail SEO on engine-code queries ("N55 specs", "B58 oil capacity"). */}
+        {commonEngineTrims.length > 0 && (
+          <section>
+            <h2 className="section-h">
+              Other vehicles with the {trimRow.engine_code ?? trimRow.engine_display ?? "same"} engine
+              <span className="count">{commonEngineTrims.length}</span>
+            </h2>
+            <p className="muted" style={{ fontSize: 12, marginBottom: 8 }}>
+              Same engine, different car. Fluids, torques and parts that are engine-scoped
+              (oil capacity, spark plug PN, coolant) are identical across these.
+            </p>
+            <ul
+              style={{
+                listStyle: "none",
+                padding: 0,
+                margin: 0,
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
+                gap: 0,
+                border: "1px solid var(--rule)",
+              }}
+            >
+              {commonEngineTrims.map((c) => {
+                const cyrs = c.gen_end
+                  ? `${c.gen_start}–${c.gen_end}`
+                  : `${c.gen_start}–present`;
+                return (
+                  <li
+                    key={`${c.brand_slug}/${c.gen_slug}/${c.trim_slug}`}
+                    style={{ borderRight: "1px solid var(--rule)", borderBottom: "1px solid var(--rule)" }}
+                  >
+                    <a
+                      href={`/${c.brand_slug}/${c.gen_slug}/${c.trim_slug}`}
+                      style={{ display: "block", padding: "10px 14px", fontSize: 13, color: "var(--ink)" }}
+                    >
+                      <div
+                        style={{
+                          fontSize: 10,
+                          fontWeight: 600,
+                          letterSpacing: "0.08em",
+                          textTransform: "uppercase",
+                          color: "var(--ink-soft)",
+                          marginBottom: 2,
+                        }}
+                      >
+                        {c.brand_name}
+                      </div>
+                      <div style={{ fontWeight: 500 }}>
+                        {c.gen_display} {c.trim_name}
+                      </div>
+                      <div
+                        className="muted"
+                        style={{
+                          fontFamily: "var(--font-mono)",
+                          fontSize: 11,
+                          marginTop: 2,
+                        }}
+                      >
+                        {cyrs}{c.hp ? ` · ${c.hp} hp` : ""}
+                      </div>
+                    </a>
+                  </li>
+                );
+              })}
             </ul>
           </section>
         )}

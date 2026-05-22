@@ -421,6 +421,156 @@ The second-worst: a Subaru EJ-series with belt failure on the freeway. Same over
       ],
     ],
   },
+  {
+    slug: "severe-duty-vs-normal-duty",
+    title: "Severe duty vs normal duty maintenance: when each applies",
+    description:
+      "Most owners qualify as severe duty without realising it. The trigger list, what gets shortened (and what doesn't), and how to read your specific car's split schedule.",
+    body: `## What "severe duty" actually means
+
+The manufacturer's "severe duty" schedule isn't a marketing term — it's a separate schedule in your owner's manual triggered by specific driving conditions. The standard triggers are:
+
+- Trips under 5 mi (8 km), especially in cold weather — the oil never reaches full operating temperature, so fuel dilution and water condensation accumulate
+- Stop-and-go traffic for the majority of mileage
+- Driving on dusty or unpaved roads
+- Towing or heavy hauling above ~50% of rated capacity
+- Sustained operation in extreme heat (> 32 °C / 90 °F) or cold (< -18 °C / 0 °F)
+- Idling for extended periods (often defined as > 30 minutes per shift)
+
+Most owners genuinely qualify for severe duty even when they don't realise it — short urban commutes are the single most common trigger.
+
+## How much shorter are the intervals?
+
+Typical compressions seen across mainstream brands:
+
+- **Engine oil**: from 7,500 → 5,000 mi  (12,000 → 8,000 km)
+- **Transmission fluid**: from 60,000 → 30,000 mi
+- **Air filter**: from 30,000 → 15,000 mi
+- **Differential / transfer case fluid**: from 60,000 → 30,000 mi
+- **Coolant flush**: typically unchanged (chemistry-driven, not load-driven)
+- **Brake fluid**: typically unchanged (moisture-absorption-driven)
+- **Spark plugs**: typically unchanged
+
+The compressions cluster on items where fuel dilution, soot loading, or thermal cycling drive degradation.
+
+## When the OEM expects severe duty by default
+
+Some manufacturers (Toyota, Honda) explicitly state in the manual that "most" driving qualifies as severe. Others (BMW, Mercedes-Benz, Audi) use a Condition Based Service (CBS) system that calculates the actual interval from on-board sensors rather than splitting normal/severe schedules — your iDrive or COMAND screen will show the remaining mileage to next service.
+
+## A practical heuristic
+
+If any of these is true for at least 30% of your annual mileage, treat your car as severe duty:
+
+1. Average trip distance under 10 mi
+2. Below freezing on > 60 days/year at startup
+3. Any routine towing
+4. Stop-and-go traffic for > 1 hour daily
+
+If none apply, the normal-duty schedule is appropriate.
+
+## Why does the OEM split the schedule at all?
+
+Two reasons. First, advertised maintenance cost (cost-of-ownership figures) uses the normal-duty schedule, so manufacturers have an incentive to keep that interval as long as the engine can tolerate. Second, warranty terms tie to "following the maintenance schedule applicable to your driving conditions" — if you exceed normal-duty intervals while driving severe-duty conditions, a powertrain failure can be denied under warranty.
+
+## Find the exact split for your car
+
+The maintenance schedule page for every generation on ownerspecs.com lists normal-duty and severe-duty mileages side by side, sourced from the OEM owner's manual. The exact compression varies enough between manufacturers that a generic "halve it" rule is wrong as often as right — look up your gen.`,
+    faq: [
+      [
+        "Is severe duty just normal duty with one shorter interval?",
+        "No — multiple intervals are typically shortened (oil, transmission fluid, air filter, differentials). The exact list varies per OEM; coolant flush and brake fluid flush usually stay the same because they're driven by chemistry and moisture absorption rather than load.",
+      ],
+      [
+        "Does following severe duty on a car driven normally hurt anything?",
+        "No mechanical harm, but you spend more on maintenance than necessary. Some owners default to severe to be conservative; it's a cost decision, not a safety one.",
+      ],
+      [
+        "If I tow once a year on a road trip, am I severe duty?",
+        "Not from one trip. The OEM definitions imply sustained or routine exposure. A weekend with a small trailer doesn't move you into severe duty — repeated weekly towing or commercial use does.",
+      ],
+      [
+        "What's the difference between severe duty and 'driving conditions' on European cars?",
+        "European OEMs typically use Condition Based Service (CBS) instead of a binary normal/severe split — sensors compute actual oil life, brake pad wear and brake fluid moisture. The CBS schedule effectively replaces the US-style severe schedule.",
+      ],
+      [
+        "Does the dealer override severe duty by default?",
+        "Dealer service writers usually default to normal duty unless you state your conditions. If you tow or commute short distances, mention it — they can flag your car for the severe-duty reminder cadence in the DMS.",
+      ],
+    ],
+  },
+  {
+    slug: "engines-shared-across-vehicles",
+    title: "How to find every vehicle that uses your engine",
+    description:
+      "Modern engines often serve five or more different vehicles. The engine code, oil capacity, spark plug PN and torque values are identical across them — but body, gearbox and final drive aren't. Here's what carries over and what doesn't.",
+    body: `## Why engines are shared
+
+A modern internal combustion engine costs hundreds of millions of dollars to design, certify and tool for production. Manufacturers amortise that cost by using the same engine across as many vehicles as possible — sometimes within the same brand (BMW's B58 inline-six powers the 340i, 540i, X3 M40i, X4 M40i, X5 xDrive40i, X6 xDrive40i, X7 xDrive40i, M340i, Z4 M40i, Supra 3.0 and Morgan Plus Six) and sometimes across brands when companies share platforms or supply each other.
+
+The most-shared engines tend to be:
+
+- Mid-displacement four-cylinders that work in compact, mid-size and small-SUV applications (Toyota A25A, Honda L15B, Hyundai G4FJ / Smartstream G2.5)
+- Turbocharged inline-sixes used in luxury sedans and SUVs (BMW B58, Mercedes M256)
+- V6 truck engines (Ford 2.7 / 3.5 EcoBoost, Toyota 2GR, Stellantis Pentastar)
+
+## What carries over between vehicles with the same engine
+
+Specifications that depend purely on the engine carry over identically:
+
+- **Engine oil capacity** (within a ~0.2 L tolerance for sump variations)
+- **Oil viscosity grade** and OEM specification
+- **Oil filter part number** (sometimes — depends on accessibility / packaging)
+- **Spark plug part number and gap**
+- **Spark plug torque**
+- **Oil drain plug torque**
+- **Coolant capacity** (varies more — depends on radiator and hose routing per vehicle)
+- **Air filter dimensions** (the housing is usually shared)
+- **Service intervals** for engine-scoped items (spark plug interval, timing belt / chain, valve adjustment)
+
+## What does NOT carry over
+
+Specifications that depend on the chassis or drivetrain do not:
+
+- **Transmission type and fluid** (a 335i runs the ZF 8HP, an N55-equipped M2 runs a DCT or 6MT — different fluid)
+- **Drive ratio and differential fluid**
+- **Brake rotor / pad sizes**, lug nut torque (depends on wheel and brake package)
+- **Tire size and pressure**
+- **Battery group, alternator output, fuse layout**
+
+The rule of thumb: anything inside the engine block or in direct contact with engine internals carries over. Anything that connects the engine to the road does not.
+
+## How to look up your engine code
+
+The engine code (e.g. \`N55B30A\`, \`A25A-FKS\`, \`B58B30M0\`) is stamped on the block and usually printed on the owner''s manual identification page. On most modern cars it also shows on the engine bay sticker near the strut tower. Once you have the code, the engine catalogue at \`ownerspecs.com/engines/{code}\` lists every vehicle in our database that uses it, with direct links to each vehicle''s oil capacity, torque values and OEM part numbers.
+
+## Caveats
+
+Same engine code does not always mean identical tune. Manufacturers commonly issue the same physical engine in multiple states of tune — different ECU calibration, intercooler size, exhaust manifold or fuel injectors. The B58 in a 540i and a Supra 3.0 produce different horsepower from the same block. Mechanical service items still carry over; performance numbers do not.
+
+Some engines have minor production-year revisions (different intake camshafts, different oil pump) that change oil capacity by 0.2-0.4 L or shift the spark plug torque. Always cross-check with your specific vehicle's owner manual before relying on a cross-vehicle figure.`,
+    faq: [
+      [
+        "If my BMW 335i and a Z4 sDrive35is both have the N54, are the maintenance schedules the same?",
+        "The engine-scoped items (spark plug interval, oil drain interval, valve cover gasket torque, oil filter PN) are identical. The transmission service interval differs — the 335i could be ordered with a 6MT or ZF6HP/ZF7HP/ZF8HP automatic, while the Z4 sDrive35is was DCT-only. Look up each vehicle's transmission fluid page separately.",
+      ],
+      [
+        "How do I find the engine code on my car?",
+        "Three places: (1) the owner's manual under 'Identification', (2) the engine bay sticker on or near the strut tower, (3) stamped on the engine block itself (usually on the side of the block visible from above). Some manufacturers use a separate sales designation (e.g. 'TFSI') and a different internal code (e.g. EA888) — the catalogue uses the internal code.",
+      ],
+      [
+        "If the engine is shared with another car, can I buy parts from that car's dealer?",
+        "For engine-scoped parts (oil filter, spark plug, air filter, sometimes coolant), yes — they're the same part number from the same supplier. For accessory parts that bolt to the engine (alternator, AC compressor, power steering pump on older cars), the part may differ even though the engine block is shared, because the accessory bracket layout often differs per vehicle. Cross-check the part number, not just the engine code.",
+      ],
+      [
+        "Do tuners use the same map on the same engine in different cars?",
+        "No. Even when the engine block is identical, the ECU mapping accounts for the vehicle's transmission, fuel-octane rating in the target market, intake / exhaust restrictions and emissions calibration. A 335i ECU flash will not run correctly on a Z4 sDrive35is even though both have the N54.",
+      ],
+      [
+        "Where does ownerspecs list shared-engine information?",
+        "On every engine catalogue page (\`/engines/{code}\`), and as a 'Same engine, other vehicles' section on oil-capacity, coolant, transmission-fluid, torque, parts and maintenance-schedule pages where engine-scoped data is shown.",
+      ],
+    ],
+  },
 ];
 
 export function generateStaticParams() {

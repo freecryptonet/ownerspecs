@@ -426,6 +426,34 @@ export default async function Page({ params }: { params: Promise<Params> }) {
           </section>
         )}
 
+        {/* GUIDE LINK — explains what carries over between vehicles sharing
+            an engine (oil cap, spark plug PN) and what doesn't (transmission,
+            differential, brakes). Hub for the cross-engine sections elsewhere. */}
+        <section>
+          <h2 className="section-h">Sharing this engine across vehicles</h2>
+          <div
+            style={{
+              border: "1px solid var(--rule)",
+              borderLeft: "3px solid var(--accent)",
+              background: "var(--bg-alt)",
+              padding: "16px 20px",
+            }}
+          >
+            <p style={{ fontSize: 13, color: "var(--ink-soft)", lineHeight: 1.55, margin: 0 }}>
+              The {engine.code} is used in {apps.length} {apps.length === 1 ? "vehicle" : "vehicles"} in
+              our catalogue. Oil capacity, spark plug part number and engine-scoped torque values are
+              identical across all of them; transmission, drive ratio and brake values are not.
+              {" "}
+              <a
+                href="/guides/engines-shared-across-vehicles"
+                style={{ color: "var(--accent)", fontWeight: 600 }}
+              >
+                Read the engine-sharing guide →
+              </a>
+            </p>
+          </div>
+        </section>
+
         {/* OBD-II diagnostic cross-link — sister site autodtcs.com handles
             full DTC catalogue. Link from here captures users searching
             "B58 check engine codes" / "A25A-FXS P0420". */}
