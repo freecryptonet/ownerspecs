@@ -283,6 +283,16 @@ async function getGenerationData(brand: string, generation: string) {
     [gen.id],
   );
 
+  const tireCount = await queryOne<{ n: number }>(
+    "SELECT COUNT(*) AS n FROM tire_pressures WHERE generation_id = ?",
+    [gen.id],
+  );
+
+  const procCount = await queryOne<{ n: number }>(
+    "SELECT COUNT(*) AS n FROM procedures WHERE generation_id = ?",
+    [gen.id],
+  );
+
   const heroImage = await queryOne<HeroImage>(
     `SELECT url, attribution, license, original_url, caption, width, height
      FROM images
@@ -344,6 +354,8 @@ async function getGenerationData(brand: string, generation: string) {
     bulbCount: bulbCount?.n ?? 0,
     fuseCount: fuseCount?.n ?? 0,
     partCount: partCount?.n ?? 0,
+    tireCount: tireCount?.n ?? 0,
+    procCount: procCount?.n ?? 0,
     serviceIntervals,
     heroImage,
     bodystyleSiblings,
@@ -468,6 +480,8 @@ export default async function Page({ params }: { params: Promise<Params> }) {
     bulbCount,
     fuseCount,
     partCount,
+    tireCount,
+    procCount,
     serviceIntervals,
     heroImage,
     bodystyleSiblings,
@@ -1060,6 +1074,8 @@ export default async function Page({ params }: { params: Promise<Params> }) {
             </span>
           </h2>
           <div className="moat-list">
+            {/* Tile suppression mirrors each topic page's own notFound() guard,
+               so we never link from the gen hub to a topic that would 404. */}
             {fluids.some(f => f.fluid_type === "engine_oil") ? (
               <a className="moat-row" href={`/${make.slug}/${gen.slug}/oil-capacity`}>
                 <svg className="icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5">
@@ -1071,7 +1087,7 @@ export default async function Page({ params }: { params: Promise<Params> }) {
                 </span>
                 <span className="arrow">→</span>
               </a>
-            ) : (
+            ) : fluids.some(f => f.fluid_type === "coolant") ? (
               <a className="moat-row" href={`/${make.slug}/${gen.slug}/coolant`}>
                 <svg className="icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5">
                   <path d="M10 2v5m0 0c-2.5 1.5-4 4-4 6.5a4 4 0 0 0 8 0c0-2.5-1.5-5-4-6.5z" />
@@ -1082,55 +1098,67 @@ export default async function Page({ params }: { params: Promise<Params> }) {
                 </span>
                 <span className="arrow">→</span>
               </a>
+            ) : null}
+            {fluids.some(f => f.fluid_type === "coolant") && fluids.some(f => f.fluid_type === "engine_oil") && (
+              <a className="moat-row" href={`/${make.slug}/${gen.slug}/coolant`}>
+                <svg className="icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="10" cy="10" r="6"/><path d="M10 4v12"/></svg>
+                <span>
+                  <span className="name">Coolant — capacity, formula, drain interval</span>
+                  <span className="peek">Per-engine system size and OEM-approved coolant standard</span>
+                </span>
+                <span className="arrow">→</span>
+              </a>
             )}
-            <a className="moat-row" href={`/${make.slug}/${gen.slug}/coolant`}>
-              <svg className="icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="10" cy="10" r="6"/><path d="M10 4v12"/></svg>
-              <span>
-                <span className="name">Coolant — capacity, formula, drain interval</span>
-                <span className="peek">Per-engine system size and OEM-approved coolant standard</span>
-              </span>
-              <span className="arrow">→</span>
-            </a>
-            <a className="moat-row" href={`/${make.slug}/${gen.slug}/maintenance-schedule`}>
-              <svg className="icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="10" cy="10" r="7" /><path d="M10 6v4l3 2" /></svg>
-              <span>
-                <span className="name">Maintenance schedule</span>
-                <span className="peek">{serviceIntervals.length} services · normal &amp; severe duty</span>
-              </span>
-              <span className="arrow">→</span>
-            </a>
-            <a className="moat-row" href={`/${make.slug}/${gen.slug}/torque`}>
-              <svg className="icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="10" cy="10" r="2.5" /><path d="M10 2v3M10 15v3M2 10h3M15 10h3" /></svg>
-              <span>
-                <span className="name">Torque specifications</span>
-                <span className="peek">{torques.length} fasteners · per-engine where applicable</span>
-              </span>
-              <span className="arrow">→</span>
-            </a>
-            <a className="moat-row" href={`/${make.slug}/${gen.slug}/tires`}>
-              <svg className="icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="10" cy="10" r="7" /><circle cx="10" cy="10" r="3" /></svg>
-              <span>
-                <span className="name">Tires &amp; pressures</span>
-                <span className="peek">OE tire size · placard PSI · bolt pattern</span>
-              </span>
-              <span className="arrow">→</span>
-            </a>
-            <a className="moat-row" href={`/${make.slug}/${gen.slug}/electrical`}>
-              <svg className="icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="7" width="14" height="8" /><path d="M6 7V5m8 2V5m-4 5v2" /></svg>
-              <span>
-                <span className="name">Battery, bulbs &amp; fuses</span>
-                <span className="peek">{electrical?.battery_group ? `Group ${electrical.battery_group} · ` : ""}{bulbCount} bulbs · {fuseCount} fuses</span>
-              </span>
-              <span className="arrow">→</span>
-            </a>
-            <a className="moat-row" href={`/${make.slug}/${gen.slug}/procedures`}>
-              <svg className="icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M3 5h14M3 10h14M3 15h9" /></svg>
-              <span>
-                <span className="name">Service procedures</span>
-                <span className="peek">Oil reset · TPMS · battery · jump-start</span>
-              </span>
-              <span className="arrow">→</span>
-            </a>
+            {serviceIntervals.length > 0 && (
+              <a className="moat-row" href={`/${make.slug}/${gen.slug}/maintenance-schedule`}>
+                <svg className="icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="10" cy="10" r="7" /><path d="M10 6v4l3 2" /></svg>
+                <span>
+                  <span className="name">Maintenance schedule</span>
+                  <span className="peek">{serviceIntervals.length} services · normal &amp; severe duty</span>
+                </span>
+                <span className="arrow">→</span>
+              </a>
+            )}
+            {torques.length > 0 && (
+              <a className="moat-row" href={`/${make.slug}/${gen.slug}/torque`}>
+                <svg className="icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="10" cy="10" r="2.5" /><path d="M10 2v3M10 15v3M2 10h3M15 10h3" /></svg>
+                <span>
+                  <span className="name">Torque specifications</span>
+                  <span className="peek">{torques.length} fasteners · per-engine where applicable</span>
+                </span>
+                <span className="arrow">→</span>
+              </a>
+            )}
+            {tireCount > 0 && (
+              <a className="moat-row" href={`/${make.slug}/${gen.slug}/tires`}>
+                <svg className="icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="10" cy="10" r="7" /><circle cx="10" cy="10" r="3" /></svg>
+                <span>
+                  <span className="name">Tires &amp; pressures</span>
+                  <span className="peek">OE tire size · placard PSI · bolt pattern</span>
+                </span>
+                <span className="arrow">→</span>
+              </a>
+            )}
+            {(electrical || bulbCount > 0 || fuseCount > 0) && (
+              <a className="moat-row" href={`/${make.slug}/${gen.slug}/electrical`}>
+                <svg className="icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="7" width="14" height="8" /><path d="M6 7V5m8 2V5m-4 5v2" /></svg>
+                <span>
+                  <span className="name">Battery, bulbs &amp; fuses</span>
+                  <span className="peek">{electrical?.battery_group ? `Group ${electrical.battery_group} · ` : ""}{bulbCount} bulbs · {fuseCount} fuses</span>
+                </span>
+                <span className="arrow">→</span>
+              </a>
+            )}
+            {procCount > 0 && (
+              <a className="moat-row" href={`/${make.slug}/${gen.slug}/procedures`}>
+                <svg className="icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M3 5h14M3 10h14M3 15h9" /></svg>
+                <span>
+                  <span className="name">Service procedures</span>
+                  <span className="peek">Oil reset · TPMS · battery · jump-start</span>
+                </span>
+                <span className="arrow">→</span>
+              </a>
+            )}
           </div>
         </section>
 
