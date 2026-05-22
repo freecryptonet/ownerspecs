@@ -31,6 +31,8 @@ type Generation = {
   slug: string;
   ordinal: number | null;
   codename: string | null;
+  family_slug: string | null;
+  family_label: string | null;
   display_name: string;
   body_type: string;
   start_year: number;
@@ -50,6 +52,17 @@ type Generation = {
   rear_suspension: string | null;
   front_brakes: string | null;
   rear_brakes: string | null;
+};
+type FamilySibling = {
+  id: number;
+  slug: string;
+  codename: string | null;
+  body_type: string;
+  start_year: number;
+  end_year: number | null;
+  model_slug: string;
+  model_name: string;
+  make_slug: string;
 };
 type Market = { id: number; code: string; name: string };
 type Engine = {
@@ -159,7 +172,7 @@ async function getGenerationData(brand: string, generation: string) {
   if (!make) return null;
 
   const gen = await queryOne<Generation & { model_id: number }>(
-    `SELECT g.id, g.model_id, g.slug, g.ordinal, g.codename, g.display_name,
+    `SELECT g.id, g.model_id, g.slug, g.ordinal, g.codename, g.family_slug, g.family_label, g.display_name,
             g.body_type, g.start_year, g.end_year, g.layout, g.platform,
             g.editorial_intro,
             g.length_mm, g.width_mm, g.height_mm, g.wheelbase_mm,
@@ -302,6 +315,22 @@ async function getGenerationData(brand: string, generation: string) {
     [gen.model_id, gen.id, gen.body_type, gen.end_year, gen.end_year, gen.start_year],
   );
 
+  // Family siblings — gens sharing the same chassis platform across body/M
+  // variants and pre-LCI/LCI splits. Drives the "related gens" disambiguator
+  // and a link to the family umbrella page at /family/<family_slug>.
+  const familySiblings = gen.family_slug
+    ? await query<FamilySibling>(
+        `SELECT g.id, g.slug, g.codename, g.body_type, g.start_year, g.end_year,
+                m.slug AS model_slug, m.name AS model_name, mk.slug AS make_slug
+         FROM generations g
+         JOIN models m ON m.id = g.model_id
+         JOIN makes  mk ON mk.id = m.make_id
+         WHERE g.family_slug = ? AND g.id != ?
+         ORDER BY g.start_year, m.slug, g.body_type`,
+        [gen.family_slug, gen.id],
+      )
+    : [];
+
   return {
     make,
     model,
@@ -318,6 +347,7 @@ async function getGenerationData(brand: string, generation: string) {
     serviceIntervals,
     heroImage,
     bodystyleSiblings,
+    familySiblings,
   };
 }
 
@@ -441,6 +471,7 @@ export default async function Page({ params }: { params: Promise<Params> }) {
     serviceIntervals,
     heroImage,
     bodystyleSiblings,
+    familySiblings,
   } = data;
 
   const yrs = yearRange(gen.start_year, gen.end_year);
@@ -520,8 +551,53 @@ export default async function Page({ params }: { params: Promise<Params> }) {
           <a href="/">Catalogue</a><span className="sep">/</span>
           <a href={`/${make.slug}`}>{make.name}</a><span className="sep">/</span>
           <a href={`/${make.slug}/${model.slug}`}>{model.name}</a><span className="sep">/</span>
+          {gen.family_slug && (
+            <>
+              <a href={`/family/${gen.family_slug}`}>{gen.family_label || gen.codename + " family"}</a>
+              <span className="sep">/</span>
+            </>
+          )}
           <span>{gen.display_name} · {yrs}</span>
         </nav>
+
+        {familySiblings && familySiblings.length > 0 && (
+          <div style={{
+            border: "1px solid var(--rule)",
+            borderRadius: 8,
+            padding: "10px 14px",
+            background: "var(--surface-soft, #fafafa)",
+            margin: "0 0 18px",
+            fontSize: 13,
+            display: "flex",
+            flexWrap: "wrap",
+            alignItems: "center",
+            gap: 12,
+          }}>
+            <strong style={{ fontSize: 12, textTransform: "uppercase", letterSpacing: 0.4, color: "var(--ink-soft)" }}>Related on same chassis</strong>
+            {familySiblings.map((s) => (
+              <a key={s.id} href={`/${s.make_slug}/${s.slug}`} style={{
+                fontSize: 13,
+                padding: "2px 8px",
+                border: "1px solid var(--rule)",
+                borderRadius: 4,
+                textDecoration: "none",
+                color: "inherit",
+                whiteSpace: "nowrap",
+              }}>
+                {s.codename} {s.body_type} · {s.start_year}{s.end_year ? `–${s.end_year}` : "–present"}
+              </a>
+            ))}
+            {gen.family_slug && (
+              <a href={`/family/${gen.family_slug}`} style={{
+                fontSize: 13,
+                color: "var(--ink-soft)",
+                marginLeft: "auto",
+              }}>
+                Family overview →
+              </a>
+            )}
+          </div>
+        )}
 
         <div className="pagehead">
           <h1>{make.name} {gen.display_name} — {yrs}</h1>
