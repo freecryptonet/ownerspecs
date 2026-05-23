@@ -211,6 +211,53 @@ const CHASSIS_RULES: Record<string, ChassisRule> = {
       return overlaps(s, e, 2018, 2024) ? [2] : [];
     },
   },
+  // BMW 3 (F30, F31, F80) — 5 catalog gens (4 regular + M3 F80)
+  // Gens: 53=F30-sedan, 136=F31-touring, 125=F30-LCI-sedan, 137=F31-LCI-touring, 141=M3-F80-sedan
+  // LCI cutoff for F30/F31: mid-2015 (used 2015 boundary in classify)
+  "bmw-3-f30": {
+    crawlFile: "haynespro-crawl-bmw-3-f30-2026-05-23.json",
+    modelId: "d_200000009",
+    label: "BMW 3 (F30, F31, F80)",
+    classify: (type, years) => {
+      const [s, e] = parseYears(years);
+      // M3 → F80 only
+      if (/^M3(\s|$)/.test(type)) {
+        return overlaps(s, e, 2014, 2018) ? [141] : [];
+      }
+      // Skip 3 GT F34 — not in chassis listing but in case
+      if (/^GT|F34/.test(type)) return [];
+      // Regular 3-series — sedan + touring × pre/LCI
+      const gens: number[] = [];
+      if (overlaps(s, e, 2012, 2015)) gens.push(53, 136);
+      if (overlaps(s, e, 2015, 2020)) gens.push(125, 137);
+      return gens;
+    },
+  },
+  // BMW 3 (G20, G21, G80, G81) — 8 catalog gens (4 regular + 4 M3 variants)
+  // Gens: 6=G20-sedan, 138=G21-touring, 126=G20-LCI-sedan, 139=G21-LCI-touring,
+  //       142=M3-G80, 144=M3-G81-touring, 143=M3-G80-LCI, 145=M3-G81-LCI-touring
+  // LCI cutoff: 2022 boundary
+  "bmw-3-g20": {
+    crawlFile: "haynespro-crawl-bmw-3-g20-2026-05-23.json",
+    modelId: "d_319003007",
+    label: "BMW 3 (G20, G21, G80)",
+    classify: (type, years) => {
+      const [s, e] = parseYears(years);
+      // M3 → G80 sedan + G81 touring × pre/LCI
+      if (/^M3(\s|$)/.test(type)) {
+        const gens: number[] = [];
+        if (overlaps(s, e, 2020, 2024)) gens.push(142, 144);
+        if (overlaps(s, e, 2024, 2099)) gens.push(143, 145);
+        return gens;
+      }
+      // M340 — high-trim 3-series (not M3), under regular G20/G21
+      // Regular 3-series (incl M340) — sedan + touring × pre/LCI
+      const gens: number[] = [];
+      if (overlaps(s, e, 2019, 2022)) gens.push(6, 138);
+      if (overlaps(s, e, 2022, 2099)) gens.push(126, 139);
+      return gens;
+    },
+  },
 };
 
 function arg(flag: string): string | null {

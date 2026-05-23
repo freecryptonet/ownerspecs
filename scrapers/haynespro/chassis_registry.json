@@ -136,6 +136,37 @@
       ],
       "last_crawl": "haynespro-crawl-toyota-camry-xv70-2026-05-23.json",
       "last_crawl_at": "2026-05-23T09:11:46Z"
+    },
+    {
+      "modelId": "d_200000009",
+      "brand": "bmw",
+      "label": "BMW 3 (F30, F31, F80, Q30) 2011-2020",
+      "catalog_gens": [
+        "3-series-f30-sedan-2012-2015",
+        "3-series-f31-touring-2012-2015",
+        "3-series-f30-lci-sedan-2015-2018",
+        "3-series-f31-lci-touring-2015-2019",
+        "m3-f80-sedan-2014-2018"
+      ],
+      "last_crawl": "haynespro-crawl-bmw-3-f30-2026-05-23.json",
+      "last_crawl_at": "2026-05-23T17:30:00Z"
+    },
+    {
+      "modelId": "d_319003007",
+      "brand": "bmw",
+      "label": "BMW 3 (G20, G21, G28, G80) 2019-",
+      "catalog_gens": [
+        "3-series-sedan-g20-2019-2022",
+        "3-series-g21-touring-2019-2022",
+        "3-series-sedan-g20-lci-2022-present",
+        "3-series-g21-lci-touring-2022-present",
+        "m3-g80-sedan-2020-2024",
+        "m3-g81-touring-2022-2024",
+        "m3-g80-lci-sedan-2024-present",
+        "m3-g81-lci-touring-2024-present"
+      ],
+      "last_crawl": "haynespro-crawl-bmw-3-g20-2026-05-23.json",
+      "last_crawl_at": "2026-05-23T17:30:00Z"
     }
   ]
 }
