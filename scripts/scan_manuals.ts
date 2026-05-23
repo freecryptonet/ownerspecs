@@ -24,8 +24,8 @@ import { createHash } from "node:crypto";
 import { resolve, relative, join } from "node:path";
 import { config as loadEnv } from "dotenv";
 import mysql from "mysql2/promise";
-// @ts-expect-error — pdf-parse has no bundled types
-import pdfParse from "pdf-parse";
+// @ts-expect-error — pdf-parse v2 ESM types
+import { PDFParse } from "pdf-parse";
 
 loadEnv({ path: ".env.local" });
 loadEnv({ path: ".env" });
@@ -72,6 +72,8 @@ function sha256(file: string): string {
 }
 
 function detectBrand(text: string, filename: string): string | null {
+  // Filename hint takes precedence for Nissan EUR pattern (omYYxx-...eur.pdf)
+  if (/^om\d{2}[a-z]{2}-.+eur\.pdf$/i.test(filename)) return "nissan";
   const haystack = (text.slice(0, 4000) + " " + filename).toLowerCase();
   const brands = [
     "audi", "volkswagen", "vw", "bmw", "mercedes-benz", "mercedes", "honda", "acura",
@@ -81,8 +83,30 @@ function detectBrand(text: string, filename: string): string | null {
     "tesla", "polestar", "renault", "peugeot", "citroën", "citroen", "opel", "vauxhall",
     "seat", "škoda", "skoda", "cupra"
   ];
-  for (const b of brands) if (haystack.includes(b)) return b === "vw" ? "volkswagen" : b.replace("ë", "e");
+  for (const b of brands) {
+    // Word boundary — "audi" must NOT match inside "audio"
+    const re = new RegExp(`\\b${b.replace(/[-\s]/g, "[-\\s]")}\\b`, "i");
+    if (re.test(haystack)) return b === "vw" ? "volkswagen" : b.replace("ë", "e");
+  }
   return null;
+}
+
+// Nissan EUR model code → human model name mapping (drawn from filename position 4-7)
+const NISSAN_MODEL_CODES: Record<string, string> = {
+  "0F16": "Juke",
+  "HF16": "Juke Hybrid",
+  "0FE0": "Ariya",
+  "HJ12": "X-Trail e-Power",
+  "HT33": "Qashqai e-Power",
+};
+function nissanModelFromFilename(filename: string): string | null {
+  const m = filename.match(/^om\d{2}[a-z]{2}-([0-9hH][a-zA-Z0-9]{3})/i);
+  if (!m) return null;
+  return NISSAN_MODEL_CODES[m[1].toUpperCase()] ?? null;
+}
+function nissanMyFromFilename(filename: string): number | null {
+  const m = filename.match(/^om(\d{2})/i);
+  return m ? 2000 + parseInt(m[1], 10) : null;
 }
 
 function extractMyRange(text: string): { start: number | null; end: number | null } {
@@ -131,18 +155,31 @@ function extractEditionCode(text: string, brand: string | null): string | null {
   return null;
 }
 
-function extractLanguage(text: string): string {
-  const head = text.slice(0, 2000).toLowerCase();
-  if (/(owner'?s\s+manual|owner manual)/i.test(text.slice(0, 5000))) {
-    if (/\b(canada|canadian|québec)\b/i.test(text.slice(0, 5000))) return "en-CA";
-    if (/\b(united kingdom|britain|british)\b/i.test(text.slice(0, 5000))) return "en-GB";
+function extractLanguage(text: string, filename: string): string {
+  // Filename hint: Nissan EUR-NL pattern omYYnl-...eur
+  if (/^om\d{2}nl-/i.test(filename)) return "nl-NL";
+  if (/^om\d{2}de-/i.test(filename)) return "de-DE";
+  if (/^om\d{2}fr-/i.test(filename)) return "fr-FR";
+  if (/^om\d{2}it-/i.test(filename)) return "it-IT";
+  if (/^om\d{2}es-/i.test(filename)) return "es-ES";
+
+  const head = text.slice(0, 5000).toLowerCase();
+  // Dutch
+  if (/(instructieboekje|gebruikershandleiding|eigenaarshandleiding|bedieningshandleiding|handleiding\s+voor)/.test(head)) return "nl-NL";
+  // German
+  if (/(bedienungsanleitung|betriebsanleitung|fahrzeughandbuch)/.test(head)) return "de-DE";
+  // French
+  if (/(manuel\s*du\s*conducteur|guide\s*du\s*propriétaire|notice\s*d'utilisation)/.test(head)) return "fr-FR";
+  // Italian
+  if (/(manuale\s*del\s*proprietario|libretto\s*di\s*uso)/.test(head)) return "it-IT";
+  // Spanish
+  if (/(manual\s*del\s*propietario|manual\s*del\s*conductor)/.test(head)) return "es-ES";
+  // English variants
+  if (/(owner'?s\s+manual|owner manual)/.test(head)) {
+    if (/\b(canada|canadian|québec)\b/.test(head)) return "en-CA";
+    if (/\b(united kingdom|britain|british)\b/.test(head)) return "en-GB";
     return "en-US";
   }
-  if (/(bedienungsanleitung|betriebsanleitung|fahrzeughandbuch)/.test(head)) return "de-DE";
-  if (/(manuel\s*du\s*conducteur|guide\s*du\s*propriétaire)/.test(head)) return "fr-FR";
-  if (/(manuale\s*del\s*proprietario|libretto)/.test(head)) return "it-IT";
-  if (/(handleiding|gebruikershandleiding)/.test(head)) return "nl-NL";
-  if (/(manual\s*del\s*propietario|manual\s*del\s*conductor)/.test(head)) return "es-ES";
   return "en-US";
 }
 
@@ -157,6 +194,12 @@ function extractRegion(text: string): string | null {
   return null;
 }
 
+// Nissan EUR filename pattern: omYYxx-<modelCode><rev><variant>eur.pdf — extract the model+rev as edition code
+function extractFilenameCode(filename: string): string | null {
+  const m = filename.match(/^(om\d{2}[a-z]{2}-[0-9a-z]+eur)\.pdf$/i);
+  return m ? m[1].toUpperCase() : null;
+}
+
 function firstTitleLine(text: string): string {
   for (const ln of text.split(/\r?\n/).slice(0, 30)) {
     const t = ln.trim();
@@ -165,22 +208,37 @@ function firstTitleLine(text: string): string {
   return text.slice(0, 100).trim();
 }
 
-async function parsePdf(filepath: string): Promise<ParsedManual> {
+function pdfDateToISO(raw: string | undefined | null): string | null {
+  if (!raw) return null;
+  const m = raw.match(/D:(\d{4})(\d{2})(\d{2})/);
+  return m ? `${m[1]}-${m[2]}-${m[3]}` : null;
+}
+
+async function parsePdf(filepath: string): Promise<ParsedManual & { pdf_info?: any }> {
   const buf = readFileSync(filepath);
   const file_path = relative(process.cwd(), filepath).replace(/\\/g, "/");
   const sha = createHash("sha256").update(buf).digest("hex");
-  const parsed = await pdfParse(buf);
-  const text = parsed.text || "";
-  const page_count = parsed.numpages || 0;
+  const parser = new PDFParse({ data: buf });
+  const infoResult = await parser.getInfo();
+  const textResult = await parser.getText();
+  const text = textResult.text || "";
+  const page_count = infoResult.total || 0;
+  const pdf_info = infoResult.info || {};
+  const pdf_creation = pdfDateToISO(pdf_info.CreationDate);
 
   // Use first ~6000 chars + last ~2000 for heuristics (title pages + colophon)
   const filename = file_path.split("/").pop() || "";
   const brand = detectBrand(text, filename);
-  const my = extractMyRange(text.slice(0, 6000) + " " + filename);
-  const edition_code = extractEditionCode(text, brand);
-  const publication_date = extractPublicationDate(text);
-  const language = extractLanguage(text);
-  const region = extractRegion(text);
+  // Nissan filenames are deterministic: omYY = MY, 4-char model code = vehicle.
+  const nissanMy = brand === "nissan" ? nissanMyFromFilename(filename) : null;
+  const nissanModel = brand === "nissan" ? nissanModelFromFilename(filename) : null;
+  const my = nissanMy ? { start: nissanMy, end: nissanMy } : extractMyRange(text.slice(0, 6000) + " " + filename);
+  // Prefer PDF metadata date if present, else text-extracted
+  const publication_date = pdf_creation || extractPublicationDate(text);
+  const edition_code = extractEditionCode(text, brand) || extractFilenameCode(filename);
+  const language = extractLanguage(text, filename);
+  // Nissan EUR-NL pattern → EU region. Else try text extraction.
+  const region = /^om\d{2}[a-z]{2}-.+eur\.pdf$/i.test(filename) ? "EU" : extractRegion(text);
 
   // Manual type from filename or text
   let manual_type: ParsedManual["manual_type"] = "owner";
@@ -196,7 +254,7 @@ async function parsePdf(filepath: string): Promise<ParsedManual> {
     sha256: sha,
     manual_type,
     brand,
-    model: null,
+    model: nissanModel,
     model_year_start: my.start,
     model_year_end: my.end,
     edition_code,
@@ -218,17 +276,20 @@ async function main() {
   }
   console.log(`Found ${pdfs.length} PDFs under ${ROOT}`);
 
-  const conn = await mysql.createConnection({
-    host: process.env.DB_HOST,
-    port: parseInt(process.env.DB_PORT || "3306", 10),
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME,
-    multipleStatements: false,
-  });
-
-  const [existingRows] = (await conn.query("SELECT sha256, id FROM manual_inventory")) as any;
-  const existing = new Map<string, number>(existingRows.map((r: any) => [r.sha256, r.id]));
+  let conn: any = null;
+  let existing = new Map<string, number>();
+  if (!DRY) {
+    conn = await mysql.createConnection({
+      host: process.env.DB_HOST,
+      port: parseInt(process.env.DB_PORT || "3306", 10),
+      user: process.env.DB_USER,
+      password: process.env.DB_PASSWORD,
+      database: process.env.DB_NAME,
+      multipleStatements: false,
+    });
+    const [existingRows] = (await conn.query("SELECT sha256, id FROM manual_inventory")) as any;
+    existing = new Map<string, number>(existingRows.map((r: any) => [r.sha256, r.id]));
+  }
   let inserted = 0, skipped = 0, reindexed = 0, errors = 0;
 
   for (const pdf of pdfs) {
@@ -257,7 +318,7 @@ async function main() {
     }
   }
 
-  await conn.end();
+  if (conn) await conn.end();
   console.log(`\nDone. inserted=${inserted} skipped=${skipped} reindexed=${reindexed} errors=${errors}`);
 }
 
