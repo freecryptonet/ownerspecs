@@ -233,6 +233,71 @@ const CHASSIS_RULES: Record<string, ChassisRule> = {
       return gens;
     },
   },
+  // Audi A1 8X (2011-2018) — single gen, S1 (CWZA 2.0 TFSI) included in base.
+  "audi-a1-8x": {
+    crawlFile: "haynespro-crawl-audi-a1-8x-2026-05-23.json",
+    modelId: "d_102000157",
+    label: "Audi A1 (8X)",
+    classify: (_type, years) => {
+      const [s, e] = parseYears(years);
+      return overlaps(s, e, 2011, 2018) ? [293] : [];
+    },
+  },
+  // Audi A1 GB (2019-) — single gen.
+  "audi-a1-gb": {
+    crawlFile: "haynespro-crawl-audi-a1-gb-2026-05-23.json",
+    modelId: "d_319002998",
+    label: "Audi A1 (GBA, GBH)",
+    classify: (_type, years) => {
+      const [s, e] = parseYears(years);
+      return overlaps(s, e, 2019, 2099) ? [294] : [];
+    },
+  },
+  // Audi Q2 GA (2017-) — base + SQ2 (300hp 2.0 TFSI). Gens: 295, 296.
+  "audi-q2-ga": {
+    crawlFile: "haynespro-crawl-audi-q2-ga-2026-05-23.json",
+    modelId: "d_319000521",
+    label: "Audi Q2 (GA)",
+    classify: (type, years) => {
+      const [s, e] = parseYears(years);
+      if (/^SQ2\b/.test(type)) return overlaps(s, e, 2018, 2099) ? [296] : [];
+      return overlaps(s, e, 2017, 2099) ? [295] : [];
+    },
+  },
+  // Audi TT 8N (1998-2006) — 1st gen, single gen (no RS in 8N). Gen: 297.
+  "audi-tt-8n": {
+    crawlFile: "haynespro-crawl-audi-tt-8n-2026-05-23.json",
+    modelId: "d_420",
+    label: "Audi TT (8N)",
+    classify: (_type, years) => {
+      const [s, e] = parseYears(years);
+      return overlaps(s, e, 1998, 2006) ? [297] : [];
+    },
+  },
+  // Audi TT 8J (2006-2014) — base + TT RS 8J. HaynesPro labels RS as 'RS (2.5 TFSI)'.
+  // Gens: 298 (base), 299 (RS).
+  "audi-tt-8j": {
+    crawlFile: "haynespro-crawl-audi-tt-8j-2026-05-23.json",
+    modelId: "d_102000006",
+    label: "Audi TT (8J)",
+    classify: (type, years) => {
+      const [s, e] = parseYears(years);
+      if (/^RS\b/.test(type)) return overlaps(s, e, 2009, 2014) ? [299] : [];
+      return overlaps(s, e, 2006, 2014) ? [298] : [];
+    },
+  },
+  // Audi TT FV/8S (2015-2023) — base + TT RS FV. TTS (S (2.0 TFSI)) stays in base.
+  // Gens: 300 (base), 301 (RS).
+  "audi-tt-fv": {
+    crawlFile: "haynespro-crawl-audi-tt-fv-2026-05-23.json",
+    modelId: "d_303000002",
+    label: "Audi TT (FV/8S)",
+    classify: (type, years) => {
+      const [s, e] = parseYears(years);
+      if (/^RS\b/.test(type)) return overlaps(s, e, 2016, 2023) ? [301] : [];
+      return overlaps(s, e, 2015, 2023) ? [300] : [];
+    },
+  },
   // Audi A7 4G (2010-2018) — base + RS7 4G (4.0 V8 TFSI). Gens: 283, 284.
   "audi-a7-4g": {
     crawlFile: "haynespro-crawl-audi-a7-4g-2026-05-23.json",

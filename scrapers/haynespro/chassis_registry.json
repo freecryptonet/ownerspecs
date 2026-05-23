@@ -152,6 +152,54 @@
       "last_crawl_at": "2026-05-23T17:30:00Z"
     },
     {
+      "modelId": "d_102000157",
+      "brand": "audi",
+      "label": "Audi A1 (8X) 2011-2018",
+      "catalog_gens": ["a1-8x-hatch-2011-2018"],
+      "last_crawl": "haynespro-crawl-audi-a1-8x-2026-05-23.json",
+      "last_crawl_at": "2026-05-23T21:30:00Z"
+    },
+    {
+      "modelId": "d_319002998",
+      "brand": "audi",
+      "label": "Audi A1 (GBA, GBH) 2019-",
+      "catalog_gens": ["a1-gb-hatch-2019-present"],
+      "last_crawl": "haynespro-crawl-audi-a1-gb-2026-05-23.json",
+      "last_crawl_at": "2026-05-23T21:30:00Z"
+    },
+    {
+      "modelId": "d_319000521",
+      "brand": "audi",
+      "label": "Audi Q2 (GA) 2017-",
+      "catalog_gens": ["q2-ga-suv-2017-present", "sq2-ga-suv-2018-present"],
+      "last_crawl": "haynespro-crawl-audi-q2-ga-2026-05-23.json",
+      "last_crawl_at": "2026-05-23T21:30:00Z"
+    },
+    {
+      "modelId": "d_420",
+      "brand": "audi",
+      "label": "Audi TT (8N) 1998-2006",
+      "catalog_gens": ["tt-8n-1998-2006"],
+      "last_crawl": "haynespro-crawl-audi-tt-8n-2026-05-23.json",
+      "last_crawl_at": "2026-05-23T21:30:00Z"
+    },
+    {
+      "modelId": "d_102000006",
+      "brand": "audi",
+      "label": "Audi TT (8J) 2006-2014",
+      "catalog_gens": ["tt-8j-2006-2014", "tt-rs-8j-2009-2014"],
+      "last_crawl": "haynespro-crawl-audi-tt-8j-2026-05-23.json",
+      "last_crawl_at": "2026-05-23T21:30:00Z"
+    },
+    {
+      "modelId": "d_303000002",
+      "brand": "audi",
+      "label": "Audi TT (FV/8S) 2015-2023",
+      "catalog_gens": ["tt-fv-2015-2023", "tt-rs-fv-2016-2023"],
+      "last_crawl": "haynespro-crawl-audi-tt-fv-2026-05-23.json",
+      "last_crawl_at": "2026-05-23T21:30:00Z"
+    },
+    {
       "modelId": "d_102000177",
       "brand": "audi",
       "label": "Audi A7 (4G) 2010-2018",
