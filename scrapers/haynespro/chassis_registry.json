@@ -152,6 +152,70 @@
       "last_crawl_at": "2026-05-23T17:30:00Z"
     },
     {
+      "modelId": "d_830",
+      "brand": "bmw",
+      "label": "BMW 1 (E81, E82, E87, E88) 2004-2013",
+      "catalog_gens": ["1-series-e87-hatch-2004-2013", "1-series-e82-coupe-2007-2013"],
+      "last_crawl": "haynespro-crawl-bmw-1-e87-2026-05-23.json",
+      "last_crawl_at": "2026-05-23T19:30:00Z"
+    },
+    {
+      "modelId": "d_102000239",
+      "brand": "bmw",
+      "label": "BMW 1 (F20, F21) 2011-2019",
+      "catalog_gens": ["1-series-f20-hatch-2011-2015", "1-series-f20-lci-hatch-2015-2019"],
+      "last_crawl": "haynespro-crawl-bmw-1-f20-2026-05-23.json",
+      "last_crawl_at": "2026-05-23T19:30:00Z"
+    },
+    {
+      "modelId": "d_319004645",
+      "brand": "bmw",
+      "label": "BMW 1 (F40) 2019-",
+      "catalog_gens": ["1-series-f40-hatch-2019-2024"],
+      "last_crawl": "haynespro-crawl-bmw-1-f40-2026-05-23.json",
+      "last_crawl_at": "2026-05-23T19:30:00Z"
+    },
+    {
+      "modelId": "d_319022590",
+      "brand": "bmw",
+      "label": "BMW 1 (F70) 2024-",
+      "catalog_gens": ["1-series-f70-hatch-2024-present"],
+      "last_crawl": "haynespro-crawl-bmw-1-f70-2026-05-23.json",
+      "last_crawl_at": "2026-05-23T19:30:00Z"
+    },
+    {
+      "modelId": "d_800",
+      "brand": "bmw",
+      "label": "BMW 7 (E65, E66, E67, E68) 2001-2008",
+      "catalog_gens": ["7-series-e65-sedan-2001-2008"],
+      "last_crawl": "haynespro-crawl-bmw-7-e65-2026-05-23.json",
+      "last_crawl_at": "2026-05-23T19:30:00Z"
+    },
+    {
+      "modelId": "d_102000073",
+      "brand": "bmw",
+      "label": "BMW 7 (F01, F02, F04) 2008-2015",
+      "catalog_gens": ["7-series-f01-sedan-2008-2015"],
+      "last_crawl": "haynespro-crawl-bmw-7-f01-2026-05-23.json",
+      "last_crawl_at": "2026-05-23T19:30:00Z"
+    },
+    {
+      "modelId": "d_317000028",
+      "brand": "bmw",
+      "label": "BMW 7 (G11, G12) 2015-2022",
+      "catalog_gens": ["7-series-g11-sedan-2015-2019", "7-series-g11-lci-sedan-2019-2022"],
+      "last_crawl": "haynespro-crawl-bmw-7-g11-2026-05-23.json",
+      "last_crawl_at": "2026-05-23T19:30:00Z"
+    },
+    {
+      "modelId": "d_319017039",
+      "brand": "bmw",
+      "label": "BMW 7 (G70, i7) 2022-",
+      "catalog_gens": ["7-series-g70-sedan-2022-present", "i7-g70-sedan-2022-present"],
+      "last_crawl": "haynespro-crawl-bmw-7-g70-2026-05-23.json",
+      "last_crawl_at": "2026-05-23T19:30:00Z"
+    },
+    {
       "modelId": "d_810",
       "brand": "bmw",
       "label": "BMW 5 (E60, E61) 2003-2010",

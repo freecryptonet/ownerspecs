@@ -233,6 +233,103 @@ const CHASSIS_RULES: Record<string, ChassisRule> = {
       return gens;
     },
   },
+  // BMW 1 Series E87/E82/E88 (1st gen, 2004-2013) — 2 catalog gens (hatch + coupe).
+  // Most engines were offered in hatch + coupe + convertible bodies — fluid specs identical.
+  // Coupe-only engines (1M N54B30A) go to coupe gen only.
+  "bmw-1-e87": {
+    crawlFile: "haynespro-crawl-bmw-1-e87-2026-05-23.json",
+    modelId: "d_830",
+    label: "BMW 1 (E81, E82, E87, E88)",
+    classify: (type, years) => {
+      const [s, e] = parseYears(years);
+      if (!overlaps(s, e, 2004, 2013)) return [];
+      // 1M / M Coupe → coupe only
+      if (/Coupe|^1M\b|M Coupe/.test(type)) return [196];
+      // Other engines: fan out to both hatch (195) + coupe (196)
+      return [195, 196];
+    },
+  },
+  // BMW 1 Series F20/F21 (2nd gen, 2011-2019) — hatch only. Pre/LCI split.
+  "bmw-1-f20": {
+    crawlFile: "haynespro-crawl-bmw-1-f20-2026-05-23.json",
+    modelId: "d_102000239",
+    label: "BMW 1 (F20, F21)",
+    classify: (_type, years) => {
+      const [s, e] = parseYears(years);
+      const gens: number[] = [];
+      if (overlaps(s, e, 2011, 2015)) gens.push(197);
+      if (overlaps(s, e, 2015, 2019)) gens.push(198);
+      return gens;
+    },
+  },
+  // BMW 1 Series F40 (3rd gen, 2019-2024) — single gen.
+  "bmw-1-f40": {
+    crawlFile: "haynespro-crawl-bmw-1-f40-2026-05-23.json",
+    modelId: "d_319004645",
+    label: "BMW 1 (F40)",
+    classify: (_type, years) => {
+      const [s, e] = parseYears(years);
+      return overlaps(s, e, 2019, 2024) ? [199] : [];
+    },
+  },
+  // BMW 1 Series F70 (4th gen, 2024-) — single gen.
+  "bmw-1-f70": {
+    crawlFile: "haynespro-crawl-bmw-1-f70-2026-05-23.json",
+    modelId: "d_319022590",
+    label: "BMW 1 (F70)",
+    classify: (_type, years) => {
+      const [s, e] = parseYears(years);
+      return overlaps(s, e, 2024, 2099) ? [200] : [];
+    },
+  },
+  // BMW 7 Series E65/E66 (2001-2008) — single gen (SWB E65 + LWB E66 share fluids).
+  "bmw-7-e65": {
+    crawlFile: "haynespro-crawl-bmw-7-e65-2026-05-23.json",
+    modelId: "d_800",
+    label: "BMW 7 (E65, E66, E67, E68)",
+    classify: (_type, years) => {
+      const [s, e] = parseYears(years);
+      return overlaps(s, e, 2001, 2008) ? [201] : [];
+    },
+  },
+  // BMW 7 Series F01/F02/F04 (2008-2015) — single gen.
+  "bmw-7-f01": {
+    crawlFile: "haynespro-crawl-bmw-7-f01-2026-05-23.json",
+    modelId: "d_102000073",
+    label: "BMW 7 (F01, F02, F04)",
+    classify: (_type, years) => {
+      const [s, e] = parseYears(years);
+      return overlaps(s, e, 2008, 2015) ? [202] : [];
+    },
+  },
+  // BMW 7 Series G11/G12 (2015-2022) — pre/LCI split, LCI cutoff 2019.
+  "bmw-7-g11": {
+    crawlFile: "haynespro-crawl-bmw-7-g11-2026-05-23.json",
+    modelId: "d_317000028",
+    label: "BMW 7 (G11, G12)",
+    classify: (_type, years) => {
+      const [s, e] = parseYears(years);
+      const gens: number[] = [];
+      if (overlaps(s, e, 2015, 2019)) gens.push(203);
+      if (overlaps(s, e, 2019, 2022)) gens.push(204);
+      return gens;
+    },
+  },
+  // BMW 7 Series G70 + i7 G70 (2022-) — split by BEV (i7) vs ICE (7 Series).
+  // i7 motor codes start with XE2 / HA0; ICE engines are B57/B58/S68.
+  "bmw-7-g70": {
+    crawlFile: "haynespro-crawl-bmw-7-g70-2026-05-23.json",
+    modelId: "d_319017039",
+    label: "BMW 7 (G70, i7)",
+    classify: (type, years) => {
+      const [s, e] = parseYears(years);
+      if (!overlaps(s, e, 2022, 2099)) return [];
+      // i7 BEV variants → gen 206
+      if (/^i7\b/.test(type)) return [206];
+      // ICE 7-series → gen 205
+      return [205];
+    },
+  },
   // BMW 5 (E60, E61, M5 E60) — 5 catalog gens.
   // Gens: 179=E60-sedan, 181=E61-touring, 180=E60-LCI-sedan, 182=E61-LCI-touring, 183=M5-E60-sedan.
   // LCI cutoff: 2007.
