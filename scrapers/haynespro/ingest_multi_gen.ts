@@ -233,6 +233,45 @@ const CHASSIS_RULES: Record<string, ChassisRule> = {
       return gens;
     },
   },
+  // BMW 4 Series F32/F33/F36/F82/F83 (2013-2020) — 8 catalog gens.
+  // M4 (S55B30A) → F82 coupe (223) + F83 convertible (224) only.
+  // Regular → coupe (217/218) + convertible (219/220) + gran-coupe (221/222) × pre/LCI 2017.
+  "bmw-4-f32": {
+    crawlFile: "haynespro-crawl-bmw-4-f32-2026-05-23.json",
+    modelId: "d_301000031",
+    label: "BMW 4 (F32, F33, F36, F82, F83)",
+    classify: (type, years) => {
+      const [s, e] = parseYears(years);
+      // M4 family → F82 coupe + F83 convertible
+      if (/^M4\b/.test(type)) {
+        return overlaps(s, e, 2014, 2020) ? [223, 224] : [];
+      }
+      // Regular — coupe + convertible + gran-coupe, fan out per pre/LCI
+      const gens: number[] = [];
+      if (overlaps(s, e, 2013, 2017)) gens.push(217, 219, 221);  // F32 + F33 + F36 pre-LCI
+      if (overlaps(s, e, 2017, 2020)) gens.push(218, 220, 222);  // LCI variants
+      return gens;
+    },
+  },
+  // BMW 4 Series G22/G23/G26/G82/G83 (2020-) — 5 catalog gens.
+  // M4 family → G82 coupe (228) + G83 convertible (229).
+  // Regular → coupe (225) + convertible (226) + gran-coupe (227, from 2021).
+  // (i4 G26 BEV is in d_319009109, separately crawled.)
+  "bmw-4-g22": {
+    crawlFile: "haynespro-crawl-bmw-4-g22-2026-05-23.json",
+    modelId: "d_319008746",
+    label: "BMW 4 (G22, G23, G24, G26, G82, G83)",
+    classify: (type, years) => {
+      const [s, e] = parseYears(years);
+      if (/^M4\b/.test(type)) {
+        return overlaps(s, e, 2021, 2099) ? [228, 229] : [];
+      }
+      const gens: number[] = [];
+      if (overlaps(s, e, 2020, 2099)) gens.push(225, 226);  // coupe + convertible
+      if (overlaps(s, e, 2021, 2099)) gens.push(227);       // Gran Coupe from 2021
+      return gens;
+    },
+  },
   // BMW X1 E84 (1st gen, 2009-2015) — single gen, RWD-based.
   "bmw-x1-e84": {
     crawlFile: "haynespro-crawl-bmw-x1-e84-2026-05-23.json",

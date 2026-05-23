@@ -152,6 +152,31 @@
       "last_crawl_at": "2026-05-23T17:30:00Z"
     },
     {
+      "modelId": "d_301000031",
+      "brand": "bmw",
+      "label": "BMW 4 (F32, F33, F36, F82, F83) 2013-2020",
+      "catalog_gens": [
+        "4-series-f32-coupe-2013-2017", "4-series-f32-lci-coupe-2017-2020",
+        "4-series-f33-convertible-2014-2017", "4-series-f33-lci-convertible-2017-2020",
+        "4-series-f36-gran-coupe-2014-2017", "4-series-f36-lci-gran-coupe-2017-2020",
+        "m4-f82-coupe-2014-2020", "m4-f83-convertible-2014-2020"
+      ],
+      "last_crawl": "haynespro-crawl-bmw-4-f32-2026-05-23.json",
+      "last_crawl_at": "2026-05-23T20:00:00Z"
+    },
+    {
+      "modelId": "d_319008746",
+      "brand": "bmw",
+      "label": "BMW 4 (G22, G23, G24, G26, G82, G83) 2020-",
+      "catalog_gens": [
+        "4-series-g22-coupe-2020-present", "4-series-g23-convertible-2020-present",
+        "4-series-g26-gran-coupe-2021-present",
+        "m4-g82-coupe-2021-present", "m4-g83-convertible-2021-present"
+      ],
+      "last_crawl": "haynespro-crawl-bmw-4-g22-2026-05-23.json",
+      "last_crawl_at": "2026-05-23T20:00:00Z"
+    },
+    {
       "modelId": "d_102000120",
       "brand": "bmw",
       "label": "BMW X1 (E84) 2009-2015",
