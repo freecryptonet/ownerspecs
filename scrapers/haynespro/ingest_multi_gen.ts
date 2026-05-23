@@ -233,6 +233,42 @@ const CHASSIS_RULES: Record<string, ChassisRule> = {
       return gens;
     },
   },
+  // BMW 5 (F10, F11, F18) — 5 catalog gens (4 regular + M5 F10).
+  // Gens: 172=F10-sedan, 174=F11-touring, 173=F10-LCI-sedan, 175=F11-LCI-touring, 176=M5-F10-sedan
+  // LCI cutoff: 2013. F18 LWB (China) skipped.
+  "bmw-5-f10": {
+    crawlFile: "haynespro-crawl-bmw-5-f10-2026-05-23.json",
+    modelId: "d_102000140",
+    label: "BMW 5 (F10, F11, F18)",
+    classify: (type, years) => {
+      const [s, e] = parseYears(years);
+      // M5 → F10 sedan only
+      if (/^M5(\s|$)/.test(type)) {
+        return overlaps(s, e, 2011, 2016) ? [176] : [];
+      }
+      // M550 — high-trim regular 5-series (not M5)
+      // Regular 5-series — sedan + touring × pre/LCI
+      const gens: number[] = [];
+      if (overlaps(s, e, 2010, 2013)) gens.push(172, 174);
+      if (overlaps(s, e, 2013, 2017)) gens.push(173, 175);
+      return gens;
+    },
+  },
+  // BMW X5 (E70) — 2 catalog gens: pre-LCI 2006-2010 + LCI 2010-2013.
+  // Gens: 177=x5-e70-suv-2006-2010, 178=x5-e70-lci-suv-2010-2013.
+  // X5 M E70 (S63 engine, 2009-2013) routes into regular gen — no separate catalog gen.
+  "bmw-x5-e70": {
+    crawlFile: "haynespro-crawl-bmw-x5-e70-2026-05-23.json",
+    modelId: "d_1000001",
+    label: "BMW X5 (E70)",
+    classify: (_type, years) => {
+      const [s, e] = parseYears(years);
+      const gens: number[] = [];
+      if (overlaps(s, e, 2006, 2010)) gens.push(177);
+      if (overlaps(s, e, 2010, 2013)) gens.push(178);
+      return gens;
+    },
+  },
   // BMW iX3 (G08) — BEV single catalog gen (2 motor variants: iX3, iX3 M).
   // Note: 'iX3 M' is a sport trim, not a separate M-car. Gen: 169.
   "bmw-ix3-g08": {

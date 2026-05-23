@@ -152,6 +152,31 @@
       "last_crawl_at": "2026-05-23T17:30:00Z"
     },
     {
+      "modelId": "d_102000140",
+      "brand": "bmw",
+      "label": "BMW 5 (F10, F11, F18) 2010-2017",
+      "catalog_gens": [
+        "5-series-f10-sedan-2010-2013",
+        "5-series-f10-lci-sedan-2013-2017",
+        "5-series-f11-touring-2010-2013",
+        "5-series-f11-lci-touring-2013-2017",
+        "m5-f10-sedan-2011-2016"
+      ],
+      "last_crawl": "haynespro-crawl-bmw-5-f10-2026-05-23.json",
+      "last_crawl_at": "2026-05-23T18:45:00Z"
+    },
+    {
+      "modelId": "d_1000001",
+      "brand": "bmw",
+      "label": "BMW X5 (E70) 2006-2013",
+      "catalog_gens": [
+        "x5-e70-suv-2006-2010",
+        "x5-e70-lci-suv-2010-2013"
+      ],
+      "last_crawl": "haynespro-crawl-bmw-x5-e70-2026-05-23.json",
+      "last_crawl_at": "2026-05-23T18:45:00Z"
+    },
+    {
       "modelId": "d_319018751",
       "brand": "bmw",
       "label": "BMW iX3 (G08) 2020-",
