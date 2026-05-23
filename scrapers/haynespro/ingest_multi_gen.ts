@@ -233,6 +233,69 @@ const CHASSIS_RULES: Record<string, ChassisRule> = {
       return gens;
     },
   },
+  // BMW 5 (E60, E61, M5 E60) — 5 catalog gens.
+  // Gens: 179=E60-sedan, 181=E61-touring, 180=E60-LCI-sedan, 182=E61-LCI-touring, 183=M5-E60-sedan.
+  // LCI cutoff: 2007.
+  "bmw-5-e60": {
+    crawlFile: "haynespro-crawl-bmw-5-e60-2026-05-23.json",
+    modelId: "d_810",
+    label: "BMW 5 (E60, E61)",
+    classify: (type, years) => {
+      const [s, e] = parseYears(years);
+      // M5 → E60 sedan only (V10 S85, no LCI distinction in our catalog)
+      if (/^M5\b/.test(type)) {
+        return overlaps(s, e, 2005, 2010) ? [183] : [];
+      }
+      // Regular — sedan + touring × pre/LCI
+      const gens: number[] = [];
+      if (overlaps(s, e, 2003, 2007)) gens.push(179, 181);
+      if (overlaps(s, e, 2007, 2010)) gens.push(180, 182);
+      return gens;
+    },
+  },
+  // BMW 3 (E90, E91, E92, E93, M3) — 11 catalog gens (8 regular + 3 M3 V8).
+  // Gens — regular:
+  //   184=E90-sedan, 185=E90-LCI-sedan
+  //   186=E91-touring, 187=E91-LCI-touring
+  //   188=E92-coupe, 189=E92-LCI-coupe
+  //   190=E93-convertible, 191=E93-LCI-convertible
+  // Gens — M3 V8 (S65):
+  //   192=M3-E90-sedan, 193=M3-E92-coupe, 194=M3-E93-convertible
+  // LCI cutoffs differ per body:
+  //   E90/E91 LCI: 2008
+  //   E92/E93 LCI: 2010
+  // E93 convertible launched 2007 (later than sedan/touring/coupe).
+  "bmw-3-e90": {
+    crawlFile: "haynespro-crawl-bmw-3-e90-2026-05-23.json",
+    modelId: "d_900",
+    label: "BMW 3 (E90, E91, E92, E93)",
+    classify: (type, years) => {
+      const [s, e] = parseYears(years);
+      // M3 V8 → all 3 M3 body gens (sedan/coupe/convertible) by year overlap.
+      if (/^M3\b/.test(type)) {
+        const gens: number[] = [];
+        if (overlaps(s, e, 2007, 2011)) gens.push(192);  // M3 E90 sedan (discontinued 2011)
+        if (overlaps(s, e, 2007, 2013)) gens.push(193);  // M3 E92 coupe
+        if (overlaps(s, e, 2008, 2013)) gens.push(194);  // M3 E93 convertible
+        return gens;
+      }
+      // Regular — fan-out across all 4 body types × pre/LCI per body
+      const gens: number[] = [];
+      // E90 sedan
+      if (overlaps(s, e, 2005, 2008)) gens.push(184);
+      if (overlaps(s, e, 2008, 2012)) gens.push(185);
+      // E91 touring
+      if (overlaps(s, e, 2005, 2008)) gens.push(186);
+      if (overlaps(s, e, 2008, 2012)) gens.push(187);
+      // E92 coupe (from 2006, LCI 2010)
+      if (overlaps(s, e, 2006, 2010)) gens.push(188);
+      if (overlaps(s, e, 2010, 2013)) gens.push(189);
+      // E93 convertible (from 2007, LCI 2010)
+      if (overlaps(s, e, 2007, 2010)) gens.push(190);
+      if (overlaps(s, e, 2010, 2013)) gens.push(191);
+      return gens;
+    },
+  },
   // BMW 5 (F10, F11, F18) — 5 catalog gens (4 regular + M5 F10).
   // Gens: 172=F10-sedan, 174=F11-touring, 173=F10-LCI-sedan, 175=F11-LCI-touring, 176=M5-F10-sedan
   // LCI cutoff: 2013. F18 LWB (China) skipped.
@@ -466,7 +529,7 @@ function main() {
     const e = byEngine.get(code)!;
     for (const genId of gens) {
       const engLookup = `(SELECT id FROM engines WHERE code = ${escapeSql(code)})`;
-      if (e.oil && (e.oil.sump_l != null || e.oil.spec)) {
+      if (e.oil && (e.oil.sump_l != null || e.oil.spec || e.oil.visc || e.oil.drain_nm != null)) {
         const capQt = e.oil.sump_l != null ? Math.round(e.oil.sump_l * 1.05669 * 100) / 100 : null;
         const notes = `HaynesPro typeId ${e.typeId}; ${e.type}; drain ${e.oil.drain_nm ?? "?"} Nm`;
         lines.push(`INSERT INTO fluid_specs (generation_id, fluid_type, engine_id, capacity_l, capacity_qt, viscosity, spec_standard, notes)`);

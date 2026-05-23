@@ -152,6 +152,40 @@
       "last_crawl_at": "2026-05-23T17:30:00Z"
     },
     {
+      "modelId": "d_810",
+      "brand": "bmw",
+      "label": "BMW 5 (E60, E61) 2003-2010",
+      "catalog_gens": [
+        "5-series-e60-sedan-2003-2007",
+        "5-series-e60-lci-sedan-2007-2010",
+        "5-series-e61-touring-2004-2007",
+        "5-series-e61-lci-touring-2007-2010",
+        "m5-e60-sedan-2005-2010"
+      ],
+      "last_crawl": "haynespro-crawl-bmw-5-e60-2026-05-23.json",
+      "last_crawl_at": "2026-05-23T19:00:00Z"
+    },
+    {
+      "modelId": "d_900",
+      "brand": "bmw",
+      "label": "BMW 3 (E90, E91, E92, E93) 2005-2013",
+      "catalog_gens": [
+        "3-series-e90-sedan-2005-2008",
+        "3-series-e90-lci-sedan-2008-2012",
+        "3-series-e91-touring-2005-2008",
+        "3-series-e91-lci-touring-2008-2012",
+        "3-series-e92-coupe-2006-2010",
+        "3-series-e92-lci-coupe-2010-2013",
+        "3-series-e93-convertible-2007-2010",
+        "3-series-e93-lci-convertible-2010-2013",
+        "m3-e90-sedan-2007-2011",
+        "m3-e92-coupe-2007-2013",
+        "m3-e93-convertible-2008-2013"
+      ],
+      "last_crawl": "haynespro-crawl-bmw-3-e90-2026-05-23.json",
+      "last_crawl_at": "2026-05-23T19:00:00Z"
+    },
+    {
       "modelId": "d_102000140",
       "brand": "bmw",
       "label": "BMW 5 (F10, F11, F18) 2010-2017",
