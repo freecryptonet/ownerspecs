@@ -152,6 +152,16 @@
       "last_crawl_at": "2026-05-23T17:30:00Z"
     },
     {
+      "modelId": "d_319009109",
+      "brand": "bmw",
+      "label": "BMW i4 (G26) 2021-",
+      "catalog_gens": [
+        "i4-g26-sedan-2021-present"
+      ],
+      "last_crawl": "haynespro-crawl-bmw-i4-g26-2026-05-23.json",
+      "last_crawl_at": "2026-05-23T17:45:00Z"
+    },
+    {
       "modelId": "d_319003007",
       "brand": "bmw",
       "label": "BMW 3 (G20, G21, G28, G80) 2019-",

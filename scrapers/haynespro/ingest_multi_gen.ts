@@ -233,6 +233,16 @@ const CHASSIS_RULES: Record<string, ChassisRule> = {
       return gens;
     },
   },
+  // BMW i4 G26 — single BEV gen (3 motor variants: M50 xDrive, eDrive35, eDrive40)
+  "bmw-i4-g26": {
+    crawlFile: "haynespro-crawl-bmw-i4-g26-2026-05-23.json",
+    modelId: "d_319009109",
+    label: "BMW i4 (G26)",
+    classify: (_type, years) => {
+      const [s, e] = parseYears(years);
+      return overlaps(s, e, 2021, 2099) ? [119] : [];
+    },
+  },
   // BMW 3 (G20, G21, G80, G81) — 8 catalog gens (4 regular + 4 M3 variants)
   // Gens: 6=G20-sedan, 138=G21-touring, 126=G20-LCI-sedan, 139=G21-LCI-touring,
   //       142=M3-G80, 144=M3-G81-touring, 143=M3-G80-LCI, 145=M3-G81-LCI-touring
