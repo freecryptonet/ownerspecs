@@ -152,6 +152,45 @@
       "last_crawl_at": "2026-05-23T17:30:00Z"
     },
     {
+      "modelId": "d_890",
+      "brand": "bmw",
+      "label": "BMW Z4 (E85, E86) 2003-2009",
+      "catalog_gens": ["z4-e85-roadster-2003-2009", "z4-e86-coupe-2006-2009"],
+      "last_crawl": "haynespro-crawl-bmw-z4-e85-2026-05-23.json",
+      "last_crawl_at": "2026-05-23T20:30:00Z"
+    },
+    {
+      "modelId": "d_102000124",
+      "brand": "bmw",
+      "label": "BMW Z4 (E89) 2009-2016",
+      "catalog_gens": ["z4-e89-convertible-2009-2016"],
+      "last_crawl": "haynespro-crawl-bmw-z4-e89-2026-05-23.json",
+      "last_crawl_at": "2026-05-23T20:30:00Z"
+    },
+    {
+      "modelId": "d_319003512",
+      "brand": "bmw",
+      "label": "BMW Z4 (G29) 2019-",
+      "catalog_gens": ["z4-g29-roadster-2019-present"],
+      "last_crawl": "haynespro-crawl-bmw-z4-g29-2026-05-23.json",
+      "last_crawl_at": "2026-05-23T20:30:00Z"
+    },
+    {
+      "modelId": "d_319003011",
+      "brand": "bmw",
+      "label": "BMW 8 (F91, F92, F93, G14, G15, G16) 2018-",
+      "catalog_gens": [
+        "8-series-g15-coupe-2018-present",
+        "8-series-g14-convertible-2019-present",
+        "8-series-g16-gran-coupe-2019-present",
+        "m8-f92-coupe-2019-present",
+        "m8-f91-convertible-2019-present",
+        "m8-f93-gran-coupe-2019-present"
+      ],
+      "last_crawl": "haynespro-crawl-bmw-8-g15-2026-05-23.json",
+      "last_crawl_at": "2026-05-23T20:30:00Z"
+    },
+    {
       "modelId": "d_304000002",
       "brand": "bmw",
       "label": "BMW X4 (F26) 2014-2018",

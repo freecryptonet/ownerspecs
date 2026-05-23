@@ -233,6 +233,60 @@ const CHASSIS_RULES: Record<string, ChassisRule> = {
       return gens;
     },
   },
+  // BMW Z4 E85/E86 (2003-2009) — Roadster (E85, 2003-2009) + Coupe (E86, 2006-2009).
+  // HaynesPro doesn't differentiate body in chassis listing — fan out to both.
+  "bmw-z4-e85": {
+    crawlFile: "haynespro-crawl-bmw-z4-e85-2026-05-23.json",
+    modelId: "d_890",
+    label: "BMW Z4 (E85, E86)",
+    classify: (_type, years) => {
+      const [s, e] = parseYears(years);
+      const gens: number[] = [];
+      if (overlaps(s, e, 2003, 2009)) gens.push(243);  // E85 Roadster
+      if (overlaps(s, e, 2006, 2009)) gens.push(244);  // E86 Coupe (2006-2009 only)
+      return gens;
+    },
+  },
+  // BMW Z4 E89 (2nd gen, 2009-2016) — folding hardtop convertible, single gen.
+  "bmw-z4-e89": {
+    crawlFile: "haynespro-crawl-bmw-z4-e89-2026-05-23.json",
+    modelId: "d_102000124",
+    label: "BMW Z4 (E89)",
+    classify: (_type, years) => {
+      const [s, e] = parseYears(years);
+      return overlaps(s, e, 2009, 2016) ? [245] : [];
+    },
+  },
+  // BMW Z4 G29 (3rd gen, 2019-) — soft-top Roadster, single gen.
+  "bmw-z4-g29": {
+    crawlFile: "haynespro-crawl-bmw-z4-g29-2026-05-23.json",
+    modelId: "d_319003512",
+    label: "BMW Z4 (G29)",
+    classify: (_type, years) => {
+      const [s, e] = parseYears(years);
+      return overlaps(s, e, 2019, 2099) ? [246] : [];
+    },
+  },
+  // BMW 8 Series + M8 (G15/G14/G16/F91/F92/F93, 2018-) — 6 catalog gens.
+  // M8 / M8 Competition → F92 coupe (250) + F91 convertible (251) + F93 Gran Coupe (252).
+  // Regular incl M850i → G15 coupe (247) + G14 convertible (248) + G16 Gran Coupe (249).
+  "bmw-8-g15": {
+    crawlFile: "haynespro-crawl-bmw-8-g15-2026-05-23.json",
+    modelId: "d_319003011",
+    label: "BMW 8 (F91, F92, F93, G14, G15, G16)",
+    classify: (type, years) => {
+      const [s, e] = parseYears(years);
+      // M8 / M8 Competition → F92/F91/F93 fan-out
+      if (/^M8\b/.test(type)) {
+        return overlaps(s, e, 2019, 2099) ? [250, 251, 252] : [];
+      }
+      // Regular incl M850i → G15/G14/G16 fan-out
+      const gens: number[] = [];
+      if (overlaps(s, e, 2018, 2099)) gens.push(247);  // G15 coupe (from 2018)
+      if (overlaps(s, e, 2019, 2099)) gens.push(248, 249);  // G14 conv + G16 GC (from 2019)
+      return gens;
+    },
+  },
   // BMW X4 F26 (1st gen, 2014-2018) — single gen. M40i is high-trim, not separate M-car.
   "bmw-x4-f26": {
     crawlFile: "haynespro-crawl-bmw-x4-f26-2026-05-23.json",
