@@ -10,7 +10,7 @@ const config: FluidTopicConfig = {
   slug: "brake-fluid",
   label: "Brake fluid",
   h1: "Brake fluid type & service interval",
-  fluidTypes: ["brake_fluid", "brake"],
+  fluidTypes: ["brake_fluid"],
   lede: ({ make, gen, yrs }) =>
     `OEM-spec brake fluid grade (DOT 3 / DOT 4 / DOT 4 LV / DOT 5.1) and service interval for the ${make} ${gen} (${yrs}). Brake fluid is hygroscopic — water content above ~3% drops the boiling point enough to cause pedal fade under heavy braking.`,
   buildFaq: ({ make, gen, yrs, primary }) => {
@@ -42,7 +42,7 @@ export async function generateStaticParams(): Promise<Params[]> {
      JOIN models m ON m.id = g.model_id
      JOIN makes mk ON mk.id = m.make_id
      WHERE g.is_active = 1
-       AND EXISTS (SELECT 1 FROM fluid_specs WHERE generation_id = g.id AND fluid_type IN ('brake_fluid','brake'))`,
+       AND EXISTS (SELECT 1 FROM fluid_specs WHERE generation_id = g.id AND fluid_type = 'brake_fluid')`,
   );
 }
 

@@ -317,8 +317,8 @@ function main() {
         lines.push(`WHERE NOT EXISTS (SELECT 1 FROM fluid_specs WHERE generation_id = ${genId} AND fluid_type = 'coolant' AND engine_id = ${engLookup});`);
         fluidRows++;
       }
-      // Per-engine transmission row (engine-scoped)
-      if (e.transmission && e.transmission.spec) {
+      // Per-engine transmission row (engine-scoped) — emit if spec OR capacity present
+      if (e.transmission && (e.transmission.spec || e.transmission.capacity_l != null)) {
         const tType = e.transmission.type;
         const capQt = e.transmission.capacity_l != null ? Math.round(e.transmission.capacity_l * 1.05669 * 100) / 100 : null;
         const notes = `HaynesPro typeId ${e.typeId}; ${e.type}; ${e.transmission.label}`;
