@@ -515,13 +515,25 @@ export default async function Page({ params }: { params: Promise<Params> }) {
   const distinctHps = new Set(trims.map((t) => t.hp).filter((h): h is number => h != null));
   const someFluidScoped = fluids.some((f) => f.engine_id != null);
   const multiEngine = engines.length > 1 || distinctHps.size > 1 || someFluidScoped;
+  // Per-engine coverage signal: a gen-wide row is only "provisional" if a
+  // per-engine row exists for the same fluid_type. Without that, the gen-
+  // wide row is the only data we have and IS the chassis-level value
+  // (matches the matching change in components/FluidTopicPage.tsx).
+  const perEngineCoverage = new Set<string>();
+  for (const f of fluids) {
+    if (f.engine_id) perEngineCoverage.add(f.fluid_type);
+  }
   const fluidsByEngineType = new Map<string, FluidSpec>();
   const fluidsGenWide: FluidSpec[] = [];
   const suppressedTypes = new Set<string>();
   for (const f of fluids) {
     if (f.engine_id) {
       fluidsByEngineType.set(`${f.engine_id}:${f.fluid_type}`, f);
-    } else if (multiEngine && ENGINE_SCOPED.has(f.fluid_type)) {
+    } else if (
+      multiEngine &&
+      ENGINE_SCOPED.has(f.fluid_type) &&
+      perEngineCoverage.has(f.fluid_type)
+    ) {
       suppressedTypes.add(f.fluid_type);
     } else {
       fluidsGenWide.push(f);

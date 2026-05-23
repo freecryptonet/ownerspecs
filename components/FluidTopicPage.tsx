@@ -152,10 +152,25 @@ export async function FluidTopicPage({
   const multiEngine = engineList.length > 1 || distinctHps.size > 1 || someRowScoped;
 
   // Split rows into rendered + suppressed.
+  // Suppression rule: on a multi-engine gen, a gen-wide (engine_id NULL) row
+  // for an engine-scoped fluid is "provisional" — but ONLY when per-engine
+  // rows already exist for that same fluid_type. If no per-engine row exists,
+  // the gen-wide row is the only data we have and should render as a
+  // chassis-level value (e.g. coolant on the C8 4A: same G12EVO + 10.0 L
+  // across all engines per HaynesPro multi-engine cross-verification).
+  const perEngineCoverage = new Set<string>();
+  for (const r of rows) {
+    if (r.engine_id != null) perEngineCoverage.add(r.fluid_type);
+  }
   const rendered: Row[] = [];
   const suppressedTypes = new Set<string>();
   for (const r of rows) {
-    if (r.engine_id == null && multiEngine && ENGINE_SCOPED.has(r.fluid_type)) {
+    if (
+      r.engine_id == null &&
+      multiEngine &&
+      ENGINE_SCOPED.has(r.fluid_type) &&
+      perEngineCoverage.has(r.fluid_type)
+    ) {
       suppressedTypes.add(r.fluid_type);
     } else {
       rendered.push(r);
