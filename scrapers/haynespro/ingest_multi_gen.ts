@@ -233,6 +233,28 @@ const CHASSIS_RULES: Record<string, ChassisRule> = {
       return gens;
     },
   },
+  // BMW X3 (G01) — single catalog gen (no X3 M / iX3 in catalog yet).
+  // Routes all engines including M40i, X3 M (F97) into x3-g01-suv-2018-2024.
+  "bmw-x3-g01": {
+    crawlFile: "haynespro-crawl-bmw-x3-g01-2026-05-23.json",
+    modelId: "d_319001442",
+    label: "BMW X3 (G01)",
+    classify: (_type, years) => {
+      const [s, e] = parseYears(years);
+      return overlaps(s, e, 2018, 2024) ? [60] : [];
+    },
+  },
+  // BMW X5 (G05, F95) — single catalog gen (no X5 M F95 separate in catalog).
+  // Routes all engines including X5 M (F95) into x5-g05-suv-2019-2023.
+  "bmw-x5-g05": {
+    crawlFile: "haynespro-crawl-bmw-x5-g05-2026-05-23.json",
+    modelId: "d_319003510",
+    label: "BMW X5 (G05, F95)",
+    classify: (_type, years) => {
+      const [s, e] = parseYears(years);
+      return overlaps(s, e, 2019, 2023) ? [48] : [];
+    },
+  },
   // BMW i4 G26 — single BEV gen (3 motor variants: M50 xDrive, eDrive35, eDrive40)
   "bmw-i4-g26": {
     crawlFile: "haynespro-crawl-bmw-i4-g26-2026-05-23.json",

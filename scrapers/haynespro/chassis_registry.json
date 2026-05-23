@@ -152,6 +152,26 @@
       "last_crawl_at": "2026-05-23T17:30:00Z"
     },
     {
+      "modelId": "d_319001442",
+      "brand": "bmw",
+      "label": "BMW X3 (G01) 2017-2024",
+      "catalog_gens": [
+        "x3-g01-suv-2018-2024"
+      ],
+      "last_crawl": "haynespro-crawl-bmw-x3-g01-2026-05-23.json",
+      "last_crawl_at": "2026-05-23T18:00:00Z"
+    },
+    {
+      "modelId": "d_319003510",
+      "brand": "bmw",
+      "label": "BMW X5 (G05, F95) 2018-",
+      "catalog_gens": [
+        "x5-g05-suv-2019-2023"
+      ],
+      "last_crawl": "haynespro-crawl-bmw-x5-g05-2026-05-23.json",
+      "last_crawl_at": "2026-05-23T18:00:00Z"
+    },
+    {
       "modelId": "d_319009109",
       "brand": "bmw",
       "label": "BMW i4 (G26) 2021-",
