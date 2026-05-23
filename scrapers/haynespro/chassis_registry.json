@@ -152,6 +152,27 @@
       "last_crawl_at": "2026-05-23T17:30:00Z"
     },
     {
+      "modelId": "d_319018751",
+      "brand": "bmw",
+      "label": "BMW iX3 (G08) 2020-",
+      "catalog_gens": [
+        "ix3-g08-suv-2020-2024"
+      ],
+      "last_crawl": "haynespro-crawl-bmw-ix3-g08-2026-05-23.json",
+      "last_crawl_at": "2026-05-23T18:30:00Z"
+    },
+    {
+      "modelId": "d_840",
+      "brand": "bmw",
+      "label": "BMW X3 (E83) 2004-2010",
+      "catalog_gens": [
+        "x3-e83-suv-2004-2006",
+        "x3-e83-lci-suv-2006-2010"
+      ],
+      "last_crawl": "haynespro-crawl-bmw-x3-e83-2026-05-23.json",
+      "last_crawl_at": "2026-05-23T18:30:00Z"
+    },
+    {
       "modelId": "d_102000210",
       "brand": "bmw",
       "label": "BMW X3 (F25) 2011-2018",

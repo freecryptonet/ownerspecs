@@ -233,6 +233,31 @@ const CHASSIS_RULES: Record<string, ChassisRule> = {
       return gens;
     },
   },
+  // BMW iX3 (G08) — BEV single catalog gen (2 motor variants: iX3, iX3 M).
+  // Note: 'iX3 M' is a sport trim, not a separate M-car. Gen: 169.
+  "bmw-ix3-g08": {
+    crawlFile: "haynespro-crawl-bmw-ix3-g08-2026-05-23.json",
+    modelId: "d_319018751",
+    label: "BMW iX3 (G08)",
+    classify: (_type, years) => {
+      const [s, e] = parseYears(years);
+      return overlaps(s, e, 2020, 2024) ? [169] : [];
+    },
+  },
+  // BMW X3 (E83) — 2 catalog gens: pre-LCI 2004-2006 + LCI 2006-2010.
+  // Gens: 170=x3-e83-suv-2004-2006, 171=x3-e83-lci-suv-2006-2010.
+  "bmw-x3-e83": {
+    crawlFile: "haynespro-crawl-bmw-x3-e83-2026-05-23.json",
+    modelId: "d_840",
+    label: "BMW X3 (E83)",
+    classify: (_type, years) => {
+      const [s, e] = parseYears(years);
+      const gens: number[] = [];
+      if (overlaps(s, e, 2004, 2006)) gens.push(170);
+      if (overlaps(s, e, 2006, 2010)) gens.push(171);
+      return gens;
+    },
+  },
   // BMW X3 (F25) — 2 catalog gens: pre-LCI 2011-2014 + LCI 2014-2018.
   // Gens: 166=x3-f25-suv-2011-2014, 167=x3-f25-lci-suv-2014-2018.
   "bmw-x3-f25": {
