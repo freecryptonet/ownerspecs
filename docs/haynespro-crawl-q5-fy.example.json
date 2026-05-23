@@ -1,0 +1,46 @@
+{
+  "chassis": {
+    "modelId": "d_319001449",
+    "label": "Q5 (FY)",
+    "engines_count": 30,
+    "fetched_at": "2026-05-23T08:26:13.641Z"
+  },
+  "_meta": {
+    "source": "scrapers/haynespro/crawl_chassis.js running in browser via Playwright session, 2026-05-23",
+    "duration_ms": 46917,
+    "throttle_ms": 1200,
+    "discovered_engines_not_in_catalog": ["DEUB","DEZB","DTNB","DETB","DEUA","DEZE","DTNA","DFBA","DMSA","DTPA","CVMD","DCPE","DAXB","DAYB","DAXC","DNTA","DPUA","DPVA","DGKB","DCPC","DMGA","DLGA+EBCA","DRYA+EBCA","CWGD","DEWB","DMKC"]
+  },
+  "types": [
+    {"typeId":"t_319005453","type":"30 TDI","engine_code":"DEUB","cc":1968,"kw":100,"years":"2017 - 2018","oil":{"visc":"0W-30","spec":"VW 507 00","sump_l":4.7,"drain_nm":30},"coolant":{"spec":"TL-VW 774L (G12EVO)","capacity_l":8}},
+    {"typeId":"t_619017262","type":"30 TDI","engine_code":"DEZB","cc":1968,"kw":100,"years":"2019 - 2020","oil":{"visc":"0W-20","spec":"VW 509 00","sump_l":5.5,"drain_nm":30},"coolant":{"spec":"TL-VW 774L (G12EVO)","capacity_l":8}},
+    {"typeId":"t_619035877","type":"30 TDI","engine_code":"DTNB","cc":1968,"kw":100,"years":"2021 - ...","oil":{"visc":"0W-20","spec":"VW 509 00","sump_l":5.5,"drain_nm":30},"coolant":{"spec":"TL-VW 774L (G12EVO)","capacity_l":8}},
+    {"typeId":"t_319005451","type":"35 TDI","engine_code":"DETB","cc":1968,"kw":120,"years":"2017 - 2020","oil":{"visc":"0W-30","spec":"VW 507 00","sump_l":4.7,"drain_nm":30},"coolant":{"spec":"TL-VW 774L (G12EVO)","capacity_l":8}},
+    {"typeId":"t_319005452","type":"35 TDI","engine_code":"DEUA","cc":1968,"kw":110,"years":"2017 - 2020","oil":{"visc":"0W-30","spec":"VW 507 00","sump_l":4.7,"drain_nm":30},"coolant":{"spec":"TL-VW 774L (G12EVO)","capacity_l":8}},
+    {"typeId":"t_619029454","type":"35 TDI","engine_code":"DEZE","cc":1968,"kw":120,"years":"2019 - 2020","oil":{"visc":"0W-20","spec":"VW 509 00","sump_l":5.5,"drain_nm":30},"coolant":{"spec":"TL-VW 774L (G12EVO)","capacity_l":8}},
+    {"typeId":"t_619035876","type":"35 TDI","engine_code":"DTNA","cc":1968,"kw":120,"years":"2021 - ...","oil":{"visc":"0W-20","spec":"VW 509 00","sump_l":5.5,"drain_nm":30},"coolant":{"spec":"TL-VW 774L (G12EVO)","capacity_l":8}},
+    {"typeId":"t_319005449","type":"40 TDI","engine_code":"DESA","cc":1968,"kw":140,"years":"2016 - 2025","oil":{"visc":"0W-30","spec":"VW 507 00","sump_l":4.7,"drain_nm":30},"coolant":{"spec":"TL-VW 774L (G12EVO)","capacity_l":8}},
+    {"typeId":"t_319005450","type":"40 TDI","engine_code":"DETA","cc":1968,"kw":140,"years":"2017 - 2020","oil":{"visc":"0W-30","spec":"VW 507 00","sump_l":4.7,"drain_nm":30},"coolant":{"spec":"TL-VW 774L (G12EVO)","capacity_l":8}},
+    {"typeId":"t_619017263","type":"40 TDI","engine_code":"DFBA","cc":1968,"kw":150,"years":"2019 - 2020","oil":{"visc":"0W-20","spec":"VW 509 00","sump_l":5.5,"drain_nm":30},"coolant":{"spec":"TL-VW 774L (G12EVO)","capacity_l":8}},
+    {"typeId":"t_619039148","type":"40 TFSI","engine_code":"DMSA","cc":1984,"kw":150,"years":"2022 - ...","oil":{"visc":"0W-20","spec":"VW 508 00","sump_l":5.2,"drain_nm":null},"coolant":{"spec":"TL-VW 774L (G12EVO)","capacity_l":10}},
+    {"typeId":"t_619035878","type":"40 eTDI","engine_code":"DTPA","cc":1968,"kw":150,"years":"2021 - ...","oil":{"visc":"0W-30","spec":"VW 507 00","sump_l":5.5,"drain_nm":30},"coolant":{"spec":"TL-VW 774L (G12EVO)","capacity_l":8}},
+    {"typeId":"t_619017258","type":"45 TDI","engine_code":"CVMD","cc":2967,"kw":183,"years":"2018 - 2025","oil":{"visc":"0W-30","spec":"VW 507 00","sump_l":6.1,"drain_nm":30},"coolant":{"spec":"TL-VW 774L (G12EVO)","capacity_l":15}},
+    {"typeId":"t_619017259","type":"45 TDI","engine_code":"DCPE","cc":2967,"kw":170,"years":"2019 - 2020","oil":{"visc":"0W-30","spec":"VW 507 00","sump_l":6.1,"drain_nm":30},"coolant":{"spec":"TL-VW 774L (G12EVO)","capacity_l":10}},
+    {"typeId":"t_319005448","type":"45 TFSI","engine_code":"DAXB","cc":1984,"kw":185,"years":"2017 - ...","oil":{"visc":"0W-30","spec":"VW 504 00","sump_l":5.2,"drain_nm":30},"coolant":{"spec":"TL-VW 774L (G12EVO)","capacity_l":10}},
+    {"typeId":"t_319005530","type":"45 TFSI","engine_code":"DAYB","cc":1984,"kw":185,"years":"2017 - 2018","oil":{"visc":"0W-30","spec":"VW 502 00","sump_l":5.2,"drain_nm":30},"coolant":{"spec":"TL-VW 774L (G12EVO)","capacity_l":10}},
+    {"typeId":"t_319005529","type":"45 TFSI","engine_code":"DAXC","cc":1984,"kw":183,"years":"2017 - 2020","oil":{"visc":"0W-30","spec":"VW 502 00","sump_l":5.2,"drain_nm":30},"coolant":{"spec":"TL-VW 774L (G12EVO)","capacity_l":10}},
+    {"typeId":"t_619016909","type":"45 TFSI","engine_code":"DNTA","cc":1984,"kw":180,"years":"2019 - 2020","oil":{"visc":"0W-20","spec":"VW 508 00","sump_l":5.2,"drain_nm":30},"coolant":{"spec":"TL-VW 774L (G12EVO)","capacity_l":10}},
+    {"typeId":"t_619035869","type":"45 TFSI MHEV","engine_code":"DPUA","cc":1984,"kw":195,"years":"2021 - ...","oil":{"visc":"0W-20","spec":"VW 508 00","sump_l":5.2,"drain_nm":null},"coolant":{"spec":"TL-VW 774L (G12EVO)","capacity_l":10}},
+    {"typeId":"t_619035870","type":"45 TFSI MHEV","engine_code":"DPVA","cc":1984,"kw":195,"years":"2021 - ...","oil":{"visc":"0W-20","spec":"VW 508 00","sump_l":5.2,"drain_nm":null},"coolant":{"spec":"TL-VW 774L (G12EVO)","capacity_l":10}},
+    {"typeId":"t_619035872","type":"45 TFSI MHEV","engine_code":"DGKB","cc":1984,"kw":183,"years":"2021 - ...","oil":{"visc":"0W-20","spec":"VW 508 00","sump_l":5.2,"drain_nm":30},"coolant":{"spec":"TL-VW 774L (G12EVO)","capacity_l":10}},
+    {"typeId":"t_619007998","type":"50 TDI","engine_code":"DCPC","cc":2967,"kw":210,"years":"2017 - 2020","oil":{"visc":"0W-30","spec":"VW 507 00","sump_l":6.1,"drain_nm":30},"coolant":{"spec":"TL-VW 774L (G12EVO)","capacity_l":10}},
+    {"typeId":"t_619035871","type":"50 TDI MHEV","engine_code":"DMGA","cc":2967,"kw":210,"years":"2021 - ...","oil":{"visc":"0W-30","spec":"VW 507 00","sump_l":6.1,"drain_nm":35},"coolant":{"spec":"TL-VW 774L (G12EVO)","capacity_l":10}},
+    {"typeId":"t_619017265","type":"50 TFSI e","engine_code":"DLGA+EBCA","cc":1984,"kw":220,"years":"2019 - ...","oil":{"visc":"0W-20","spec":"VW 508 00","sump_l":5.2,"drain_nm":30},"coolant":{"spec":"TL-VW 774L (G12EVO)","capacity_l":10}},
+    {"typeId":"t_619035874","type":"50 TFSI e","engine_code":"DRYA+EBCA","cc":1984,"kw":220,"years":"2021 - ...","oil":{"visc":"0W-20","spec":"VW 508 00","sump_l":5.2,"drain_nm":null},"coolant":{"spec":"TL-VW 774L (G12EVO)","capacity_l":10}},
+    {"typeId":"t_319005447","type":"55 TFSI","engine_code":"CWGD","cc":2995,"kw":260,"years":"2017 - ...","oil":{"visc":"0W-20","spec":"VW 508 00","sump_l":7.25,"drain_nm":null},"coolant":{"spec":"TL-VW 774L (G12EVO)","capacity_l":10}},
+    {"typeId":"t_619028758","type":"55 TFSI e","engine_code":"DLGA+EBCA","cc":1984,"kw":270,"years":"2019 - ...","oil":{"visc":"0W-20","spec":"VW 508 00","sump_l":5.2,"drain_nm":30},"coolant":{"spec":"TL-VW 774L (G12EVO)","capacity_l":null}},
+    {"typeId":"t_619035875","type":"55 TFSI e","engine_code":"DRYA+EBCA","cc":1984,"kw":270,"years":"2021 - ...","oil":{"visc":"0W-20","spec":"VW 508 00","sump_l":5.2,"drain_nm":null},"coolant":{"spec":"TL-VW 774L (G12EVO)","capacity_l":10}},
+    {"typeId":"t_619017260","type":"SQ5 (3.0 TDI) MHEV","engine_code":"DEWB","cc":2967,"kw":255,"years":"2019 - 2020","oil":{"visc":"0W-30","spec":"VW 507 00","sump_l":6.1,"drain_nm":30},"coolant":{"spec":"TL-VW 774L (G12EVO)","capacity_l":10}},
+    {"typeId":"t_619035873","type":"SQ5 (3.0 TDI) MHEV","engine_code":"DMKC","cc":2967,"kw":251,"years":"2021 - ...","oil":{"visc":"0W-30","spec":"VW 507 00","sump_l":6.1,"drain_nm":30},"coolant":{"spec":"TL-VW 774L (G12EVO)","capacity_l":10}}
+  ]
+}
