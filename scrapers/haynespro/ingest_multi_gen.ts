@@ -32,6 +32,8 @@ type EngineRecord = {
   years: string;
   oil?: { visc: string | null; spec: string | null; sump_l: number | null; drain_nm: number | null } | null;
   coolant?: { spec: string | null; capacity_l: number | null } | null;
+  brake_fluid?: { spec: string | null; spec_alt: string | null; capacity_l: number | null } | null;
+  transmission?: { type: string; label: string; spec: string | null; capacity_l: number | null } | null;
 };
 
 type Crawl = {
@@ -171,6 +173,44 @@ const CHASSIS_RULES: Record<string, ChassisRule> = {
       return overlaps(s, e, 2022, 2025) ? [50] : [];
     },
   },
+  // Phase 2 chassis added here so the same multi-gen ingest now covers them
+  // for the new brake_fluid + transmission fluid types (Phase 4).
+  "q5-fy": {
+    crawlFile: "haynespro-crawl-q5-fy-2026-05-23.json",
+    modelId: "d_319001449",
+    label: "Audi Q5 (FY)",
+    classify: (_type, years) => {
+      const [s, e] = parseYears(years);
+      return overlaps(s, e, 2017, 2020) ? [82] : [];
+    },
+  },
+  "vw-tiguan-ad": {
+    crawlFile: "haynespro-crawl-vw-tiguan-ii-ad-2026-05-23.json",
+    modelId: "d_317000050",
+    label: "VW Tiguan II (AD, AX, BT, BW, BJ)",
+    classify: (_type, years) => {
+      const [s, e] = parseYears(years);
+      return overlaps(s, e, 2017, 2024) ? [44] : [];
+    },
+  },
+  "honda-civic-x": {
+    crawlFile: "haynespro-crawl-honda-civic-x-fk-2026-05-23.json",
+    modelId: "d_319001478",
+    label: "Honda Civic X (FK, FC)",
+    classify: (_type, years) => {
+      const [s, e] = parseYears(years);
+      return overlaps(s, e, 2016, 2021) ? [1] : [];
+    },
+  },
+  "toyota-camry-xv70": {
+    crawlFile: "haynespro-crawl-toyota-camry-xv70-2026-05-23.json",
+    modelId: "d_319001688",
+    label: "Toyota Camry (XV70)",
+    classify: (_type, years) => {
+      const [s, e] = parseYears(years);
+      return overlaps(s, e, 2018, 2024) ? [2] : [];
+    },
+  },
 };
 
 function arg(flag: string): string | null {
@@ -277,6 +317,40 @@ function main() {
         lines.push(`WHERE NOT EXISTS (SELECT 1 FROM fluid_specs WHERE generation_id = ${genId} AND fluid_type = 'coolant' AND engine_id = ${engLookup});`);
         fluidRows++;
       }
+      // Per-engine transmission row (engine-scoped)
+      if (e.transmission && e.transmission.spec) {
+        const tType = e.transmission.type;
+        const capQt = e.transmission.capacity_l != null ? Math.round(e.transmission.capacity_l * 1.05669 * 100) / 100 : null;
+        const notes = `HaynesPro typeId ${e.typeId}; ${e.type}; ${e.transmission.label}`;
+        lines.push(`INSERT INTO fluid_specs (generation_id, fluid_type, engine_id, capacity_l, capacity_qt, viscosity, spec_standard, notes)`);
+        lines.push(`SELECT ${genId}, ${escapeSql(tType)}, ${engLookup}, ${num(e.transmission.capacity_l)}, ${num(capQt)}, NULL, ${escapeSql(e.transmission.spec)}, ${escapeSql(notes)}`);
+        lines.push(`WHERE NOT EXISTS (SELECT 1 FROM fluid_specs WHERE generation_id = ${genId} AND fluid_type = ${escapeSql(tType)} AND engine_id = ${engLookup});`);
+        fluidRows++;
+      }
+    }
+  }
+  lines.push("");
+
+  // 3b) Per-gen brake_fluid (gen-wide, engine_id NULL) using modal brake spec across all engines
+  const brakeCounts = new Map<string, { spec: string; spec_alt: string | null; capacity_l: number | null; count: number }>();
+  for (const e of byEngine.values()) {
+    if (!e.brake_fluid || !e.brake_fluid.spec) continue;
+    const key = `${e.brake_fluid.spec}|${e.brake_fluid.spec_alt ?? ""}|${e.brake_fluid.capacity_l ?? ""}`;
+    const cur = brakeCounts.get(key);
+    if (cur) cur.count++;
+    else brakeCounts.set(key, { spec: e.brake_fluid.spec, spec_alt: e.brake_fluid.spec_alt, capacity_l: e.brake_fluid.capacity_l, count: 1 });
+  }
+  const modalBrake = [...brakeCounts.values()].sort((a, b) => b.count - a.count)[0] ?? null;
+  if (modalBrake) {
+    const genIds = [...new Set([...engineToGens.values()].flatMap(s => [...s]))];
+    const capQt = modalBrake.capacity_l != null ? Math.round(modalBrake.capacity_l * 1.05669 * 100) / 100 : null;
+    const altNote = modalBrake.spec_alt ? `Alt: ${modalBrake.spec_alt}` : "";
+    const notes = `HaynesPro chassis ${rule.modelId}; ${altNote}`.trim();
+    for (const genId of genIds) {
+      lines.push(`INSERT INTO fluid_specs (generation_id, fluid_type, engine_id, capacity_l, capacity_qt, viscosity, spec_standard, notes)`);
+      lines.push(`SELECT ${genId}, 'brake_fluid', NULL, ${num(modalBrake.capacity_l)}, ${num(capQt)}, NULL, ${escapeSql(modalBrake.spec)}, ${escapeSql(notes)}`);
+      lines.push(`WHERE NOT EXISTS (SELECT 1 FROM fluid_specs WHERE generation_id = ${genId} AND fluid_type = 'brake_fluid' AND engine_id IS NULL);`);
+      fluidRows++;
     }
   }
   lines.push("");
@@ -284,19 +358,27 @@ function main() {
   // 4) Link inserted rows to HaynesPro source
   const genIds = [...new Set([...engineToGens.values()].flatMap(s => [...s]))];
   const codeList = [...engineToGens.keys()].map(escapeSql).join(", ");
+  lines.push("-- Link engine-scoped rows (oil, coolant, transmission_*)");
   lines.push("INSERT IGNORE INTO spec_sources (spec_table, spec_id, source_id)");
   lines.push(`SELECT 'fluid_specs', fs.id, @s_haynes`);
   lines.push(`FROM fluid_specs fs JOIN engines e ON e.id = fs.engine_id`);
   lines.push(`WHERE fs.generation_id IN (${genIds.join(", ")})`);
   lines.push(`  AND e.code IN (${codeList})`);
-  lines.push(`  AND fs.fluid_type IN ('engine_oil', 'coolant');`);
+  lines.push(`  AND fs.fluid_type IN ('engine_oil', 'coolant', 'transmission_at', 'transmission_mt', 'transmission_dct', 'transmission_cvt');`);
+  lines.push("");
+  lines.push("-- Link gen-wide brake_fluid rows");
+  lines.push("INSERT IGNORE INTO spec_sources (spec_table, spec_id, source_id)");
+  lines.push(`SELECT 'fluid_specs', fs.id, @s_haynes`);
+  lines.push(`FROM fluid_specs fs`);
+  lines.push(`WHERE fs.generation_id IN (${genIds.join(", ")})`);
+  lines.push(`  AND fs.fluid_type = 'brake_fluid' AND fs.engine_id IS NULL;`);
   lines.push("");
 
   // 5) Audit
-  lines.push(`SELECT g.slug, COUNT(*) AS fluid_rows`);
+  lines.push(`SELECT g.slug, fs.fluid_type, COUNT(*) AS rows_count`);
   lines.push(`FROM fluid_specs fs JOIN generations g ON g.id = fs.generation_id`);
-  lines.push(`WHERE fs.generation_id IN (${genIds.join(", ")}) AND fs.fluid_type IN ('engine_oil','coolant')`);
-  lines.push(`GROUP BY g.slug ORDER BY g.slug;`);
+  lines.push(`WHERE fs.generation_id IN (${genIds.join(", ")}) AND fs.fluid_type IN ('engine_oil','coolant','brake_fluid','transmission_at','transmission_mt','transmission_dct','transmission_cvt')`);
+  lines.push(`GROUP BY g.slug, fs.fluid_type ORDER BY g.slug, fs.fluid_type;`);
 
   const outPath = resolve("db/migrations", `${migNumber}_ingest_multigen_${key}.sql`);
   writeFileSync(outPath, lines.join("\n"), "utf8");
