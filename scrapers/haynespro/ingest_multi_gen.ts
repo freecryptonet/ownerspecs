@@ -233,6 +233,86 @@ const CHASSIS_RULES: Record<string, ChassisRule> = {
       return gens;
     },
   },
+  // BMW 6 Series E63/E64 (2003-2011) — Coupe + Convertible + M6 V10.
+  // M6 → m6-e63-coupe (255) + m6-e64-convertible (256). Regular → 253 + 254.
+  "bmw-6-e63": {
+    crawlFile: "haynespro-crawl-bmw-6-e63-2026-05-23.json",
+    modelId: "d_860",
+    label: "BMW 6 (E63, E64)",
+    classify: (type, years) => {
+      const [s, e] = parseYears(years);
+      if (/^M6\b/.test(type)) {
+        const gens: number[] = [];
+        if (overlaps(s, e, 2005, 2010)) gens.push(255);  // M6 E63 coupe
+        if (overlaps(s, e, 2006, 2010)) gens.push(256);  // M6 E64 convertible
+        return gens;
+      }
+      const gens: number[] = [];
+      if (overlaps(s, e, 2003, 2010)) gens.push(253);  // E63 coupe
+      if (overlaps(s, e, 2004, 2010)) gens.push(254);  // E64 convertible
+      return gens;
+    },
+  },
+  // BMW 6 Series F06/F12/F13 (2011-2018) — Coupe + Convertible + Gran Coupe + M6 V8.
+  // M6 → m6-f13/f12/f06 fan-out. Regular → 6-series-f13/f12/f06 fan-out.
+  "bmw-6-f13": {
+    crawlFile: "haynespro-crawl-bmw-6-f13-2026-05-23.json",
+    modelId: "d_102000141",
+    label: "BMW 6 (F06, F12, F13)",
+    classify: (type, years) => {
+      const [s, e] = parseYears(years);
+      if (/^M6\b/.test(type)) {
+        const gens: number[] = [];
+        if (overlaps(s, e, 2012, 2018)) gens.push(260, 261);  // M6 F13 + F12
+        if (overlaps(s, e, 2013, 2018)) gens.push(262);       // M6 F06 GC (from 2013)
+        return gens;
+      }
+      const gens: number[] = [];
+      if (overlaps(s, e, 2011, 2018)) gens.push(257, 258);  // F13 + F12
+      if (overlaps(s, e, 2012, 2018)) gens.push(259);       // F06 GC (from 2012)
+      return gens;
+    },
+  },
+  // BMW 6 Series Gran Turismo G32 (2017-) — single gen.
+  "bmw-6-g32": {
+    crawlFile: "haynespro-crawl-bmw-6-g32-2026-05-23.json",
+    modelId: "d_319001547",
+    label: "BMW 6 GT (G32)",
+    classify: (_type, years) => {
+      const [s, e] = parseYears(years);
+      return overlaps(s, e, 2017, 2099) ? [263] : [];
+    },
+  },
+  // BMW X2 F39 (1st gen, 2018-2023) — single gen.
+  "bmw-x2-f39": {
+    crawlFile: "haynespro-crawl-bmw-x2-f39-2026-05-23.json",
+    modelId: "d_319001659",
+    label: "BMW X2 (F39)",
+    classify: (_type, years) => {
+      const [s, e] = parseYears(years);
+      return overlaps(s, e, 2018, 2023) ? [264] : [];
+    },
+  },
+  // BMW X2 U10 (2nd gen, 2023-) — single gen.
+  "bmw-x2-u10": {
+    crawlFile: "haynespro-crawl-bmw-x2-u10-2026-05-23.json",
+    modelId: "d_319021717",
+    label: "BMW X2 (U10)",
+    classify: (_type, years) => {
+      const [s, e] = parseYears(years);
+      return overlaps(s, e, 2023, 2099) ? [265] : [];
+    },
+  },
+  // BMW iX I20 (2021-2025, BEV) — single gen.
+  "bmw-ix-i20": {
+    crawlFile: "haynespro-crawl-bmw-ix-i20-2026-05-23.json",
+    modelId: "d_319009108",
+    label: "BMW iX (I20)",
+    classify: (_type, years) => {
+      const [s, e] = parseYears(years);
+      return overlaps(s, e, 2021, 2025) ? [266] : [];
+    },
+  },
   // BMW Z4 E85/E86 (2003-2009) — Roadster (E85, 2003-2009) + Coupe (E86, 2006-2009).
   // HaynesPro doesn't differentiate body in chassis listing — fan out to both.
   "bmw-z4-e85": {

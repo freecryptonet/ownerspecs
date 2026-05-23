@@ -152,6 +152,57 @@
       "last_crawl_at": "2026-05-23T17:30:00Z"
     },
     {
+      "modelId": "d_860",
+      "brand": "bmw",
+      "label": "BMW 6 (E63, E64) 2003-2011",
+      "catalog_gens": ["6-series-e63-coupe-2003-2010", "6-series-e64-convertible-2004-2010", "m6-e63-coupe-2005-2010", "m6-e64-convertible-2006-2010"],
+      "last_crawl": "haynespro-crawl-bmw-6-e63-2026-05-23.json",
+      "last_crawl_at": "2026-05-23T20:45:00Z"
+    },
+    {
+      "modelId": "d_102000141",
+      "brand": "bmw",
+      "label": "BMW 6 (F06, F12, F13) 2011-2018",
+      "catalog_gens": [
+        "6-series-f13-coupe-2011-2018", "6-series-f12-convertible-2011-2018", "6-series-f06-gran-coupe-2012-2018",
+        "m6-f13-coupe-2012-2018", "m6-f12-convertible-2012-2018", "m6-f06-gran-coupe-2013-2018"
+      ],
+      "last_crawl": "haynespro-crawl-bmw-6-f13-2026-05-23.json",
+      "last_crawl_at": "2026-05-23T20:45:00Z"
+    },
+    {
+      "modelId": "d_319001547",
+      "brand": "bmw",
+      "label": "BMW 6 GT (G32) 2017-",
+      "catalog_gens": ["6-series-g32-gran-turismo-2017-present"],
+      "last_crawl": "haynespro-crawl-bmw-6-g32-2026-05-23.json",
+      "last_crawl_at": "2026-05-23T20:45:00Z"
+    },
+    {
+      "modelId": "d_319001659",
+      "brand": "bmw",
+      "label": "BMW X2 (F39) 2018-2023",
+      "catalog_gens": ["x2-f39-suv-2018-2023"],
+      "last_crawl": "haynespro-crawl-bmw-x2-f39-2026-05-23.json",
+      "last_crawl_at": "2026-05-23T20:45:00Z"
+    },
+    {
+      "modelId": "d_319021717",
+      "brand": "bmw",
+      "label": "BMW X2 (U10) 2023-",
+      "catalog_gens": ["x2-u10-suv-2023-present"],
+      "last_crawl": "haynespro-crawl-bmw-x2-u10-2026-05-23.json",
+      "last_crawl_at": "2026-05-23T20:45:00Z"
+    },
+    {
+      "modelId": "d_319009108",
+      "brand": "bmw",
+      "label": "BMW iX (I20) 2021-2025",
+      "catalog_gens": ["ix-i20-suv-2021-2025"],
+      "last_crawl": "haynespro-crawl-bmw-ix-i20-2026-05-23.json",
+      "last_crawl_at": "2026-05-23T20:45:00Z"
+    },
+    {
       "modelId": "d_890",
       "brand": "bmw",
       "label": "BMW Z4 (E85, E86) 2003-2009",
