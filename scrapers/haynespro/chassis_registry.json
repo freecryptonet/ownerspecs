@@ -152,6 +152,54 @@
       "last_crawl_at": "2026-05-23T17:30:00Z"
     },
     {
+      "modelId": "d_3580",
+      "brand": "mercedes-benz",
+      "label": "Mercedes-Benz A (W169) 2005-2012",
+      "catalog_gens": ["a-class-w169-2005-2012"],
+      "last_crawl": "haynespro-crawl-mb-a-w169-2026-05-23.json",
+      "last_crawl_at": "2026-05-24T00:00:00Z"
+    },
+    {
+      "modelId": "d_200000018",
+      "brand": "mercedes-benz",
+      "label": "Mercedes-Benz A (W176) 2012-2018",
+      "catalog_gens": ["a-class-w176-2012-2018"],
+      "last_crawl": "haynespro-crawl-mb-a-w176-2026-05-23.json",
+      "last_crawl_at": "2026-05-24T00:00:00Z"
+    },
+    {
+      "modelId": "d_319001679",
+      "brand": "mercedes-benz",
+      "label": "Mercedes-Benz A (W177) 2018-",
+      "catalog_gens": ["a-class-w177-2018-present"],
+      "last_crawl": "haynespro-crawl-mb-a-w177-2026-05-23.json",
+      "last_crawl_at": "2026-05-24T00:00:00Z"
+    },
+    {
+      "modelId": "d_3480",
+      "brand": "mercedes-benz",
+      "label": "Mercedes-Benz B (W245) 2005-2011",
+      "catalog_gens": ["b-class-w245-2005-2011"],
+      "last_crawl": "haynespro-crawl-mb-b-w245-2026-05-23.json",
+      "last_crawl_at": "2026-05-24T00:00:00Z"
+    },
+    {
+      "modelId": "d_102000248",
+      "brand": "mercedes-benz",
+      "label": "Mercedes-Benz B (W242, W246) 2011-2018",
+      "catalog_gens": ["b-class-w246-2011-2018"],
+      "last_crawl": "haynespro-crawl-mb-b-w246-2026-05-23.json",
+      "last_crawl_at": "2026-05-24T00:00:00Z"
+    },
+    {
+      "modelId": "d_319002954",
+      "brand": "mercedes-benz",
+      "label": "Mercedes-Benz B (W247) 2019-",
+      "catalog_gens": ["b-class-w247-2019-present"],
+      "last_crawl": "haynespro-crawl-mb-b-w247-2026-05-23.json",
+      "last_crawl_at": "2026-05-24T00:00:00Z"
+    },
+    {
       "modelId": "d_3610",
       "brand": "mercedes-benz",
       "label": "Mercedes-Benz C (W203, S203) 2000-2007",

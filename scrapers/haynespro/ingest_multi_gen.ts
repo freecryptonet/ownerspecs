@@ -233,6 +233,66 @@ const CHASSIS_RULES: Record<string, ChassisRule> = {
       return gens;
     },
   },
+  // Mercedes-Benz A-Class W169 (2005-2012) — single gen. Gen: 313.
+  "mb-a-w169": {
+    crawlFile: "haynespro-crawl-mb-a-w169-2026-05-23.json",
+    modelId: "d_3580",
+    label: "Mercedes-Benz A (W169)",
+    classify: (_type, years) => {
+      const [s, e] = parseYears(years);
+      return overlaps(s, e, 2005, 2012) ? [313] : [];
+    },
+  },
+  // Mercedes-Benz A-Class W176 (2012-2018) — single gen, A45 AMG merged. Gen: 314.
+  "mb-a-w176": {
+    crawlFile: "haynespro-crawl-mb-a-w176-2026-05-23.json",
+    modelId: "d_200000018",
+    label: "Mercedes-Benz A (W176)",
+    classify: (_type, years) => {
+      const [s, e] = parseYears(years);
+      return overlaps(s, e, 2012, 2018) ? [314] : [];
+    },
+  },
+  // Mercedes-Benz A-Class W177 (2018-) — single gen, A35/A45 AMG merged. Gen: 315.
+  "mb-a-w177": {
+    crawlFile: "haynespro-crawl-mb-a-w177-2026-05-23.json",
+    modelId: "d_319001679",
+    label: "Mercedes-Benz A (W177)",
+    classify: (_type, years) => {
+      const [s, e] = parseYears(years);
+      return overlaps(s, e, 2018, 2099) ? [315] : [];
+    },
+  },
+  // Mercedes-Benz B-Class W245 (2005-2011) — single gen. Gen: 316.
+  "mb-b-w245": {
+    crawlFile: "haynespro-crawl-mb-b-w245-2026-05-23.json",
+    modelId: "d_3480",
+    label: "Mercedes-Benz B (W245)",
+    classify: (_type, years) => {
+      const [s, e] = parseYears(years);
+      return overlaps(s, e, 2005, 2011) ? [316] : [];
+    },
+  },
+  // Mercedes-Benz B-Class W246 (2011-2018) — single gen. W242 = B-Class Electric. Gen: 317.
+  "mb-b-w246": {
+    crawlFile: "haynespro-crawl-mb-b-w246-2026-05-23.json",
+    modelId: "d_102000248",
+    label: "Mercedes-Benz B (W242, W246)",
+    classify: (_type, years) => {
+      const [s, e] = parseYears(years);
+      return overlaps(s, e, 2011, 2018) ? [317] : [];
+    },
+  },
+  // Mercedes-Benz B-Class W247 (2019-) — single gen. Gen: 318.
+  "mb-b-w247": {
+    crawlFile: "haynespro-crawl-mb-b-w247-2026-05-23.json",
+    modelId: "d_319002954",
+    label: "Mercedes-Benz B (W247)",
+    classify: (_type, years) => {
+      const [s, e] = parseYears(years);
+      return overlaps(s, e, 2019, 2099) ? [318] : [];
+    },
+  },
   // Mercedes-Benz C-Class W203 (2000-2007) — single gen.
   "mb-c-w203": {
     crawlFile: "haynespro-crawl-mb-c-w203-2026-05-23.json",
