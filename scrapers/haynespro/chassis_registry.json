@@ -152,6 +152,54 @@
       "last_crawl_at": "2026-05-23T17:30:00Z"
     },
     {
+      "modelId": "d_102000120",
+      "brand": "bmw",
+      "label": "BMW X1 (E84) 2009-2015",
+      "catalog_gens": ["x1-e84-suv-2009-2015"],
+      "last_crawl": "haynespro-crawl-bmw-x1-e84-2026-05-23.json",
+      "last_crawl_at": "2026-05-23T19:45:00Z"
+    },
+    {
+      "modelId": "d_318000006",
+      "brand": "bmw",
+      "label": "BMW X1 (F48) 2015-2022",
+      "catalog_gens": ["x1-f48-suv-2015-2022"],
+      "last_crawl": "haynespro-crawl-bmw-x1-f48-2026-05-23.json",
+      "last_crawl_at": "2026-05-23T19:45:00Z"
+    },
+    {
+      "modelId": "d_319017768",
+      "brand": "bmw",
+      "label": "BMW X1 (U11) 2022-",
+      "catalog_gens": ["x1-u11-suv-2022-present", "ix1-u11-suv-2022-present"],
+      "last_crawl": "haynespro-crawl-bmw-x1-u11-2026-05-23.json",
+      "last_crawl_at": "2026-05-23T19:45:00Z"
+    },
+    {
+      "modelId": "d_302000002",
+      "brand": "bmw",
+      "label": "BMW 2 (F22, F23, F87) 2014-2021",
+      "catalog_gens": ["2-series-f22-coupe-2014-2021", "2-series-f23-convertible-2014-2021", "m2-f87-coupe-2016-2021"],
+      "last_crawl": "haynespro-crawl-bmw-2-f22-2026-05-23.json",
+      "last_crawl_at": "2026-05-23T19:45:00Z"
+    },
+    {
+      "modelId": "d_319004912",
+      "brand": "bmw",
+      "label": "BMW 2 Gran Coupe (F44) 2019-",
+      "catalog_gens": ["2-series-f44-gran-coupe-2019-present"],
+      "last_crawl": "haynespro-crawl-bmw-2-f44-2026-05-23.json",
+      "last_crawl_at": "2026-05-23T19:45:00Z"
+    },
+    {
+      "modelId": "d_319009165",
+      "brand": "bmw",
+      "label": "BMW 2 (G42, G87) 2022-",
+      "catalog_gens": ["2-series-g42-coupe-2022-present", "m2-g87-coupe-2023-present"],
+      "last_crawl": "haynespro-crawl-bmw-2-g42-2026-05-23.json",
+      "last_crawl_at": "2026-05-23T19:45:00Z"
+    },
+    {
       "modelId": "d_830",
       "brand": "bmw",
       "label": "BMW 1 (E81, E82, E87, E88) 2004-2013",

@@ -233,6 +233,76 @@ const CHASSIS_RULES: Record<string, ChassisRule> = {
       return gens;
     },
   },
+  // BMW X1 E84 (1st gen, 2009-2015) — single gen, RWD-based.
+  "bmw-x1-e84": {
+    crawlFile: "haynespro-crawl-bmw-x1-e84-2026-05-23.json",
+    modelId: "d_102000120",
+    label: "BMW X1 (E84)",
+    classify: (_type, years) => {
+      const [s, e] = parseYears(years);
+      return overlaps(s, e, 2009, 2015) ? [207] : [];
+    },
+  },
+  // BMW X1 F48 (2nd gen, 2015-2022) — single gen, FWD-based.
+  "bmw-x1-f48": {
+    crawlFile: "haynespro-crawl-bmw-x1-f48-2026-05-23.json",
+    modelId: "d_318000006",
+    label: "BMW X1 (F48)",
+    classify: (_type, years) => {
+      const [s, e] = parseYears(years);
+      return overlaps(s, e, 2015, 2022) ? [208] : [];
+    },
+  },
+  // BMW X1 U11 (3rd gen, 2022-) — split ICE (X1 gen 209) vs BEV iX1 (gen 210)
+  "bmw-x1-u11": {
+    crawlFile: "haynespro-crawl-bmw-x1-u11-2026-05-23.json",
+    modelId: "d_319017768",
+    label: "BMW X1 (U11)",
+    classify: (type, years) => {
+      const [s, e] = parseYears(years);
+      if (!overlaps(s, e, 2022, 2099)) return [];
+      return /^iX1\b/.test(type) ? [210] : [209];
+    },
+  },
+  // BMW 2 Series F22/F23/F87 (2014-2021) — 3 gens: coupe + convertible + M2 F87.
+  // M2 / M2 Competition / M2 CS → M2 F87 gen only.
+  // M235i / M240i → high-trim regular, fan out to coupe+convertible.
+  "bmw-2-f22": {
+    crawlFile: "haynespro-crawl-bmw-2-f22-2026-05-23.json",
+    modelId: "d_302000002",
+    label: "BMW 2 (F22, F23, F87)",
+    classify: (type, years) => {
+      const [s, e] = parseYears(years);
+      // M2 family (N55B30A in early M2; S55B30A in M2 Competition/CS) → F87 coupe only
+      if (/^M2\b/.test(type)) {
+        return overlaps(s, e, 2016, 2021) ? [213] : [];
+      }
+      // Regular + M235i/M240i high-trim → coupe (211) + convertible (212)
+      if (!overlaps(s, e, 2014, 2021)) return [];
+      return [211, 212];
+    },
+  },
+  // BMW 2 Series Gran Coupe F44 (2019-) — single gen, FWD.
+  "bmw-2-f44": {
+    crawlFile: "haynespro-crawl-bmw-2-f44-2026-05-23.json",
+    modelId: "d_319004912",
+    label: "BMW 2 Gran Coupe (F44)",
+    classify: (_type, years) => {
+      const [s, e] = parseYears(years);
+      return overlaps(s, e, 2019, 2099) ? [214] : [];
+    },
+  },
+  // BMW 2 Series G42/G87 (2022-) — split coupe (gen 215) vs M2 G87 (gen 216).
+  "bmw-2-g42": {
+    crawlFile: "haynespro-crawl-bmw-2-g42-2026-05-23.json",
+    modelId: "d_319009165",
+    label: "BMW 2 (G42, G87)",
+    classify: (type, years) => {
+      const [s, e] = parseYears(years);
+      if (!overlaps(s, e, 2022, 2099)) return [];
+      return /^M2\b/.test(type) ? [216] : [215];
+    },
+  },
   // BMW 1 Series E87/E82/E88 (1st gen, 2004-2013) — 2 catalog gens (hatch + coupe).
   // Most engines were offered in hatch + coupe + convertible bodies — fluid specs identical.
   // Coupe-only engines (1M N54B30A) go to coupe gen only.
