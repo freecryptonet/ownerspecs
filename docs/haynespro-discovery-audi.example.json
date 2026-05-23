@@ -1,0 +1,71 @@
+{
+  "makeId": "m_120",
+  "make_label": "AUDI",
+  "fetched_at": "2026-05-23T08:30:53.694Z",
+  "duration_ms": 14677,
+  "model_groups_count": 21,
+  "total_chassis": 52,
+  "model_groups": [
+    {"modelGroupId":"dg_1000115","model_label":"A1 2011 - ...","chassis":[
+      {"modelId":"d_319002998","label":"A1 (GBA, GBH) 2019 - ..."},
+      {"modelId":"d_102000157","label":"A1 (8X) 2011 - 2018"}]},
+    {"modelGroupId":"dg_1000237","model_label":"A3 1997 - ...","chassis":[
+      {"modelId":"d_319007427","label":"A3 IV (8Y) 2020 - ..."},
+      {"modelId":"d_102000240","label":"A3 III (8V) 2013 - 2020"},
+      {"modelId":"d_480","label":"A3 II (8P) 2003 - 2013"},
+      {"modelId":"d_410","label":"A3 I (8L) 1997 - 2006"}]},
+    {"modelGroupId":"dg_1000312","model_label":"A4 1995 - ...","chassis":[
+      {"modelId":"d_317000026","label":"A4 (8W) 2016 - ..."},
+      {"modelId":"d_105000007","label":"A4 /-Allroad (8K) 2007 - 2015"},
+      {"modelId":"d_500","label":"A4 (8E, 8H) 2005 - 2009"},
+      {"modelId":"d_470","label":"A4 (8E, 8H) 2001 - 2006"},
+      {"modelId":"d_390","label":"A4 (8D) 1995 - 2001"}]},
+    {"modelGroupId":"dg_1000412","model_label":"A5 2007 - ...","chassis":[
+      {"modelId":"d_319022568","label":"A5 (FU) 2024 - ..."},
+      {"modelId":"d_319000522","label":"A5 (F5) 2017 - 2025"},
+      {"modelId":"d_110000005","label":"A5 (8T, 8F) 2007 - 2017"}]},
+    {"modelGroupId":"dg_1000475","model_label":"A6 1997 - ...","chassis":[
+      {"modelId":"d_319001693","label":"A6 /-Allroad (4A) 2019 - ..."},
+      {"modelId":"d_102000215","label":"A6 /Allroad (4G) 2011 - 2018"},
+      {"modelId":"d_450","label":"A6 /-Allroad (4F) 2005 - 2011"},
+      {"modelId":"d_460","label":"Allroad (4BH) 2000 - 2005"},
+      {"modelId":"d_400","label":"A6 /Allroad (4B) 1997 - 2005"}]},
+    {"modelGroupId":"dg_1000561","model_label":"A7 2010 - ...","chassis":[
+      {"modelId":"d_319001691","label":"A7 (4K) 2018 - ..."},
+      {"modelId":"d_102000177","label":"A7 (4GF) 2010 - 2018"}]},
+    {"modelGroupId":"dg_1000614","model_label":"A8 1994 - ...","chassis":[
+      {"modelId":"d_319001497","label":"A8 (4N) 2018 - ..."},
+      {"modelId":"d_102000172","label":"A8 (4H) 2010 - 2017"},
+      {"modelId":"d_440","label":"A8 (4E) 2003 - 2010"},
+      {"modelId":"d_360","label":"A8 (4D) 1994 - 2003"}]},
+    {"modelGroupId":"dg_319000246","model_label":"Q2 2017 - ...","chassis":[
+      {"modelId":"d_319000521","label":"Q2 (GA) 2017 - ..."}]},
+    {"modelGroupId":"dg_1000223","model_label":"Q3 2012 - ...","chassis":[
+      {"modelId":"d_319023857","label":"Q3 (FJ) 2024 - ..."},
+      {"modelId":"d_319003511","label":"Q3 (G2, F3) 2018 - ..."},
+      {"modelId":"d_200000005","label":"Q3 (8U) 2012 - 2018"}]},
+    {"modelGroupId":"dg_619004361","model_label":"Q4 2021 - ...","chassis":[
+      {"modelId":"d_319008295","label":"Q4 e-tron (F4) 2021 - ..."}]},
+    {"modelGroupId":"dg_1000377","model_label":"Q5 2008 - ...","chassis":[
+      {"modelId":"d_319001449","label":"Q5 (FY) 2016 - ..."},
+      {"modelId":"d_102000075","label":"Q5 (8R) 2008 - 2017"}]},
+    {"modelGroupId":"dg_619008439","model_label":"Q6 2024 - ...","chassis":[
+      {"modelId":"d_319017953","label":"Q6 (GF) 2024 - ..."}]},
+    {"modelGroupId":"dg_1000523","model_label":"Q7 2007 - ...","chassis":[
+      {"modelId":"d_312000002","label":"Q7 (4MB, 4MG) 2016 - ..."},
+      {"modelId":"d_490","label":"Q7 (4L) 2007 - 2015"}]},
+    {"modelGroupId":"dg_619000651","model_label":"Q8 2019 - ...","chassis":[
+      {"modelId":"d_319017708","label":"Q8 e-tron (GET, GEG) 2023 - ..."},
+      {"modelId":"d_319002009","label":"Q8 (4MN) 2019 - ..."}]},
+    {"modelGroupId":"dg_1000975","model_label":"R8 2007 - ...","chassis":[
+      {"modelId":"d_312000003","label":"R8 (4S) 2016 - ..."},
+      {"modelId":"d_110000004","label":"R8 (42) 2007 - 2015"}]},
+    {"modelGroupId":"dg_1000779","model_label":"TT 1998 - 2023","chassis":[
+      {"modelId":"d_303000002","label":"TT (FV) 2015 - 2023"},
+      {"modelId":"d_102000006","label":"TT (8J) 2006 - 2014"},
+      {"modelId":"d_420","label":"TT (8N) 1998 - 2006"}]},
+    {"modelGroupId":"dg_619002464","model_label":"e-tron 2019 - 2024","chassis":[
+      {"modelId":"d_319008833","label":"e-tron GT (F8) 2021 - 2024"},
+      {"modelId":"d_319003762","label":"e-tron (GE) 2019 - 2022"}]}
+  ]
+}
