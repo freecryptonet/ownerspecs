@@ -15,8 +15,8 @@
         "a4-sedan-b9-lci-2019-2025",
         "a4-avant-b9-lci-2019-2024"
       ],
-      "last_crawl": null,
-      "last_crawl_at": null
+      "last_crawl": "haynespro-crawl-a4-8w-2026-05-23.json",
+      "last_crawl_at": "2026-05-23T09:11:46Z"
     },
     {
       "modelId": "d_319001693",
@@ -35,40 +35,48 @@
         "rs6-avant-c8-2019-2023",
         "rs6-avant-c8-lci-2023-present"
       ],
-      "last_crawl": null,
-      "last_crawl_at": null
+      "last_crawl": "haynespro-crawl-a6-allroad-4a-2026-05-23.json",
+      "last_crawl_at": "2026-05-23T09:11:46Z"
     },
     {
       "modelId": "d_319001449",
       "brand": "audi",
       "label": "Q5 (FY) 2016-",
-      "catalog_gens": ["q5-fy-suv-2017-2020"],
-      "last_crawl": "haynespro-crawl-q5-fy.json",
-      "last_crawl_at": "2026-05-23T08:26:13.641Z"
+      "catalog_gens": [
+        "q5-fy-suv-2017-2020"
+      ],
+      "last_crawl": "haynespro-crawl-q5-fy-2026-05-23.json",
+      "last_crawl_at": "2026-05-23T09:11:46Z"
     },
     {
       "modelId": "d_312000002",
       "brand": "audi",
       "label": "Q7 (4MB, 4MG) 2016-",
-      "catalog_gens": ["q7-4m-suv-2015-2019"],
-      "last_crawl": null,
-      "last_crawl_at": null
+      "catalog_gens": [
+        "q7-4m-suv-2015-2019"
+      ],
+      "last_crawl": "haynespro-crawl-q7-4mb-2026-05-23.json",
+      "last_crawl_at": "2026-05-23T09:11:46Z"
     },
     {
       "modelId": "d_317000050",
       "brand": "volkswagen",
       "label": "VW Tiguan II (AD) 2016-2024",
-      "catalog_gens": ["tiguan-ad1-suv-2017-2024"],
-      "last_crawl": null,
-      "last_crawl_at": null
+      "catalog_gens": [
+        "tiguan-ad1-suv-2017-2024"
+      ],
+      "last_crawl": "haynespro-crawl-vw-tiguan-ii-ad-2026-05-23.json",
+      "last_crawl_at": "2026-05-23T09:11:46Z"
     },
     {
       "modelId": "d_319007235",
       "brand": "volkswagen",
       "label": "VW Golf VIII (CD, CG) 2020-",
-      "catalog_gens": ["golf-mk8-hatchback-2020-2024"],
-      "last_crawl": null,
-      "last_crawl_at": null
+      "catalog_gens": [
+        "golf-mk8-hatchback-2020-2024"
+      ],
+      "last_crawl": "haynespro-crawl-vw-golf-viii-cd-2026-05-23.json",
+      "last_crawl_at": "2026-05-23T09:11:46Z"
     },
     {
       "modelId": "d_319001371",
@@ -81,8 +89,8 @@
         "5-series-g31-lci-touring-2020-2024",
         "m5-f90-sedan-2018-2023"
       ],
-      "last_crawl": null,
-      "last_crawl_at": null
+      "last_crawl": "haynespro-crawl-bmw-5-g30-2026-05-23.json",
+      "last_crawl_at": "2026-05-23T09:11:46Z"
     },
     {
       "modelId": "d_319018562",
@@ -96,32 +104,38 @@
         "m5-g90-sedan-2024-present",
         "m5-g99-touring-2024-present"
       ],
-      "last_crawl": null,
-      "last_crawl_at": null
+      "last_crawl": "haynespro-crawl-bmw-5-g60-2026-05-23.json",
+      "last_crawl_at": "2026-05-23T09:11:46Z"
     },
     {
       "modelId": "d_319001478",
       "brand": "honda",
       "label": "Honda Civic X (FK, FC) 2016-2021",
-      "catalog_gens": ["civic-sedan-x-2016-2021"],
-      "last_crawl": null,
-      "last_crawl_at": null
+      "catalog_gens": [
+        "civic-sedan-x-2016-2021"
+      ],
+      "last_crawl": "haynespro-crawl-honda-civic-x-fk-2026-05-23.json",
+      "last_crawl_at": "2026-05-23T09:11:46Z"
     },
     {
       "modelId": "d_319010573",
       "brand": "honda",
       "label": "Honda Civic XI (FE, FL) 2022-",
-      "catalog_gens": ["civic-fe-sedan-2022-2025"],
-      "last_crawl": null,
-      "last_crawl_at": null
+      "catalog_gens": [
+        "civic-fe-sedan-2022-2025"
+      ],
+      "last_crawl": "haynespro-crawl-honda-civic-xi-fe-2026-05-23.json",
+      "last_crawl_at": "2026-05-23T09:11:46Z"
     },
     {
       "modelId": "d_319001688",
       "brand": "toyota",
       "label": "Toyota Camry (XV70) 2018-",
-      "catalog_gens": ["camry-xv70-2018-2024"],
-      "last_crawl": null,
-      "last_crawl_at": null
+      "catalog_gens": [
+        "camry-xv70-2018-2024"
+      ],
+      "last_crawl": "haynespro-crawl-toyota-camry-xv70-2026-05-23.json",
+      "last_crawl_at": "2026-05-23T09:11:46Z"
     }
   ]
 }
