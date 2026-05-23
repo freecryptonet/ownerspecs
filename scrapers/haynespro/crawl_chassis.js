@@ -156,6 +156,46 @@ function parseLubricants(text) {
   const brakeDct = parseCap(/Brake system\s*\(Dual-clutch transmission\)\s+([\d.]+)\s*\(l\)/, brakeBlock);
   const brakeMt = parseCap(/Brake system\s*\(Manual transmission\)\s+([\d.]+)\s*\(l\)/, brakeBlock);
   const brakeAny = parseCap(/Brake system(?:\s*\([^)]*\))?\s+([\d.]+)\s*\(l\)/, brakeBlock);
+  // Transmission section — first match after brake-system header.
+  // Section headers in HaynesPro lubricants pages are line-anchored:
+  //   \n\s+Label[, optional N-speed/code]\n
+  // Order matters: "CVT" is a prefix of "Continuously variable transmission",
+  // but the line-anchor regex makes false matches harmless. The first-found
+  // section wins (parsers don't merge multi-transmission rows).
+  function findSection(label) {
+    const re = new RegExp(`\\n\\s+${label.replace(/[()]/g, '\\$&')}(?:[,\\s][^\\n]*)?\\n`, 'g');
+    const m = re.exec(after);
+    return m ? m.index + m[0].indexOf(label) : -1;
+  }
+  const transTypes = [
+    { label: 'Manual transmission', code: 'transmission_mt' },
+    { label: 'Automatic transmission', code: 'transmission_at' },
+    { label: 'Dual-clutch transmission', code: 'transmission_dct' },
+    { label: 'Continuously variable transmission', code: 'transmission_cvt' },
+    { label: 'CVT', code: 'transmission_cvt' },     // Toyota hybrid eCVT (e.g. "CVT, P710")
+    { label: 'eCVT', code: 'transmission_cvt' },
+    { label: 'Hybrid transmission', code: 'transmission_cvt' },
+  ];
+  const wheelsIdx = findSection('Wheels and tyres');
+  const acIdx = findSection('Air conditioning');
+  const brakeIdxLocal = findSection('Brake system');
+  let firstTransIdx = Infinity, firstTrans = null;
+  for (const tt of transTypes) {
+    const idx = findSection(tt.label);
+    if (idx > brakeIdxLocal && idx < firstTransIdx) { firstTransIdx = idx; firstTrans = tt; }
+  }
+  let transmission = null;
+  if (firstTrans) {
+    const endIdx = Math.min(
+      wheelsIdx > firstTransIdx ? wheelsIdx : Infinity,
+      acIdx > firstTransIdx ? acIdx : Infinity,
+      firstTransIdx + 4000
+    );
+    const tblock = after.slice(firstTransIdx, endIdx);
+    const tspec = tblock.match(/(?:Gear oil|ATF|CVT fluid|Transmission fluid)(?:\s*\([^)]*\))?\s*\n+\s*([A-Z0-9][^\n]{2,80})/);
+    const trefill = tblock.match(/(?:Gearbox refill|Initial filling|Refill capacity|Capacity, refill|Total fill)\s+([\d.]+)\s*\(l\)/);
+    transmission = { type: firstTrans.code, label: firstTrans.label, spec: tspec ? tspec[1].trim() : null, capacity_l: trefill ? parseFloat(trefill[1]) : null };
+  }
   const acBlock = section('Refrigerant', 'Compressor oil');
   const acType = acBlock?.match(/R1234yf|R134a/)?.[0] ?? null;
   const acG = acBlock?.match(/Refrigerant\s+(\d+)\s*(?:±\s*(\d+))?\s*\(g\)/);
@@ -163,6 +203,7 @@ function parseLubricants(text) {
     engine_oil: { preferred, alternatives, sump_l: oilSump, drain_nm: oilDrain, drain_note: oilDrainNote },
     coolant: (coolSpec || coolCap) ? { spec: coolSpec, capacity_l: coolCap } : null,
     brake_fluid: (brakePref || brakeAny) ? { preferred_spec: brakePref, alternative_spec: brakeAlt, capacity_at_l: brakeAt ?? brakeAny, capacity_dct_l: brakeDct, capacity_mt_l: brakeMt } : null,
+    transmission,
     ac_refrigerant: acType ? { type: acType, grams: acG ? parseInt(acG[1], 10) : null, tolerance_g: acG && acG[2] ? parseInt(acG[2], 10) : null } : null,
   };
 }

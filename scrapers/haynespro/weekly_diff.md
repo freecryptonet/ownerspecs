@@ -20,41 +20,91 @@ processes in a Claude Code session with Playwright active.
 Read `scrapers/haynespro/chassis_registry.json` → `chassis[]`. For each
 entry:
 
-1. **Run crawl** with Playwright `browser_evaluate`:
+1. **Run crawl** with Playwright `browser_evaluate`. The snippet below
+   captures FOUR fluid types per typeId (oil + coolant + brake + transmission)
+   in one pass — this is the canonical parser as of 2026-05-23. Older
+   versions only captured oil + coolant; do NOT downgrade to those.
 
    ```js
    async () => {
      const modelId = '{from registry}';
+     function parseLubricantsAll(text) {
+       const country = text.indexOf('Filter by country');
+       const after = country >= 0 ? text.slice(country) : text;
+       function findSection(label) {
+         const re = new RegExp(`\\n\\s+${label.replace(/[()]/g, '\\$&')}(?:[,\\s][^\\n]*)?\\n`, 'g');
+         const m = re.exec(after);
+         return m ? m.index + m[0].indexOf(label) : -1;
+       }
+       const oilStart = findSection('Engine oil');
+       const coolStart = findSection('Cooling system');
+       const oilBlock = oilStart >= 0 ? after.slice(oilStart, coolStart > 0 ? coolStart : oilStart + 5000) : '';
+       const oilVisc = oilBlock.match(/SAE\s+(\d+W-\d+)/);
+       const oilSpec = oilBlock.match(/(?:VW|BMW|MB|Mopar|Toyota|Honda|API|ACEA|GM|Mazda|Ford|Volvo|Audi|Subaru|FCA|JASO|Nissan|Hyundai|Kia)[^\n]+/);
+       const oilSump = oilBlock.match(/Engine sump,?\s*including filter\s+([\d.]+)\s*\(l\)/);
+       const oilDrain = oilBlock.match(/Engine oil drain plug[^.]*?(\d+)\s*\(Nm\)/);
+       const brakeStart = findSection('Brake system');
+       const coolBlock = coolStart >= 0 ? after.slice(coolStart, brakeStart > 0 ? brakeStart : coolStart + 3000) : '';
+       const coolSpec = coolBlock.match(/Coolant\s*\n+\s*([^\n]+)/);
+       const coolCap = coolBlock.match(/Cooling system\s+([\d.]+)\s*\(l\)/);
+       const transTypes = [
+         { label: 'Manual transmission', code: 'transmission_mt' },
+         { label: 'Automatic transmission', code: 'transmission_at' },
+         { label: 'Dual-clutch transmission', code: 'transmission_dct' },
+         { label: 'Continuously variable transmission', code: 'transmission_cvt' },
+         { label: 'CVT', code: 'transmission_cvt' },  // Toyota hybrid eCVT (e.g. 'CVT, P710')
+         { label: 'eCVT', code: 'transmission_cvt' },
+         { label: 'Hybrid transmission', code: 'transmission_cvt' },
+       ];
+       const wheelsStart = findSection('Wheels and tyres');
+       const acStart = findSection('Air conditioning');
+       let firstTransIdx = Infinity, firstTrans = null;
+       for (const tt of transTypes) {
+         const idx = findSection(tt.label);
+         if (idx > brakeStart && idx < firstTransIdx) { firstTransIdx = idx; firstTrans = tt; }
+       }
+       let transmission = null;
+       if (firstTrans) {
+         const endIdx = Math.min(
+           wheelsStart > firstTransIdx ? wheelsStart : Infinity,
+           acStart > firstTransIdx ? acStart : Infinity,
+           firstTransIdx + 4000
+         );
+         const tblock = after.slice(firstTransIdx, endIdx);
+         const tspec = tblock.match(/(?:Gear oil|ATF|CVT fluid|Transmission fluid)(?:\s*\([^)]*\))?\s*\n+\s*([A-Z0-9][^\n]{2,80})/);
+         const trefill = tblock.match(/(?:Gearbox refill|Initial filling|Refill capacity|Capacity, refill|Total fill)\s+([\d.]+)\s*\(l\)/);
+         transmission = { type: firstTrans.code, label: firstTrans.label, spec: tspec ? tspec[1].trim() : null, capacity_l: trefill ? parseFloat(trefill[1]) : null };
+       }
+       const brakeEnd = firstTransIdx < Infinity ? firstTransIdx : (wheelsStart > 0 ? wheelsStart : (brakeStart >= 0 ? brakeStart + 3000 : -1));
+       const brakeBlock = brakeStart >= 0 ? after.slice(brakeStart, brakeEnd) : '';
+       const bSpec = brakeBlock.match(/Brake fluid(?:\s*\([^)]*\))?\s*\n+\s*([A-Z][^\n]{2,80})/);
+       const bAlt = brakeBlock.match(/Alternative lubricant specification\)\s*\n+\s*([A-Z][^\n]{2,80})/);
+       const brakeCaps = [...brakeBlock.matchAll(/Brake system[^0-9\n]*?([\d.]+)\s*\(l\)/g)].map(m => parseFloat(m[1]));
+       const brakeCap = brakeCaps.length ? Math.min(...brakeCaps) : null;
+       return {
+         oil: { visc: oilVisc ? oilVisc[1] : null, spec: oilSpec ? oilSpec[0].trim() : null, sump_l: oilSump ? parseFloat(oilSump[1]) : null, drain_nm: oilDrain ? parseInt(oilDrain[1], 10) : null },
+         coolant: { spec: coolSpec ? coolSpec[1].trim() : null, capacity_l: coolCap ? parseFloat(coolCap[1]) : null },
+         brake_fluid: { spec: bSpec ? bSpec[1].trim() : null, spec_alt: bAlt ? bAlt[1].trim() : null, capacity_l: brakeCap },
+         transmission,
+       };
+     }
      const t0 = Date.now();
      const tlRes = await fetch(`/touch/site/layout/modelTypesList?modelId=${modelId}`, { credentials: 'include' });
      const tlDoc = new DOMParser().parseFromString(await tlRes.text(), 'text/html');
      const chassisLabel = tlDoc.querySelector('h1, h2, h3')?.textContent?.trim().replace(/\s+/g, ' ') ?? null;
-     const allRows = Array.from(tlDoc.querySelectorAll('tr[data-typeid]'));
+     const rows = Array.from(tlDoc.querySelectorAll('tr[data-typeid]'));
      const types = [];
-     for (const r of allRows) {
+     for (const r of rows) {
        const cells = Array.from(r.querySelectorAll('td')).map(td => td.textContent.trim().replace(/\s+/g, ' '));
        const meta = { typeId: r.getAttribute('data-typeid'), type: cells[0], engine_code: cells[1], cc: cells[2] ? parseInt(cells[2], 10) : null, kw: cells[3] ? parseInt(cells[3], 10) : null, years: cells[4] };
-       await new Promise(s => setTimeout(s, 1200));
        try {
+         await new Promise(s => setTimeout(s, 1000));
          const lubRes = await fetch(`/touch/site/layout/lubricants?typeId=${meta.typeId}&groupId=QUICKGUIDES&altView=true`, { credentials: 'include' });
          const lubDoc = new DOMParser().parseFromString(await lubRes.text(), 'text/html');
-         const lubText = lubDoc.body?.innerText ?? '';
-         const country = lubText.indexOf('Filter by country');
-         const after = country >= 0 ? lubText.slice(country) : lubText;
-         const oilStart = after.indexOf('Engine oil');
-         const oilEnd = after.indexOf('Cooling system', oilStart);
-         const oilBlock = after.slice(oilStart, oilEnd > 0 ? oilEnd : oilStart + 5000);
-         const v = oilBlock.match(/SAE\s+(\d+W-\d+)/);
-         const s = oilBlock.match(/(?:VW|BMW|MB|Mopar|Toyota|Honda|API|ACEA|GM|Mazda|Ford|Volvo|Audi|Subaru|FCA)[^\n]+/);
-         const sump = oilBlock.match(/Engine sump,?\s*including filter\s+([\d.]+)\s*\(l\)/);
-         const drain = oilBlock.match(/Engine oil drain plug[^.]*?(\d+)\s*\(Nm\)/);
-         const coolBlock = after.slice(after.indexOf('Cooling system'), after.indexOf('Brake system', after.indexOf('Cooling system')));
-         const coolSpec = coolBlock.match(/Coolant\s*\n+\s*([^\n]+)/)?.[1] ?? null;
-         const coolCap = coolBlock.match(/Cooling system\s+([\d.]+)\s*\(l\)/);
-         types.push({ ...meta, oil: { visc: v?.[1] ?? null, spec: s?.[0]?.trim() ?? null, sump_l: sump ? parseFloat(sump[1]) : null, drain_nm: drain ? parseInt(drain[1], 10) : null }, coolant: { spec: coolSpec, capacity_l: coolCap ? parseFloat(coolCap[1]) : null } });
+         types.push({ ...meta, ...parseLubricantsAll(lubDoc.body?.innerText ?? '') });
        } catch (e) { types.push({ ...meta, error: e.message }); }
      }
-     return { chassis: { modelId, label: chassisLabel, engines_count: allRows.length, fetched_at: new Date().toISOString() }, types, duration_ms: Date.now() - t0 };
+     return { chassis: { modelId, label: chassisLabel, engines_count: rows.length, fetched_at: new Date().toISOString() }, types, duration_ms: Date.now() - t0 };
    }
    ```
 
