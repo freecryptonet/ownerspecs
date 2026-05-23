@@ -233,6 +233,31 @@ const CHASSIS_RULES: Record<string, ChassisRule> = {
       return gens;
     },
   },
+  // BMW X3 (F25) — 2 catalog gens: pre-LCI 2011-2014 + LCI 2014-2018.
+  // Gens: 166=x3-f25-suv-2011-2014, 167=x3-f25-lci-suv-2014-2018.
+  "bmw-x3-f25": {
+    crawlFile: "haynespro-crawl-bmw-x3-f25-2026-05-23.json",
+    modelId: "d_102000210",
+    label: "BMW X3 (F25)",
+    classify: (_type, years) => {
+      const [s, e] = parseYears(years);
+      const gens: number[] = [];
+      if (overlaps(s, e, 2011, 2014)) gens.push(166);
+      if (overlaps(s, e, 2014, 2018)) gens.push(167);
+      return gens;
+    },
+  },
+  // BMW X5 (F15, F85) — single catalog gen (no X5 M F85 separate).
+  // Gen: 168=x5-f15-suv-2013-2019.
+  "bmw-x5-f15": {
+    crawlFile: "haynespro-crawl-bmw-x5-f15-2026-05-23.json",
+    modelId: "d_301000058",
+    label: "BMW X5 (F15, F85)",
+    classify: (_type, years) => {
+      const [s, e] = parseYears(years);
+      return overlaps(s, e, 2013, 2019) ? [168] : [];
+    },
+  },
   // BMW X3 (G01) — single catalog gen (no X3 M / iX3 in catalog yet).
   // Routes all engines including M40i, X3 M (F97) into x3-g01-suv-2018-2024.
   "bmw-x3-g01": {

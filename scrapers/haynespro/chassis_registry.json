@@ -152,6 +152,27 @@
       "last_crawl_at": "2026-05-23T17:30:00Z"
     },
     {
+      "modelId": "d_102000210",
+      "brand": "bmw",
+      "label": "BMW X3 (F25) 2011-2018",
+      "catalog_gens": [
+        "x3-f25-suv-2011-2014",
+        "x3-f25-lci-suv-2014-2018"
+      ],
+      "last_crawl": "haynespro-crawl-bmw-x3-f25-2026-05-23.json",
+      "last_crawl_at": "2026-05-23T18:15:00Z"
+    },
+    {
+      "modelId": "d_301000058",
+      "brand": "bmw",
+      "label": "BMW X5 (F15, F85) 2013-2019",
+      "catalog_gens": [
+        "x5-f15-suv-2013-2019"
+      ],
+      "last_crawl": "haynespro-crawl-bmw-x5-f15-2026-05-23.json",
+      "last_crawl_at": "2026-05-23T18:15:00Z"
+    },
+    {
       "modelId": "d_319001442",
       "brand": "bmw",
       "label": "BMW X3 (G01) 2017-2024",
