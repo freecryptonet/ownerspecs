@@ -233,6 +233,88 @@ const CHASSIS_RULES: Record<string, ChassisRule> = {
       return gens;
     },
   },
+  // BMW X4 F26 (1st gen, 2014-2018) — single gen. M40i is high-trim, not separate M-car.
+  "bmw-x4-f26": {
+    crawlFile: "haynespro-crawl-bmw-x4-f26-2026-05-23.json",
+    modelId: "d_304000002",
+    label: "BMW X4 (F26)",
+    classify: (_type, years) => {
+      const [s, e] = parseYears(years);
+      return overlaps(s, e, 2014, 2018) ? [230] : [];
+    },
+  },
+  // BMW X4 F98/G02 (2018-) — 3 gens: G02 pre/LCI 2022 + X4 M F98.
+  // "M Competition" / "M40 M" → X4 M F98 (233). Regular + M40i/M40d → G02.
+  "bmw-x4-g02": {
+    crawlFile: "haynespro-crawl-bmw-x4-g02-2026-05-23.json",
+    modelId: "d_319001694",
+    label: "BMW X4 (F98, G02)",
+    classify: (type, years) => {
+      const [s, e] = parseYears(years);
+      // "M Competition" → X4 M F98 (not the F98 has no Competition — both M40 and M-cars exist)
+      // HaynesPro uses "M Competition" label for the M-car (F98).
+      if (/M Competition/.test(type)) {
+        return overlaps(s, e, 2019, 2024) ? [233] : [];
+      }
+      const gens: number[] = [];
+      if (overlaps(s, e, 2018, 2022)) gens.push(231);
+      if (overlaps(s, e, 2022, 2099)) gens.push(232);
+      return gens;
+    },
+  },
+  // BMW X6 E71/E72 (1st gen, 2008-2014) — single gen. E72 = ActiveHybrid X6.
+  "bmw-x6-e71": {
+    crawlFile: "haynespro-crawl-bmw-x6-e71-2026-05-23.json",
+    modelId: "d_102000125",
+    label: "BMW X6 (E71, E72)",
+    classify: (_type, years) => {
+      const [s, e] = parseYears(years);
+      return overlaps(s, e, 2008, 2014) ? [234] : [];
+    },
+  },
+  // BMW X6 F16/F86 (2nd gen, 2014-2019) — single gen. No F86 M entries in HaynesPro listing.
+  "bmw-x6-f16": {
+    crawlFile: "haynespro-crawl-bmw-x6-f16-2026-05-23.json",
+    modelId: "d_304000001",
+    label: "BMW X6 (F16, F86)",
+    classify: (_type, years) => {
+      const [s, e] = parseYears(years);
+      return overlaps(s, e, 2014, 2019) ? [235] : [];
+    },
+  },
+  // BMW X6 F96/G06 (3rd gen, 2019-) — 4 gens: G06 pre/LCI 2023 + X6 M F96 pre/LCI 2023.
+  // "M Competition" → X6 M F96. Regular (incl M50d/M50i) → G06.
+  "bmw-x6-g06": {
+    crawlFile: "haynespro-crawl-bmw-x6-g06-2026-05-23.json",
+    modelId: "d_319004646",
+    label: "BMW X6 (F96, G06)",
+    classify: (type, years) => {
+      const [s, e] = parseYears(years);
+      if (/M Competition/.test(type)) {
+        const gens: number[] = [];
+        if (overlaps(s, e, 2019, 2023)) gens.push(239);
+        if (overlaps(s, e, 2023, 2099)) gens.push(240);
+        return gens;
+      }
+      const gens: number[] = [];
+      if (overlaps(s, e, 2019, 2023)) gens.push(237);
+      if (overlaps(s, e, 2023, 2099)) gens.push(238);
+      return gens;
+    },
+  },
+  // BMW X7 G07 (2018-) — 2 gens: pre-LCI + LCI (cutoff 2022). M60i high-trim is regular.
+  "bmw-x7-g07": {
+    crawlFile: "haynespro-crawl-bmw-x7-g07-2026-05-23.json",
+    modelId: "d_319003513",
+    label: "BMW X7 (G07)",
+    classify: (_type, years) => {
+      const [s, e] = parseYears(years);
+      const gens: number[] = [];
+      if (overlaps(s, e, 2018, 2022)) gens.push(241);
+      if (overlaps(s, e, 2022, 2099)) gens.push(242);
+      return gens;
+    },
+  },
   // BMW 4 Series F32/F33/F36/F82/F83 (2013-2020) — 8 catalog gens.
   // M4 (S55B30A) → F82 coupe (223) + F83 convertible (224) only.
   // Regular → coupe (217/218) + convertible (219/220) + gran-coupe (221/222) × pre/LCI 2017.

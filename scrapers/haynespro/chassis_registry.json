@@ -152,6 +152,57 @@
       "last_crawl_at": "2026-05-23T17:30:00Z"
     },
     {
+      "modelId": "d_304000002",
+      "brand": "bmw",
+      "label": "BMW X4 (F26) 2014-2018",
+      "catalog_gens": ["x4-f26-suv-2014-2018"],
+      "last_crawl": "haynespro-crawl-bmw-x4-f26-2026-05-23.json",
+      "last_crawl_at": "2026-05-23T20:15:00Z"
+    },
+    {
+      "modelId": "d_319001694",
+      "brand": "bmw",
+      "label": "BMW X4 (F98, G02) 2018-",
+      "catalog_gens": ["x4-g02-suv-2018-2022", "x4-g02-lci-suv-2022-present", "x4-m-f98-suv-2019-2024"],
+      "last_crawl": "haynespro-crawl-bmw-x4-g02-2026-05-23.json",
+      "last_crawl_at": "2026-05-23T20:15:00Z"
+    },
+    {
+      "modelId": "d_102000125",
+      "brand": "bmw",
+      "label": "BMW X6 (E71, E72) 2008-2014",
+      "catalog_gens": ["x6-e71-suv-2008-2014"],
+      "last_crawl": "haynespro-crawl-bmw-x6-e71-2026-05-23.json",
+      "last_crawl_at": "2026-05-23T20:15:00Z"
+    },
+    {
+      "modelId": "d_304000001",
+      "brand": "bmw",
+      "label": "BMW X6 (F16, F86) 2014-2019",
+      "catalog_gens": ["x6-f16-suv-2014-2019"],
+      "last_crawl": "haynespro-crawl-bmw-x6-f16-2026-05-23.json",
+      "last_crawl_at": "2026-05-23T20:15:00Z"
+    },
+    {
+      "modelId": "d_319004646",
+      "brand": "bmw",
+      "label": "BMW X6 (F96, G06) 2019-",
+      "catalog_gens": [
+        "x6-g06-suv-2019-2023", "x6-g06-lci-suv-2023-present",
+        "x6-m-f96-suv-2019-2023", "x6-m-f96-lci-suv-2023-present"
+      ],
+      "last_crawl": "haynespro-crawl-bmw-x6-g06-2026-05-23.json",
+      "last_crawl_at": "2026-05-23T20:15:00Z"
+    },
+    {
+      "modelId": "d_319003513",
+      "brand": "bmw",
+      "label": "BMW X7 (G07) 2018-",
+      "catalog_gens": ["x7-g07-suv-2018-2022", "x7-g07-lci-suv-2022-present"],
+      "last_crawl": "haynespro-crawl-bmw-x7-g07-2026-05-23.json",
+      "last_crawl_at": "2026-05-23T20:15:00Z"
+    },
+    {
       "modelId": "d_301000031",
       "brand": "bmw",
       "label": "BMW 4 (F32, F33, F36, F82, F83) 2013-2020",
