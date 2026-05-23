@@ -152,6 +152,62 @@
       "last_crawl_at": "2026-05-23T17:30:00Z"
     },
     {
+      "modelId": "d_102000177",
+      "brand": "audi",
+      "label": "Audi A7 (4G) 2010-2018",
+      "catalog_gens": ["a7-4g-sportback-2010-2018", "rs7-4g-sportback-2013-2018"],
+      "last_crawl": "haynespro-crawl-audi-a7-4g-2026-05-23.json",
+      "last_crawl_at": "2026-05-23T21:15:00Z"
+    },
+    {
+      "modelId": "d_319001691",
+      "brand": "audi",
+      "label": "Audi A7 (4K) 2018-",
+      "catalog_gens": ["a7-4k-sportback-2018-present", "rs7-4k-sportback-2019-present"],
+      "last_crawl": "haynespro-crawl-audi-a7-4k-2026-05-23.json",
+      "last_crawl_at": "2026-05-23T21:15:00Z"
+    },
+    {
+      "modelId": "d_440",
+      "brand": "audi",
+      "label": "Audi A8 (4E) 2003-2010",
+      "catalog_gens": ["a8-4e-sedan-2003-2010"],
+      "last_crawl": "haynespro-crawl-audi-a8-4e-2026-05-23.json",
+      "last_crawl_at": "2026-05-23T21:15:00Z"
+    },
+    {
+      "modelId": "d_102000172",
+      "brand": "audi",
+      "label": "Audi A8 (4H) 2010-2017",
+      "catalog_gens": ["a8-4h-sedan-2010-2017"],
+      "last_crawl": "haynespro-crawl-audi-a8-4h-2026-05-23.json",
+      "last_crawl_at": "2026-05-23T21:15:00Z"
+    },
+    {
+      "modelId": "d_319001497",
+      "brand": "audi",
+      "label": "Audi A8 (4N) 2018-",
+      "catalog_gens": ["a8-4n-sedan-2018-present"],
+      "last_crawl": "haynespro-crawl-audi-a8-4n-2026-05-23.json",
+      "last_crawl_at": "2026-05-23T21:15:00Z"
+    },
+    {
+      "modelId": "d_319002009",
+      "brand": "audi",
+      "label": "Audi Q8 (4MN) 2019-",
+      "catalog_gens": ["q8-4mn-suv-2019-present", "rs-q8-4mn-suv-2019-present"],
+      "last_crawl": "haynespro-crawl-audi-q8-4mn-2026-05-23.json",
+      "last_crawl_at": "2026-05-23T21:15:00Z"
+    },
+    {
+      "modelId": "d_319017708",
+      "brand": "audi",
+      "label": "Audi Q8 e-tron (GET, GEG) 2023-",
+      "catalog_gens": ["q8-e-tron-suv-2023-present"],
+      "last_crawl": "haynespro-crawl-audi-q8-e-tron-2026-05-23.json",
+      "last_crawl_at": "2026-05-23T21:15:00Z"
+    },
+    {
       "modelId": "d_480",
       "brand": "audi",
       "label": "Audi A3 II (8P) 2003-2013",

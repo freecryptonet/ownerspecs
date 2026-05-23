@@ -233,6 +233,79 @@ const CHASSIS_RULES: Record<string, ChassisRule> = {
       return gens;
     },
   },
+  // Audi A7 4G (2010-2018) — base + RS7 4G (4.0 V8 TFSI). Gens: 283, 284.
+  "audi-a7-4g": {
+    crawlFile: "haynespro-crawl-audi-a7-4g-2026-05-23.json",
+    modelId: "d_102000177",
+    label: "Audi A7 (4G)",
+    classify: (type, years) => {
+      const [s, e] = parseYears(years);
+      if (/^RS7\b/.test(type)) return overlaps(s, e, 2013, 2018) ? [284] : [];
+      return overlaps(s, e, 2010, 2018) ? [283] : [];
+    },
+  },
+  // Audi A7 4K (2018-) — base + RS7 4K. Gens: 285, 286.
+  "audi-a7-4k": {
+    crawlFile: "haynespro-crawl-audi-a7-4k-2026-05-23.json",
+    modelId: "d_319001691",
+    label: "Audi A7 (4K)",
+    classify: (type, years) => {
+      const [s, e] = parseYears(years);
+      if (/^RS7\b/.test(type)) return overlaps(s, e, 2019, 2099) ? [286] : [];
+      return overlaps(s, e, 2018, 2099) ? [285] : [];
+    },
+  },
+  // Audi A8 4E (2003-2010) — single gen. Gen: 287.
+  "audi-a8-4e": {
+    crawlFile: "haynespro-crawl-audi-a8-4e-2026-05-23.json",
+    modelId: "d_440",
+    label: "Audi A8 (4E)",
+    classify: (_type, years) => {
+      const [s, e] = parseYears(years);
+      return overlaps(s, e, 2003, 2010) ? [287] : [];
+    },
+  },
+  // Audi A8 4H (2010-2017) — single gen. Gen: 288.
+  "audi-a8-4h": {
+    crawlFile: "haynespro-crawl-audi-a8-4h-2026-05-23.json",
+    modelId: "d_102000172",
+    label: "Audi A8 (4H)",
+    classify: (_type, years) => {
+      const [s, e] = parseYears(years);
+      return overlaps(s, e, 2010, 2017) ? [288] : [];
+    },
+  },
+  // Audi A8 4N (2018-) — single gen. Gen: 289.
+  "audi-a8-4n": {
+    crawlFile: "haynespro-crawl-audi-a8-4n-2026-05-23.json",
+    modelId: "d_319001497",
+    label: "Audi A8 (4N)",
+    classify: (_type, years) => {
+      const [s, e] = parseYears(years);
+      return overlaps(s, e, 2018, 2099) ? [289] : [];
+    },
+  },
+  // Audi Q8 4MN (2019-) — base + RS Q8 4MN. SQ8 stays in base. Gens: 290, 291.
+  "audi-q8-4mn": {
+    crawlFile: "haynespro-crawl-audi-q8-4mn-2026-05-23.json",
+    modelId: "d_319002009",
+    label: "Audi Q8 (4MN)",
+    classify: (type, years) => {
+      const [s, e] = parseYears(years);
+      if (/^RSQ8\b/.test(type)) return overlaps(s, e, 2019, 2099) ? [291] : [];
+      return overlaps(s, e, 2019, 2099) ? [290] : [];
+    },
+  },
+  // Audi Q8 e-tron (2023-) — BEV single gen. Gen: 292.
+  "audi-q8-e-tron": {
+    crawlFile: "haynespro-crawl-audi-q8-e-tron-2026-05-23.json",
+    modelId: "d_319017708",
+    label: "Audi Q8 e-tron (GET, GEG)",
+    classify: (_type, years) => {
+      const [s, e] = parseYears(years);
+      return overlaps(s, e, 2023, 2099) ? [292] : [];
+    },
+  },
   // Audi A3 8P (2003-2013) — single base gen + RS3 8P Sportback (2011-2013 only).
   "audi-a3-8p": {
     crawlFile: "haynespro-crawl-audi-a3-8p-2026-05-23.json",
