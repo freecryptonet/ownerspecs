@@ -152,6 +152,78 @@
       "last_crawl_at": "2026-05-23T17:30:00Z"
     },
     {
+      "modelId": "d_480",
+      "brand": "audi",
+      "label": "Audi A3 II (8P) 2003-2013",
+      "catalog_gens": ["a3-8p-2003-2013", "rs3-8p-sportback-2011-2013"],
+      "last_crawl": "haynespro-crawl-audi-a3-8p-2026-05-23.json",
+      "last_crawl_at": "2026-05-23T21:00:00Z"
+    },
+    {
+      "modelId": "d_102000240",
+      "brand": "audi",
+      "label": "Audi A3 III (8V) 2013-2020",
+      "catalog_gens": ["a3-8v-2013-2020", "rs3-8v-2015-2020"],
+      "last_crawl": "haynespro-crawl-audi-a3-8v-2026-05-23.json",
+      "last_crawl_at": "2026-05-23T21:00:00Z"
+    },
+    {
+      "modelId": "d_319007427",
+      "brand": "audi",
+      "label": "Audi A3 IV (8Y) 2020-",
+      "catalog_gens": ["a3-8y-2020-present", "rs3-8y-2021-present"],
+      "last_crawl": "haynespro-crawl-audi-a3-8y-2026-05-23.json",
+      "last_crawl_at": "2026-05-23T21:00:00Z"
+    },
+    {
+      "modelId": "d_110000005",
+      "brand": "audi",
+      "label": "Audi A5 (8T, 8F) 2007-2017",
+      "catalog_gens": ["a5-8t-2007-2017", "rs5-8t-coupe-2010-2015"],
+      "last_crawl": "haynespro-crawl-audi-a5-8t-2026-05-23.json",
+      "last_crawl_at": "2026-05-23T21:00:00Z"
+    },
+    {
+      "modelId": "d_319000522",
+      "brand": "audi",
+      "label": "Audi A5 (F5) 2017-2025",
+      "catalog_gens": ["a5-f5-2017-2025", "rs5-f5-2017-2025"],
+      "last_crawl": "haynespro-crawl-audi-a5-f5-2026-05-23.json",
+      "last_crawl_at": "2026-05-23T21:00:00Z"
+    },
+    {
+      "modelId": "d_319022568",
+      "brand": "audi",
+      "label": "Audi A5 (FU) 2024-",
+      "catalog_gens": ["a5-fu-sedan-2024-present"],
+      "last_crawl": "haynespro-crawl-audi-a5-fu-2026-05-23.json",
+      "last_crawl_at": "2026-05-23T21:00:00Z"
+    },
+    {
+      "modelId": "d_200000005",
+      "brand": "audi",
+      "label": "Audi Q3 (8U) 2012-2018",
+      "catalog_gens": ["q3-8u-suv-2012-2018", "rs-q3-8u-suv-2013-2018"],
+      "last_crawl": "haynespro-crawl-audi-q3-8u-2026-05-23.json",
+      "last_crawl_at": "2026-05-23T21:00:00Z"
+    },
+    {
+      "modelId": "d_319003511",
+      "brand": "audi",
+      "label": "Audi Q3 (G2, F3) 2018-",
+      "catalog_gens": ["q3-f3-suv-2018-present", "rs-q3-f3-suv-2019-present"],
+      "last_crawl": "haynespro-crawl-audi-q3-f3-2026-05-23.json",
+      "last_crawl_at": "2026-05-23T21:00:00Z"
+    },
+    {
+      "modelId": "d_319023857",
+      "brand": "audi",
+      "label": "Audi Q3 (FJ) 2024-",
+      "catalog_gens": ["q3-fj-suv-2024-present"],
+      "last_crawl": "haynespro-crawl-audi-q3-fj-2026-05-23.json",
+      "last_crawl_at": "2026-05-23T21:00:00Z"
+    },
+    {
       "modelId": "d_860",
       "brand": "bmw",
       "label": "BMW 6 (E63, E64) 2003-2011",

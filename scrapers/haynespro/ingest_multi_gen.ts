@@ -233,6 +233,103 @@ const CHASSIS_RULES: Record<string, ChassisRule> = {
       return gens;
     },
   },
+  // Audi A3 8P (2003-2013) — single base gen + RS3 8P Sportback (2011-2013 only).
+  "audi-a3-8p": {
+    crawlFile: "haynespro-crawl-audi-a3-8p-2026-05-23.json",
+    modelId: "d_480",
+    label: "Audi A3 II (8P)",
+    classify: (type, years) => {
+      const [s, e] = parseYears(years);
+      if (/^RS3\b/.test(type)) return overlaps(s, e, 2011, 2013) ? [268] : [];
+      return overlaps(s, e, 2003, 2013) ? [267] : [];
+    },
+  },
+  // Audi A3 8V (2013-2020) — base + RS3 8V.
+  "audi-a3-8v": {
+    crawlFile: "haynespro-crawl-audi-a3-8v-2026-05-23.json",
+    modelId: "d_102000240",
+    label: "Audi A3 III (8V)",
+    classify: (type, years) => {
+      const [s, e] = parseYears(years);
+      if (/^RS3\b/.test(type)) return overlaps(s, e, 2015, 2020) ? [270] : [];
+      return overlaps(s, e, 2013, 2020) ? [269] : [];
+    },
+  },
+  // Audi A3 8Y (2020-) — base + RS3 8Y.
+  "audi-a3-8y": {
+    crawlFile: "haynespro-crawl-audi-a3-8y-2026-05-23.json",
+    modelId: "d_319007427",
+    label: "Audi A3 IV (8Y)",
+    classify: (type, years) => {
+      const [s, e] = parseYears(years);
+      if (/^RS3\b/.test(type)) return overlaps(s, e, 2021, 2099) ? [272] : [];
+      return overlaps(s, e, 2020, 2099) ? [271] : [];
+    },
+  },
+  // Audi A5 8T (2007-2017) — base + RS5 8T (V8 FSI).
+  "audi-a5-8t": {
+    crawlFile: "haynespro-crawl-audi-a5-8t-2026-05-23.json",
+    modelId: "d_110000005",
+    label: "Audi A5 (8T, 8F)",
+    classify: (type, years) => {
+      const [s, e] = parseYears(years);
+      if (/^RS5\b/.test(type)) return overlaps(s, e, 2010, 2015) ? [274] : [];
+      return overlaps(s, e, 2007, 2017) ? [273] : [];
+    },
+  },
+  // Audi A5 F5 (2017-2025) — base + RS5 F5 (2.9 TFSI V6).
+  "audi-a5-f5": {
+    crawlFile: "haynespro-crawl-audi-a5-f5-2026-05-23.json",
+    modelId: "d_319000522",
+    label: "Audi A5 (F5)",
+    classify: (type, years) => {
+      const [s, e] = parseYears(years);
+      if (/^RS5\b/.test(type)) return overlaps(s, e, 2017, 2025) ? [276] : [];
+      return overlaps(s, e, 2017, 2025) ? [275] : [];
+    },
+  },
+  // Audi A5 FU (2024-) — new gen replacing A4. Single gen.
+  "audi-a5-fu": {
+    crawlFile: "haynespro-crawl-audi-a5-fu-2026-05-23.json",
+    modelId: "d_319022568",
+    label: "Audi A5 (FU)",
+    classify: (_type, years) => {
+      const [s, e] = parseYears(years);
+      return overlaps(s, e, 2024, 2099) ? [277] : [];
+    },
+  },
+  // Audi Q3 8U (2012-2018) — base + RS Q3 8U.
+  "audi-q3-8u": {
+    crawlFile: "haynespro-crawl-audi-q3-8u-2026-05-23.json",
+    modelId: "d_200000005",
+    label: "Audi Q3 (8U)",
+    classify: (type, years) => {
+      const [s, e] = parseYears(years);
+      if (/^RSQ3\b/.test(type)) return overlaps(s, e, 2013, 2018) ? [279] : [];
+      return overlaps(s, e, 2012, 2018) ? [278] : [];
+    },
+  },
+  // Audi Q3 F3 (2018-) — base + RS Q3 F3.
+  "audi-q3-f3": {
+    crawlFile: "haynespro-crawl-audi-q3-f3-2026-05-23.json",
+    modelId: "d_319003511",
+    label: "Audi Q3 (G2, F3)",
+    classify: (type, years) => {
+      const [s, e] = parseYears(years);
+      if (/^RSQ3\b/.test(type)) return overlaps(s, e, 2019, 2099) ? [281] : [];
+      return overlaps(s, e, 2018, 2099) ? [280] : [];
+    },
+  },
+  // Audi Q3 FJ (2024-) — new gen. Single gen.
+  "audi-q3-fj": {
+    crawlFile: "haynespro-crawl-audi-q3-fj-2026-05-23.json",
+    modelId: "d_319023857",
+    label: "Audi Q3 (FJ)",
+    classify: (_type, years) => {
+      const [s, e] = parseYears(years);
+      return overlaps(s, e, 2024, 2099) ? [282] : [];
+    },
+  },
   // BMW 6 Series E63/E64 (2003-2011) — Coupe + Convertible + M6 V10.
   // M6 → m6-e63-coupe (255) + m6-e64-convertible (256). Regular → 253 + 254.
   "bmw-6-e63": {
