@@ -1,0 +1,25 @@
+{
+  "_meta": {
+    "description": "Curated engine_code → HaynesPro typeId mapping for oil-audit. Captured per session via Playwright on Tim's authenticated workshopdata.com login. Each entry includes the chassis modelId for traceability + 1+ representative typeId(s) per engine code.",
+    "captured_by": "Claude Code sessions 2026-05-22..2026-05-23",
+    "structure": "engines[].typeIds is a list because some engine codes appear across multiple chassis (e.g. DKMB on Audi A6 C8 + Q5 FY); pick any one for the oil-spec lookup (HaynesPro returns the same spec across all typeIds for the same engine code)."
+  },
+  "engines": [
+    {"engine_code": "DKMB", "display": "S6 2.9 V6 TFSI biturbo", "modelId": "d_319001693", "chassis": "Audi A6/-Allroad (4A) 2019-", "typeIds": ["t_619017205"]},
+    {"engine_code": "DEWA", "display": "S6 3.0 TDI V6 pre-LCI EU", "modelId": "d_319001693", "chassis": "Audi A6/-Allroad (4A) 2019-", "typeIds": ["t_619023125"]},
+    {"engine_code": "DJPB", "display": "RS6 4.0 V8 TFSI pre-LCI", "modelId": "d_319001693", "chassis": "Audi A6/-Allroad (4A) 2019-", "typeIds": ["t_619028750"]},
+    {"engine_code": "DWLA", "display": "RS6 LCI 4.0 V8", "modelId": "d_319001693", "chassis": "Audi A6/-Allroad (4A) 2019-", "typeIds": ["t_619116169"]},
+    {"engine_code": "DMTA", "display": "Audi 45 TFSI 195kW 2021-", "modelId": "d_319001693", "chassis": "Audi A6/-Allroad (4A) 2019-", "typeIds": ["t_619035648"]},
+    {"engine_code": "DLZA", "display": "Audi 55 TFSI V6 250kW", "modelId": "d_319001693", "chassis": "Audi A6/-Allroad (4A) 2019-", "typeIds": ["t_619010268"]},
+    {"engine_code": "DDVB", "display": "Audi 50 TDI V6 210kW pre-LCI", "modelId": "d_319001693", "chassis": "Audi A6/-Allroad (4A) 2019-", "typeIds": ["t_619010269"]},
+    {"engine_code": "CVNA", "display": "Audi 1.4 TFSI 110kW B9", "modelId": "d_317000026", "chassis": "Audi A4 (8W) 2015-", "typeIds": ["t_318011813"]},
+    {"engine_code": "DAYB", "display": "Audi 45 TFSI Q5 FY", "modelId": "d_319001449", "chassis": "Audi Q5 (FY) 2016-", "typeIds": ["t_319005530"]},
+    {"engine_code": "CYMC", "display": "Audi 2.0 TFSI Q7 4M", "modelId": "d_312000002", "chassis": "Audi Q7 (4MB, 4MG) 2016-", "typeIds": ["t_619017270"]},
+    {"engine_code": "DPCA", "display": "VW 1.5 TSI MQB Evo", "modelId": "d_319007235", "chassis": "VW Golf VIII (CD, CG) 2020-", "typeIds": ["t_619028741", "t_619014595"]},
+    {"engine_code": "CZEA", "display": "VW 1.4 TSI 110kW MQB", "modelId": "d_317000050", "chassis": "VW Tiguan II (AD) 2016-2024", "typeIds": ["t_319000775"]},
+    {"engine_code": "B48B20B", "display": "BMW B48B20B 2.0 TwinPower (post-LCI G20 330i)", "modelId": "d_319001371", "chassis": "BMW 5 (G30, G31, F90)", "typeIds": ["t_619015365"]},
+    {"engine_code": "B48B20", "display": "BMW B48B20 2.0 TwinPower (F30 LCI 320i)", "modelId": "d_319001371", "chassis": "BMW 3 (F30, F31, F80)", "typeIds": ["t_317000540"]},
+    {"engine_code": "L15B7", "display": "Honda 1.5 L turbo (Civic X)", "modelId": "d_319001478", "chassis": "Honda Civic X (FK, FC) 2016-2021", "typeIds": ["t_319005573"]},
+    {"engine_code": "A25A-FKS", "display": "Toyota 2.5 L Dynamic Force (Camry XV70)", "modelId": "d_319001688", "chassis": "Toyota Camry (XV70) 2018-", "typeIds": ["t_619020126"]}
+  ]
+}
