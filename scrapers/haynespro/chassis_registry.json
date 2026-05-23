@@ -152,6 +152,86 @@
       "last_crawl_at": "2026-05-23T17:30:00Z"
     },
     {
+      "modelId": "d_3610",
+      "brand": "mercedes-benz",
+      "label": "Mercedes-Benz C (W203, S203) 2000-2007",
+      "catalog_gens": ["c-class-w203-2000-2007"],
+      "last_crawl": "haynespro-crawl-mb-c-w203-2026-05-23.json",
+      "last_crawl_at": "2026-05-23T21:45:00Z"
+    },
+    {
+      "modelId": "d_3600",
+      "brand": "mercedes-benz",
+      "label": "Mercedes-Benz C (W204) 2007-2014",
+      "catalog_gens": ["c-class-w204-2007-2014"],
+      "last_crawl": "haynespro-crawl-mb-c-w204-2026-05-23.json",
+      "last_crawl_at": "2026-05-23T21:45:00Z"
+    },
+    {
+      "modelId": "d_301000084",
+      "brand": "mercedes-benz",
+      "label": "Mercedes-Benz C (W205) 2014-2023",
+      "catalog_gens": ["c-class-w205-2014-2021", "amg-c63-w205-2014-2021"],
+      "last_crawl": "haynespro-crawl-mb-c-w205-2026-05-23.json",
+      "last_crawl_at": "2026-05-23T21:45:00Z"
+    },
+    {
+      "modelId": "d_319008822",
+      "brand": "mercedes-benz",
+      "label": "Mercedes-Benz C (W206) 2021-",
+      "catalog_gens": ["c-class-w206-2021-present"],
+      "last_crawl": "haynespro-crawl-mb-c-w206-2026-05-23.json",
+      "last_crawl_at": "2026-05-23T21:45:00Z"
+    },
+    {
+      "modelId": "d_3340",
+      "brand": "mercedes-benz",
+      "label": "Mercedes-Benz E (W211, S211) 2002-2009",
+      "catalog_gens": ["e-class-w211-2002-2009"],
+      "last_crawl": "haynespro-crawl-mb-e-w211-2026-05-23.json",
+      "last_crawl_at": "2026-05-23T21:45:00Z"
+    },
+    {
+      "modelId": "d_102000087",
+      "brand": "mercedes-benz",
+      "label": "Mercedes-Benz E (W212) 2009-2016",
+      "catalog_gens": ["e-class-w212-2009-2016"],
+      "last_crawl": "haynespro-crawl-mb-e-w212-2026-05-23.json",
+      "last_crawl_at": "2026-05-23T21:45:00Z"
+    },
+    {
+      "modelId": "d_102000173",
+      "brand": "mercedes-benz",
+      "label": "Mercedes-Benz E Coupe/Cabrio (W207) 2009-2016",
+      "catalog_gens": ["e-class-c207-coupe-cabrio-2009-2016"],
+      "last_crawl": "haynespro-crawl-mb-e-w207-2026-05-23.json",
+      "last_crawl_at": "2026-05-23T21:45:00Z"
+    },
+    {
+      "modelId": "d_319000496",
+      "brand": "mercedes-benz",
+      "label": "Mercedes-Benz E (W213) 2016-2023",
+      "catalog_gens": ["e-class-w213-2016-2023"],
+      "last_crawl": "haynespro-crawl-mb-e-w213-2026-05-23.json",
+      "last_crawl_at": "2026-05-23T21:45:00Z"
+    },
+    {
+      "modelId": "d_319001437",
+      "brand": "mercedes-benz",
+      "label": "Mercedes-Benz E Coupe/Cabrio (W238) 2017-2022",
+      "catalog_gens": ["e-class-c238-coupe-cabrio-2017-2022"],
+      "last_crawl": "haynespro-crawl-mb-e-w238-2026-05-23.json",
+      "last_crawl_at": "2026-05-23T21:45:00Z"
+    },
+    {
+      "modelId": "d_319018555",
+      "brand": "mercedes-benz",
+      "label": "Mercedes-Benz E (W214) 2023-",
+      "catalog_gens": ["e-class-w214-2023-present"],
+      "last_crawl": "haynespro-crawl-mb-e-w214-2026-05-23.json",
+      "last_crawl_at": "2026-05-23T21:45:00Z"
+    },
+    {
       "modelId": "d_102000157",
       "brand": "audi",
       "label": "Audi A1 (8X) 2011-2018",

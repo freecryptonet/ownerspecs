@@ -233,6 +233,108 @@ const CHASSIS_RULES: Record<string, ChassisRule> = {
       return gens;
     },
   },
+  // Mercedes-Benz C-Class W203 (2000-2007) — single gen.
+  "mb-c-w203": {
+    crawlFile: "haynespro-crawl-mb-c-w203-2026-05-23.json",
+    modelId: "d_3610",
+    label: "Mercedes-Benz C (W203, S203)",
+    classify: (_type, years) => {
+      const [s, e] = parseYears(years);
+      return overlaps(s, e, 2000, 2007) ? [302] : [];
+    },
+  },
+  // Mercedes-Benz C-Class W204 (2007-2014) — single gen. C63 AMG merged.
+  "mb-c-w204": {
+    crawlFile: "haynespro-crawl-mb-c-w204-2026-05-23.json",
+    modelId: "d_3600",
+    label: "Mercedes-Benz C (W204)",
+    classify: (_type, years) => {
+      const [s, e] = parseYears(years);
+      return overlaps(s, e, 2007, 2014) ? [303] : [];
+    },
+  },
+  // Mercedes-Benz C-Class W205 (2014-2023) — base + AMG C63 W205 (4.0 V8 BiTurbo).
+  // Gens: 304 (base), 306 (AMG C63). 43 AMG (6-cyl) stays in base.
+  "mb-c-w205": {
+    crawlFile: "haynespro-crawl-mb-c-w205-2026-05-23.json",
+    modelId: "d_301000084",
+    label: "Mercedes-Benz C (W205)",
+    classify: (type, years) => {
+      const [s, e] = parseYears(years);
+      if (/63 AMG/.test(type)) return overlaps(s, e, 2014, 2021) ? [306] : [];
+      return overlaps(s, e, 2014, 2021) ? [304] : [];
+    },
+  },
+  // Mercedes-Benz C-Class W206 (2021-) — single gen. C43/C63 PHEV merged.
+  "mb-c-w206": {
+    crawlFile: "haynespro-crawl-mb-c-w206-2026-05-23.json",
+    modelId: "d_319008822",
+    label: "Mercedes-Benz C (W206)",
+    classify: (_type, years) => {
+      const [s, e] = parseYears(years);
+      return overlaps(s, e, 2021, 2099) ? [305] : [];
+    },
+  },
+  // Mercedes-Benz E-Class W211 (2002-2009) — single gen.
+  "mb-e-w211": {
+    crawlFile: "haynespro-crawl-mb-e-w211-2026-05-23.json",
+    modelId: "d_3340",
+    label: "Mercedes-Benz E (W211, S211)",
+    classify: (_type, years) => {
+      const [s, e] = parseYears(years);
+      return overlaps(s, e, 2002, 2009) ? [307] : [];
+    },
+  },
+  // Mercedes-Benz E-Class W212 (2009-2016) — single gen.
+  "mb-e-w212": {
+    crawlFile: "haynespro-crawl-mb-e-w212-2026-05-23.json",
+    modelId: "d_102000087",
+    label: "Mercedes-Benz E (W212)",
+    classify: (_type, years) => {
+      const [s, e] = parseYears(years);
+      return overlaps(s, e, 2009, 2016) ? [308] : [];
+    },
+  },
+  // Mercedes-Benz E-Class C207/A207 Coupe/Cabriolet (2009-2016) — single gen.
+  "mb-e-w207": {
+    crawlFile: "haynespro-crawl-mb-e-w207-2026-05-23.json",
+    modelId: "d_102000173",
+    label: "Mercedes-Benz E Coupe/Cabrio (W207)",
+    classify: (_type, years) => {
+      const [s, e] = parseYears(years);
+      return overlaps(s, e, 2009, 2016) ? [309] : [];
+    },
+  },
+  // Mercedes-Benz E-Class W213 (2016-2023) — single gen.
+  "mb-e-w213": {
+    crawlFile: "haynespro-crawl-mb-e-w213-2026-05-23.json",
+    modelId: "d_319000496",
+    label: "Mercedes-Benz E (W213)",
+    classify: (_type, years) => {
+      const [s, e] = parseYears(years);
+      return overlaps(s, e, 2016, 2023) ? [310] : [];
+    },
+  },
+  // Mercedes-Benz E-Class C238/A238 Coupe/Cabriolet (2017-2022) — single gen.
+  "mb-e-w238": {
+    crawlFile: "haynespro-crawl-mb-e-w238-2026-05-23.json",
+    modelId: "d_319001437",
+    label: "Mercedes-Benz E Coupe/Cabrio (W238)",
+    classify: (_type, years) => {
+      const [s, e] = parseYears(years);
+      return overlaps(s, e, 2017, 2022) ? [311] : [];
+    },
+  },
+  // Mercedes-Benz E-Class W214 (2023-) — single gen.
+  "mb-e-w214": {
+    crawlFile: "haynespro-crawl-mb-e-w214-2026-05-23.json",
+    modelId: "d_319018555",
+    label: "Mercedes-Benz E (W214)",
+    classify: (_type, years) => {
+      const [s, e] = parseYears(years);
+      return overlaps(s, e, 2023, 2099) ? [312] : [];
+    },
+  },
   // Audi A1 8X (2011-2018) — single gen, S1 (CWZA 2.0 TFSI) included in base.
   "audi-a1-8x": {
     crawlFile: "haynespro-crawl-audi-a1-8x-2026-05-23.json",
