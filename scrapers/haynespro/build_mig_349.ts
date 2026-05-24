@@ -56,7 +56,11 @@ for (const cw of crawls) {
     for (const b of cw.batteries) {
       const cca = b.cca_din_a == null ? "NULL" : String(b.cca_din_a);
       const ah = b.capacity_ah == null ? "NULL" : String(b.capacity_ah);
-      lines.push(`INSERT IGNORE INTO electrical_specs (generation_id, battery_group, cca, ah, alternator_amps) VALUES (${genId}, ${esc(b.equipment_code)}, ${cca}, ${ah}, NULL);`);
+      // Drop synthesized 'STD-NAh' battery_group — Tim's rule: no invented data.
+      // Only persist the real OE equipment_code (Audi format). For BMW/MB the
+      // workshop database doesn't expose a group code → battery_group = NULL.
+      const realGroup = b.equipment_code && !b.equipment_code.startsWith("STD-") ? esc(b.equipment_code) : "NULL";
+      lines.push(`INSERT IGNORE INTO electrical_specs (generation_id, battery_group, cca, ah, alternator_amps) VALUES (${genId}, ${realGroup}, ${cca}, ${ah}, NULL);`);
       stats.inserts++;
     }
     lines.push(`INSERT IGNORE INTO spec_sources (spec_table, spec_id, source_id) SELECT 'electrical_specs', id, @s_haynes FROM electrical_specs WHERE generation_id=${genId};`);

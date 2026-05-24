@@ -117,10 +117,17 @@ export default async function Page({ params }: { params: Promise<Params> }) {
   }, {});
 
   const faqs: Array<{ q: string; a: string }> = [];
-  if (electrical?.battery_group) {
+  // Trigger battery FAQ on EITHER battery_group or ah (BMW/MB have ah but no
+  // exposed OE group code — don't gate the FAQ on the assumption that all
+  // chassis publish a group code)
+  if (electrical && (electrical.battery_group || electrical.ah)) {
+    const parts: string[] = [];
+    if (electrical.battery_group) parts.push(`OE battery code ${electrical.battery_group}`);
+    if (electrical.ah) parts.push(`${electrical.ah} Ah capacity`);
+    if (electrical.cca) parts.push(`${electrical.cca} CCA cold-cranking`);
     faqs.push({
       q: `What battery does the ${make.name} ${gen.display_name} use?`,
-      a: `The ${make.name} ${gen.display_name} (${yrs}) uses a ${electrical.battery_group} battery${electrical.cca ? ` rated at ${electrical.cca} CCA` : ""}${electrical.ah ? ` and ${electrical.ah} Ah` : ""}.`,
+      a: `The ${make.name} ${gen.display_name} (${yrs}) uses ${parts.join(", ")}.`,
     });
   }
   if (electrical?.alternator_amps) {
@@ -210,7 +217,7 @@ export default async function Page({ params }: { params: Promise<Params> }) {
               {[
                 {
                   label: "Battery group",
-                  value: electrical.battery_group ? `BCI ${electrical.battery_group}` : "—",
+                  value: electrical.battery_group ?? "—",
                   unit: "",
                 },
                 {
