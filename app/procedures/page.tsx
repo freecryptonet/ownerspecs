@@ -74,8 +74,8 @@ export default async function ProceduresIndex() {
           <h1>Procedures</h1>
           <p className="sub">
             {total} owner-method procedures across every nameplate we cover.
-            Restated from OEM owner manuals and HaynesPro / startmycar /
-            manualslib references. Each procedure ships with tools required,
+            Restated from OEM owner manuals and workshop service-manual
+            references. Each procedure ships with tools required,
             common mistakes, and JSON-LD HowTo schema.
           </p>
         </header>

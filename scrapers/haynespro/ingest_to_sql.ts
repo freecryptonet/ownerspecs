@@ -113,7 +113,7 @@ function main() {
   const haynesCitation = `Workshop service manual — ${crawl.chassis.label ?? crawl.chassis.modelId}`;
   lines.push("-- 1. Workshop manual source row (is_public=0, citation only for audit trail)");
   lines.push(`INSERT IGNORE INTO sources (citation, url, retrieved_at, notes, is_public, public_link) VALUES`);
-  lines.push(`  (${escapeSql(haynesCitation)}, ${escapeSql(haynesUrl)}, NOW(), ${escapeSql(`Auto-ingested via scrapers/haynespro/ingest_to_sql.ts. modelId ${crawl.chassis.modelId}, ${candidates.length} engines crawled, ${byEngine.size} unique engine codes ingested.`)}, 0, 0);`);
+  lines.push(`  (${escapeSql(haynesCitation)}, ${escapeSql(haynesUrl)}, NOW(), ${escapeSql(`Auto-ingested. ${candidates.length} engines crawled, ${byEngine.size} unique engine codes.`)}, 0, 0);`);
   lines.push(`SET @s_haynes := (SELECT id FROM sources WHERE url = ${escapeSql(haynesUrl)} ORDER BY id DESC LIMIT 1);`);
   lines.push("");
 

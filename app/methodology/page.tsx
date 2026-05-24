@@ -7,7 +7,7 @@ import { query } from "@/lib/db";
 export const metadata = pageMetadata({
   title: "Methodology",
   description:
-    "How ownerspecs sources, verifies, and publishes vehicle specifications. Multi-source verification, OEM-manual provenance, restated-not-verbatim policy (Feist v. Rural), HaynesPro / startmycar / manualslib citation hierarchy.",
+    "How ownerspecs sources, verifies, and publishes vehicle specifications. Multi-source verification, OEM-manual provenance, restated-not-verbatim policy (Feist v. Rural), workshop-manual / community / archive citation hierarchy.",
   path: "/methodology",
 });
 
@@ -46,9 +46,9 @@ export default async function MethodologyPage() {
           <h2>Source hierarchy</h2>
           <ol>
             <li><strong>OEM owner manual (PDF)</strong> — Toyota, Honda, BMW, Mercedes, etc. publish official manuals. Highest authority for fluids, intervals, procedures.</li>
-            <li><strong>HaynesPro WorkshopData</strong> — paid OEM-equivalent service data. Used internally to cross-check fluids/torques. Citations are kept internal (HaynesPro license).</li>
-            <li><strong>manualslib.com</strong> — community archive of owner manuals. Used to cross-verify older / discontinued models where OEM portals have removed PDFs.</li>
-            <li><strong>startmycar.com</strong> — community Q&amp;A; used as a tie-breaker on ambiguous procedure variations.</li>
+            <li><strong>Workshop service manuals</strong> — paid OEM-equivalent service data. Used internally to cross-check fluids/torques. Citations are kept internal per licence terms.</li>
+            <li><strong>Community manual archives</strong> — public archives of owner manuals. Used to cross-verify older / discontinued models where OEM portals have removed PDFs.</li>
+            <li><strong>Community Q&amp;A forums</strong> — used as a tie-breaker on ambiguous procedure variations.</li>
             <li><strong>Manufacturer press materials</strong> — for engine codes, headline horsepower, transmission designations.</li>
           </ol>
 
@@ -72,7 +72,7 @@ export default async function MethodologyPage() {
             So:
           </p>
           <ul>
-            <li>We never copy paragraphs verbatim from owner manuals or HaynesPro.</li>
+            <li>We never copy paragraphs verbatim from owner manuals or workshop manuals.</li>
             <li>We never reproduce OEM line-art, scanned diagrams, or photo composition.</li>
             <li>Procedure steps are rewritten in our cadence; OEM phrasing is paraphrased.</li>
             <li>Hero images are sourced from Wikimedia Commons (CC BY-SA / CC0) with full attribution, never scraped from competitor sites.</li>
@@ -81,8 +81,8 @@ export default async function MethodologyPage() {
           <h2 id="provenance-is-exposed">Provenance is exposed</h2>
           <p>
             Every gen page has a <em>Sources</em> section listing the citations
-            backing its data. We mark HaynesPro citations as internal (not
-            surfaceable) so the public source list reflects only what an owner
+            backing its data. We mark paid-licence workshop-manual citations as
+            internal (not surfaceable) so the public source list reflects only what an owner
             could independently verify. Click into any gen page and scroll to
             the bottom to see the citation set for that page.
           </p>
