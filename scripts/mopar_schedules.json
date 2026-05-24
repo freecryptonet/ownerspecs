@@ -1,0 +1,109 @@
+{
+  "scraped_at": "2026-05-25",
+  "source": "https://www.mopar.com/en-us/my-vehicle/maintenance-schedule.html",
+  "note": "Older gens (2008 Chrysler 300 LX, 2008 Dodge Charger LX) do not have structured tables on Mopar; only PDF available.",
+  "schedules": [
+    {
+      "gen_id": 86,
+      "label": "Chrysler Pacifica (RU) 2020",
+      "milestones": [20000, 30000, 40000, 50000, 60000, 70000, 80000, 90000, 100000, 110000, 120000, 130000, 140000, 150000],
+      "rows": [
+        {"action": "Inspect the CV/Universal joints.", "checked": [20000,30000,40000,50000,60000,70000,80000,90000,100000,110000,120000,130000,140000,150000]},
+        {"action": "Inspect front suspension, boot seals, tie rod ends, and replace if necessary.", "checked": [20000,40000,60000,80000,100000,120000,140000]},
+        {"action": "Inspect the brake linings, parking brake function.", "checked": [20000,40000,60000,80000,100000,120000,140000]},
+        {"action": "Inspect front accessory drive tensioner, idler pulley, and replace if necessary.", "checked": [150000]},
+        {"action": "Replace engine air cleaner filter.", "checked": [30000,60000,90000,120000,150000]},
+        {"action": "Replace air conditioning/cabin air filter.", "checked": [20000,40000,60000,80000,100000,120000,140000]},
+        {"action": "Replace spark plugs.", "checked": [100000]},
+        {"action": "Replace the front accessory drive belt.", "checked": [150000]},
+        {"action": "Flush and replace the engine coolant at 10 years or 150,000 miles (240,000 km) whichever comes first.", "checked": [100000,150000]},
+        {"action": "Replace PCV valve.", "checked": [100000]}
+      ]
+    },
+    {
+      "gen_id": 122,
+      "label": "Dodge Charger (LD) 2017",
+      "milestones": [20000, 30000, 40000, 50000, 60000, 70000, 80000, 90000, 100000, 110000, 120000, 130000, 140000, 150000],
+      "rows": [
+        {"action": "Inspect the CV joints.", "checked": [30000,60000,90000,120000,150000]},
+        {"action": "Inspect front suspension, tie rod ends, boot seals, and replace if necessary.", "checked": [20000,40000,60000,80000,100000,120000,140000]},
+        {"action": "Inspect the rear axle fluid. Inspect the front axle fluid (All Wheel Drive Only).", "checked": [20000,40000,60000,80000,100000,120000,140000]},
+        {"action": "Inspect the brake linings, replace as necessary.", "checked": [20000,40000,60000,80000,100000,120000,140000]},
+        {"action": "Adjust park brake on vehicles equipped with four wheel disc brakes.", "checked": [20000,40000,60000,80000,100000,120000,140000]},
+        {"action": "Inspect transfer case fluid (All Wheel Drive Only).", "checked": [30000,60000,90000,120000,150000]},
+        {"action": "Replace engine air filter.", "checked": [30000,60000,90000,120000,150000]},
+        {"action": "Replace cabin/air conditioning filter.", "checked": [20000,40000,60000,80000,100000,120000,140000]},
+        {"action": "Replace spark plugs.", "checked": [100000]},
+        {"action": "Flush and replace the engine coolant at 10 years or 150,000 miles (240,000 km) whichever comes first.", "checked": [100000,150000]},
+        {"action": "Change the transfer case fluid; if using your vehicle for any of the following: police, taxi, fleet, off-road, or frequent trailer towing. (All Wheel Drive Only).", "checked": [60000,120000], "severe": true},
+        {"action": "Change the rear axle fluid and on models equipped with All Wheel Drive (AWD) change the front axle fluid if using your vehicle for any of the following: police, taxi, fleet, off-road, or frequent trailer towing.", "checked": [50000,100000,150000], "severe": true},
+        {"action": "Inspect and replace PCV valve if necessary.", "checked": [100000]}
+      ]
+    },
+    {
+      "gen_id": 69,
+      "label": "Jeep Grand Cherokee (WL) 2023",
+      "milestones": [20000, 30000, 40000, 50000, 60000, 70000, 80000, 90000, 100000, 110000, 120000, 130000, 140000, 150000],
+      "rows": [
+        {"action": "Inspect the CV/Universal joints.", "checked": [20000,30000,40000,50000,60000,70000,80000,90000,100000,110000,120000,130000,140000,150000]},
+        {"action": "Inspect front suspension, tie rod ends, and replace if necessary.", "checked": [20000,40000,60000,80000,100000,120000,140000]},
+        {"action": "Inspect the front and rear axle fluid, change if using your vehicle for police, taxi, fleet, off-road or frequent trailer towing.", "checked": [30000,60000,90000,120000,150000]},
+        {"action": "Inspect the brake linings, parking brake function.", "checked": [20000,40000,60000,80000,100000,120000,140000]},
+        {"action": "Inspect transfer case fluid.", "checked": [30000,60000,90000,120000,150000]},
+        {"action": "Replace engine air cleaner filter.", "checked": [30000,60000,90000,120000,150000]},
+        {"action": "Replace the cabin air filter.", "checked": [20000]},
+        {"action": "Replace spark plugs - 2.0L. The spark plug change interval is mileage-based only, yearly intervals do not apply.", "checked": [60000,120000]},
+        {"action": "Replace spark plugs - 3.6L & 5.7L. The spark plug change interval is mileage-based only, yearly intervals do not apply.", "checked": [100000]},
+        {"action": "Flush and replace the engine coolant at 10 years or 150,000 miles (240,000 km) whichever comes first.", "checked": [100000,150000]},
+        {"action": "Replace accessory drive belt.", "checked": [150000]},
+        {"action": "Inspect accessory drive belt tensioner and pulley, replace if necessary.", "checked": [150000]},
+        {"action": "Change transfer case fluid - Normal Usage.", "checked": [120000]},
+        {"action": "Change transfer case fluid - Severe Usage (police, taxi, fleet, off-road, or frequent trailer towing).", "checked": [70000,140000], "severe": true},
+        {"action": "Replace PCV valve.", "checked": [100000]}
+      ]
+    },
+    {
+      "gen_id": 37,
+      "label": "Jeep Wrangler (JL) 2020",
+      "milestones": [20000, 30000, 40000, 50000, 60000, 70000, 80000, 90000, 100000, 110000, 120000, 130000, 140000, 150000],
+      "rows": [
+        {"action": "Inspect the CV/Universal joints", "checked": [20000,30000,40000,50000,60000,70000,80000,90000,100000,110000,120000,130000,140000,150000]},
+        {"action": "Inspect front suspension, tie rod ends, rear suspension, and replace if necessary", "checked": [20000,40000,60000,80000,100000,120000,140000]},
+        {"action": "Inspect the front and rear axle fluid", "checked": [20000,60000,100000,140000]},
+        {"action": "Inspect the brake linings, replace as necessary", "checked": [20000,40000,60000,80000,100000,120000,140000]},
+        {"action": "Adjust parking brake on vehicles equipped with four wheel disc brakes", "checked": [20000,40000,60000,80000,100000,120000,140000]},
+        {"action": "Inspect transfer case fluid", "checked": [30000,90000,150000]},
+        {"action": "Replace engine air cleaner filter", "checked": [30000,60000,90000,120000,150000]},
+        {"action": "Replace air conditioning/cabin air filter", "checked": [20000,40000,60000,80000,100000,120000,140000]},
+        {"action": "Replace Spark Plugs - 2.0L Engine. The spark plug change interval is mileage based only, yearly intervals do not apply.", "checked": [60000,120000]},
+        {"action": "Replace spark plugs - 3.6L Engine. The spark plug change interval is mileage based only, yearly intervals do not apply.", "checked": [100000]},
+        {"action": "Flush and replace the engine, intercooler (if equipped), battery (if equipped), and Motor Generator Unit (MGU) (if equipped) coolant at 10 years or 150,000 miles (240,000 km) whichever comes first", "checked": [100000,150000]},
+        {"action": "Change the manual transmission fluid if using your vehicle for any of the following: trailer towing, snow plowing, heavy loading, taxi, police, delivery service (commercial service), off-road, desert operation or more than 50% of your driving is at sustained high speeds during hot weather", "checked": [30000,60000,90000,120000,150000], "severe": true},
+        {"action": "Change transfer case fluid if using your vehicle for any of the following: police, taxi, fleet, or frequent trailer towing", "checked": [60000,120000], "severe": true},
+        {"action": "Inspect and replace PCV valve if necessary", "checked": [100000]},
+        {"action": "Change front and rear axle fluid if using your vehicle for police, taxi, fleet, off-road or frequent trailer towing", "checked": [40000,80000,120000], "severe": true}
+      ]
+    },
+    {
+      "gen_id": 43,
+      "label": "Ram 1500 (DT) 2022",
+      "milestones": [20000, 30000, 40000, 50000, 60000, 70000, 80000, 90000, 100000, 110000, 120000, 130000, 140000, 150000],
+      "rows": [
+        {"action": "Inspect the CV/Universal joints.", "checked": [20000,30000,40000,50000,60000,70000,80000,90000,100000,110000,120000,130000,140000,150000]},
+        {"action": "Inspect front suspension, tie rod ends, and replace if necessary.", "checked": [20000,40000,60000,80000,100000,120000,140000]},
+        {"action": "Inspect the front and rear axle surfaces. If gear oil leakage is suspected, check the fluid level.", "checked": [30000,60000,90000,120000,150000]},
+        {"action": "Inspect the brake linings, replace as necessary.", "checked": [20000,40000,60000,80000,100000,120000,140000]},
+        {"action": "Inspect transfer case fluid.", "checked": [150000]},
+        {"action": "Replace cabin air filter.", "checked": [20000]},
+        {"action": "For severe dusty driving conditions, inspect and replace the Evaporative System Fresh Air Filter as necessary.", "checked": [20000,30000,40000,50000,60000,70000,80000,90000,100000,110000,120000,130000,140000,150000], "severe": true},
+        {"action": "Replace engine air cleaner.", "checked": [30000,60000,90000,120000,150000]},
+        {"action": "If equipped with Stop/Start, replace accessory drive belt with OEM grade Mopar belt.", "checked": [150000]},
+        {"action": "Replace spark plugs. The spark plug change interval is mileage-based only; yearly intervals do not apply.", "checked": [100000]},
+        {"action": "Flush and replace the engine coolant at 10 years or 150,000 miles (240,000 km) whichever comes first.", "checked": [100000,150000]},
+        {"action": "Inspect the transfer case fluid, change for any of the following: police, taxi, fleet, or frequent trailer towing.", "checked": [60000,120000], "severe": true},
+        {"action": "Change the transfer case fluid.", "checked": [120000]},
+        {"action": "Inspect and replace PCV valve if necessary.", "checked": [100000]}
+      ]
+    }
+  ]
+}
