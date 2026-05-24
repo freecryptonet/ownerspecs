@@ -1324,10 +1324,11 @@ function main() {
   lines.push("");
   lines.push("SET NAMES utf8mb4;");
   lines.push("");
-  // 1) HaynesPro source row
+  // 1) Workshop manual source row — citation is vendor-neutral per CLAUDE.md
+  //    (no "HaynesPro" or "WorkshopData" in any publicly rendered column)
   const haynesUrl = `https://www.workshopdata.com/touch/site/layout/modelTypesList?modelId=${rule.modelId}`;
   lines.push(`INSERT IGNORE INTO sources (citation, url, retrieved_at, notes, is_public, public_link) VALUES`);
-  lines.push(`  (${escapeSql("HaynesPro WorkshopData — " + rule.label)}, ${escapeSql(haynesUrl)}, NOW(), ${escapeSql(`Multi-gen ingest, ${byEngine.size} engines across ${new Set([...engineToGens.values()].flatMap(s => [...s])).size} catalog gens.`)}, 0, 0);`);
+  lines.push(`  (${escapeSql("Workshop service manual — " + rule.label)}, ${escapeSql(haynesUrl)}, NOW(), ${escapeSql(`Multi-gen ingest, ${byEngine.size} engines across ${new Set([...engineToGens.values()].flatMap(s => [...s])).size} catalog gens.`)}, 0, 0);`);
   lines.push(`SET @s_haynes := (SELECT id FROM sources WHERE url = ${escapeSql(haynesUrl)} ORDER BY id DESC LIMIT 1);`);
   lines.push("");
 

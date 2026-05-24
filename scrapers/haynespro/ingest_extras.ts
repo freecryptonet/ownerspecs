@@ -129,7 +129,7 @@ function main() {
     for (const t of torquesByKey.values()) {
       const ftlb = Math.round(t.torque_nm * 0.7376);
       lines.push(`INSERT INTO torque_specs (generation_id, fastener, torque_nm, torque_ftlb, notes)`);
-      lines.push(`SELECT ${gen}, ${escapeSql(t.fastener.slice(0, 64))}, ${num(t.torque_nm)}, ${num(ftlb)}, 'HaynesPro adjustmentData'`);
+      lines.push(`SELECT ${gen}, ${escapeSql(t.fastener.slice(0, 64))}, ${num(t.torque_nm)}, ${num(ftlb)}, NULL`);
       lines.push(`WHERE NOT EXISTS (SELECT 1 FROM torque_specs WHERE generation_id = ${gen} AND fastener = ${escapeSql(t.fastener.slice(0, 64))});`);
     }
     lines.push("");
@@ -156,7 +156,7 @@ function main() {
       if (km == null && months == null) continue;
       const svc = iv.label.slice(0, 96);
       lines.push(`INSERT INTO service_intervals (generation_id, service, km_normal, miles_normal, months, notes)`);
-      lines.push(`SELECT ${gen}, ${escapeSql(svc)}, ${num(km)}, ${num(miles)}, ${num(months)}, 'HaynesPro modelDetailMaintenance (interval header)'`);
+      lines.push(`SELECT ${gen}, ${escapeSql(svc)}, ${num(km)}, ${num(miles)}, ${num(months)}, NULL`);
       lines.push(`WHERE NOT EXISTS (SELECT 1 FROM service_intervals WHERE generation_id = ${gen} AND service = ${escapeSql(svc)});`);
     }
     lines.push("");
@@ -169,7 +169,7 @@ function main() {
       const procType = p.page === "SERVICERESET" ? "service_reset" : p.page === "SCHEDULES" ? "schedule_note" : "maintenance";
       const slugVal = slugify(`${procType}-${p.title}`);
       lines.push(`INSERT INTO procedures (generation_id, procedure_type, slug, title, body_md, tools_required, common_mistakes)`);
-      lines.push(`SELECT ${gen}, ${escapeSql(procType)}, ${escapeSql(slugVal.slice(0, 96))}, ${escapeSql(p.title.slice(0, 255))}, '(See HaynesPro WorkshopData for full procedure — storyId ${p.storyId})', NULL, NULL`);
+      lines.push(`SELECT ${gen}, ${escapeSql(procType)}, ${escapeSql(slugVal.slice(0, 96))}, ${escapeSql(p.title.slice(0, 255))}, '', NULL, NULL`);
       lines.push(`WHERE NOT EXISTS (SELECT 1 FROM procedures WHERE generation_id = ${gen} AND slug = ${escapeSql(slugVal.slice(0, 96))});`);
     }
     lines.push("");

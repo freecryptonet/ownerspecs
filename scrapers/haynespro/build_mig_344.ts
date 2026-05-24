@@ -120,7 +120,7 @@ function mapItemToCode(raw: string): string | null {
 const lines: string[] = [];
 lines.push("-- mig 344 — Phase C-2 bulk per-item service_intervals + procedures across 94 chassis.");
 lines.push("-- Per (chassis, catalog_gen):");
-lines.push("--   DELETE old v1 interval-header service rows (notes LIKE 'HaynesPro modelDetailMaintenance%')");
+lines.push("--   DELETE old auto-imported service rows (linked to @s_haynes via spec_sources)");
 lines.push("--   INSERT mapped service items at smallest km recurrence (snake_case via mapItemToCode)");
 lines.push("--   INSERT procedures (titles only, body_md placeholder)");
 lines.push("--   Cite to HaynesPro source");
@@ -183,14 +183,14 @@ for (const cw of crawls) {
     if (!genId) { stats.missingGens.push(slug); lines.push(`-- SKIP slug=${slug} — not in DB`); continue; }
     stats.gens++;
     lines.push(`-- gen ${genId} (${slug})`);
-    // 1. DELETE v1 service interval-header rows
-    lines.push(`DELETE ss FROM spec_sources ss JOIN service_intervals si ON si.id = ss.spec_id WHERE ss.spec_table='service_intervals' AND si.generation_id=${genId} AND si.notes LIKE 'HaynesPro modelDetailMaintenance%';`);
-    lines.push(`DELETE FROM service_intervals WHERE generation_id=${genId} AND notes LIKE 'HaynesPro modelDetailMaintenance%';`);
+    // 1. DELETE old auto-imported service rows (identified via spec_sources -> @s_haynes)
+    lines.push(`DELETE si FROM service_intervals si JOIN spec_sources ss ON ss.spec_table='service_intervals' AND ss.spec_id=si.id WHERE si.generation_id=${genId} AND ss.source_id=@s_haynes;`);
     // 2. INSERT mapped service rows (INSERT IGNORE on (gen, service) to skip duplicates with existing scraper rows)
     for (const [code, v] of serviceMap.entries()) {
       const km = v.km == null ? "NULL" : String(v.km);
       const mi = v.miles == null ? "NULL" : String(v.miles);
       const mo = v.months == null ? "NULL" : String(v.months);
+      // notes = the original item label (no HP brand reference) — fine to render publicly
       const noteCap = v.notes.replace(/[^\x20-\x7E]/g, ' ').slice(0, 90);
       lines.push(`INSERT INTO service_intervals (generation_id, service, km_normal, miles_normal, months, notes) SELECT ${genId}, ${esc(code)}, ${km}, ${mi}, ${mo}, ${esc(noteCap)} WHERE NOT EXISTS (SELECT 1 FROM service_intervals WHERE generation_id=${genId} AND service=${esc(code)});`);
       stats.services++;
@@ -200,7 +200,8 @@ for (const cw of crawls) {
       const procType = p.page === "SERVICERESET" ? "service_reset" : p.page === "SCHEDULES" ? "schedule_note" : "maintenance";
       const slugVal = slugify(`${procType}-${p.title}`).slice(0, 96);
       const title = p.title.slice(0, 255);
-      lines.push(`INSERT INTO procedures (generation_id, procedure_type, slug, title, body_md, tools_required, common_mistakes) SELECT ${genId}, ${esc(procType)}, ${esc(slugVal)}, ${esc(title)}, ${esc(`(See HaynesPro WorkshopData for full procedure — storyId ${p.storyId})`)}, NULL, NULL WHERE NOT EXISTS (SELECT 1 FROM procedures WHERE generation_id=${genId} AND slug=${esc(slugVal)});`);
+      // body_md = '' (empty); a later restating pass populates from body_md_source_text
+      lines.push(`INSERT INTO procedures (generation_id, procedure_type, slug, title, body_md, tools_required, common_mistakes) SELECT ${genId}, ${esc(procType)}, ${esc(slugVal)}, ${esc(title)}, '', NULL, NULL WHERE NOT EXISTS (SELECT 1 FROM procedures WHERE generation_id=${genId} AND slug=${esc(slugVal)});`);
       stats.procedures++;
     }
     // 4. Cite to HaynesPro

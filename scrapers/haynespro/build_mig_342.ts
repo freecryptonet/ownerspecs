@@ -122,7 +122,7 @@ for (const [raw, iv] of itemMap.entries()) {
 // ────── Build SQL ──────
 const lines: string[] = [];
 lines.push("-- mig 342 — Q5 FY (gen_id 82) cleanup: replace v1-parser junk with new clean rows.");
-lines.push("--   torque_specs: drop 105 v1 rows (notes='HaynesPro adjustmentData' from mig 341),");
+lines.push("--   torque_specs: drop 105 v1 rows (notes=NULL from mig 341),");
 lines.push("--                 insert " + torquesMap.size + " unique torques from new line-aware parser.");
 lines.push("--   service_intervals: drop 33 interval-header rows from mig 341,");
 lines.push("--                 insert " + serviceRows.size + " per-item rows mapped to snake_case codes.");
@@ -135,13 +135,11 @@ lines.push(`SET @s_haynes := (SELECT id FROM sources WHERE url = 'https://www.wo
 lines.push("");
 
 lines.push("-- 2. DELETE v1 junk torque rows");
-lines.push(`DELETE ss FROM spec_sources ss JOIN torque_specs ts ON ts.id = ss.spec_id WHERE ss.spec_table = 'torque_specs' AND ts.generation_id = ${GEN_ID} AND ts.notes = 'HaynesPro adjustmentData';`);
-lines.push(`DELETE FROM torque_specs WHERE generation_id = ${GEN_ID} AND notes = 'HaynesPro adjustmentData';`);
+lines.push(`DELETE ts FROM torque_specs ts JOIN spec_sources ss ON ss.spec_table='torque_specs' AND ss.spec_id=ts.id WHERE ts.generation_id=${GEN_ID} AND ss.source_id=@s_haynes;`);
 lines.push("");
 
 lines.push("-- 3. DELETE v1 interval-header service rows");
-lines.push(`DELETE ss FROM spec_sources ss JOIN service_intervals si ON si.id = ss.spec_id WHERE ss.spec_table = 'service_intervals' AND si.generation_id = ${GEN_ID} AND si.notes LIKE 'HaynesPro modelDetailMaintenance%';`);
-lines.push(`DELETE FROM service_intervals WHERE generation_id = ${GEN_ID} AND notes LIKE 'HaynesPro modelDetailMaintenance%';`);
+lines.push(`DELETE si FROM service_intervals si JOIN spec_sources ss ON ss.spec_table='service_intervals' AND ss.spec_id=si.id WHERE si.generation_id=${GEN_ID} AND ss.source_id=@s_haynes;`);
 lines.push("");
 
 lines.push(`-- 4. INSERT ${torquesMap.size} clean torque rows`);
@@ -151,7 +149,7 @@ function esc(s: string | null): string {
 }
 for (const t of torquesMap.values()) {
   const ftlb = Math.round(t.torque_nm * 0.7376);
-  lines.push(`INSERT INTO torque_specs (generation_id, fastener, torque_nm, torque_ftlb, notes) VALUES (${GEN_ID}, ${esc(t.fastener)}, ${t.torque_nm}, ${ftlb}, 'HaynesPro adjustmentData');`);
+  lines.push(`INSERT INTO torque_specs (generation_id, fastener, torque_nm, torque_ftlb, notes) VALUES (${GEN_ID}, ${esc(t.fastener)}, ${t.torque_nm}, ${ftlb}, NULL);`);
 }
 lines.push("");
 
@@ -160,13 +158,13 @@ for (const [code, v] of serviceRows.entries()) {
   const km = v.km == null ? "NULL" : String(v.km);
   const mi = v.miles == null ? "NULL" : String(v.miles);
   const mo = v.months == null ? "NULL" : String(v.months);
-  lines.push(`INSERT INTO service_intervals (generation_id, service, km_normal, miles_normal, months, notes) VALUES (${GEN_ID}, ${esc(code)}, ${km}, ${mi}, ${mo}, ${esc(v.notes ?? "HaynesPro maintenanceSchedule")});`);
+  lines.push(`INSERT INTO service_intervals (generation_id, service, km_normal, miles_normal, months, notes) VALUES (${GEN_ID}, ${esc(code)}, ${km}, ${mi}, ${mo}, ${esc(v.notes ?? null)});`);
 }
 lines.push("");
 
 lines.push("-- 6. Citations");
-lines.push(`INSERT IGNORE INTO spec_sources (spec_table, spec_id, source_id) SELECT 'torque_specs', id, @s_haynes FROM torque_specs WHERE generation_id = ${GEN_ID} AND notes = 'HaynesPro adjustmentData';`);
-lines.push(`INSERT IGNORE INTO spec_sources (spec_table, spec_id, source_id) SELECT 'service_intervals', id, @s_haynes FROM service_intervals WHERE generation_id = ${GEN_ID} AND (notes = 'HaynesPro maintenanceSchedule' OR notes IS NOT NULL);`);
+lines.push(`INSERT IGNORE INTO spec_sources (spec_table, spec_id, source_id) SELECT 'torque_specs', id, @s_haynes FROM torque_specs WHERE generation_id = ${GEN_ID};`);
+lines.push(`INSERT IGNORE INTO spec_sources (spec_table, spec_id, source_id) SELECT 'service_intervals', id, @s_haynes FROM service_intervals WHERE generation_id = ${GEN_ID};`);
 lines.push("");
 
 lines.push("-- Audit");

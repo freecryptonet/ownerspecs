@@ -43,7 +43,7 @@ lines.push("-- mig 343 — Phase C-1 bulk cleanup: replace v1-parser torque junk
 lines.push("-- across 94 HaynesPro chassis, covering all currently-affected catalog gens.");
 lines.push("--");
 lines.push("-- Per chassis × catalog gen:");
-lines.push("--   - DELETE old torque_specs with notes='HaynesPro adjustmentData' (v1-parser junk)");
+lines.push("--   - DELETE old auto-imported torque_specs (rows linked to @s_haynes via spec_sources)");
 lines.push("--   - INSERT new clean torques (line-aware parser, deduped across all chassis engines)");
 lines.push("--   - INSERT electrical_specs rows where chassis has battery data");
 lines.push("--   - Cite all new rows to existing HaynesPro source for that chassis");
@@ -77,13 +77,12 @@ for (const cw of crawls) {
     }
     stats.gensTouched++;
     lines.push(`-- gen ${genId} (${slug})`);
-    // 1. DELETE old v1 torque rows
-    lines.push(`DELETE ss FROM spec_sources ss JOIN torque_specs ts ON ts.id = ss.spec_id WHERE ss.spec_table='torque_specs' AND ts.generation_id=${genId} AND ts.notes='HaynesPro adjustmentData';`);
-    lines.push(`DELETE FROM torque_specs WHERE generation_id=${genId} AND notes='HaynesPro adjustmentData';`);
-    // 2. INSERT new clean torques
+    // 1. DELETE old auto-imported torque rows (identified by spec_sources -> @s_haynes linkage)
+    lines.push(`DELETE ts FROM torque_specs ts JOIN spec_sources ss ON ss.spec_table='torque_specs' AND ss.spec_id=ts.id WHERE ts.generation_id=${genId} AND ss.source_id=@s_haynes;`);
+    // 2. INSERT new clean torques (notes NULL — never expose ingest provenance publicly)
     for (const t of (cw.torques ?? [])) {
       const ftlb = Math.round(t.torque_nm * 0.7376);
-      lines.push(`INSERT INTO torque_specs (generation_id, fastener, torque_nm, torque_ftlb, notes) VALUES (${genId}, ${esc(t.fastener)}, ${t.torque_nm}, ${ftlb}, 'HaynesPro adjustmentData');`);
+      lines.push(`INSERT INTO torque_specs (generation_id, fastener, torque_nm, torque_ftlb, notes) VALUES (${genId}, ${esc(t.fastener)}, ${t.torque_nm}, ${ftlb}, NULL);`);
       stats.torquesInserted++;
     }
     // 3. INSERT electrical (only if chassis has data)
@@ -93,8 +92,10 @@ for (const cw of crawls) {
       lines.push(`INSERT IGNORE INTO electrical_specs (generation_id, battery_group, cca, ah, alternator_amps) VALUES (${genId}, ${esc(e.equipment_code)}, ${cca}, ${ah}, NULL);`);
       stats.electricalInserted++;
     }
-    // 4. Cite all rows for this gen to the HaynesPro source
-    lines.push(`INSERT IGNORE INTO spec_sources (spec_table, spec_id, source_id) SELECT 'torque_specs', id, @s_haynes FROM torque_specs WHERE generation_id=${genId} AND notes='HaynesPro adjustmentData';`);
+    // 4. Cite all rows for this gen to the workshop source (notes is now NULL,
+    //    so cite EVERY torque row for the gen — handles the case where this
+    //    script is run multiple times; INSERT IGNORE prevents dupes)
+    lines.push(`INSERT IGNORE INTO spec_sources (spec_table, spec_id, source_id) SELECT 'torque_specs', id, @s_haynes FROM torque_specs WHERE generation_id=${genId};`);
     lines.push(`INSERT IGNORE INTO spec_sources (spec_table, spec_id, source_id) SELECT 'electrical_specs', id, @s_haynes FROM electrical_specs WHERE generation_id=${genId};`);
   }
   stats.chassisProcessed++;
@@ -102,7 +103,7 @@ for (const cw of crawls) {
 
 lines.push("");
 lines.push("-- Audit");
-lines.push("SELECT COUNT(*) AS total_torques_with_haynespro FROM torque_specs WHERE notes='HaynesPro adjustmentData';");
+lines.push("SELECT COUNT(*) AS total_torques FROM torque_specs;");
 lines.push("SELECT COUNT(DISTINCT generation_id) AS gens_with_torques FROM torque_specs;");
 lines.push("SELECT COUNT(DISTINCT generation_id) AS gens_with_electrical FROM electrical_specs;");
 
