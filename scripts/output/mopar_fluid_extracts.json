@@ -1,0 +1,1017 @@
+[
+  {
+    "gen_id": 124,
+    "label": "Chrysler 300 LX 2008",
+    "spec_pages": [
+      502
+    ],
+    "lines": [
+      {
+        "page": 502,
+        "y": 512,
+        "text": "502 INDEX"
+      },
+      {
+        "page": 502,
+        "y": 496,
+        "text": "Oil Filter Disposal ......................4 2 5 Filters"
+      },
+      {
+        "page": 502,
+        "y": 480,
+        "text": "Oil Selection ....................... 423,473 Air Cleaner ..........................4 2 6"
+      },
+      {
+        "page": 502,
+        "y": 472,
+        "text": "Oil Synthetic .........................4 2 4 Air Conditioning .................... 291,431"
+      },
+      {
+        "page": 502,
+        "y": 456,
+        "text": "Operation ............................7 6 Engine Fuel ..........................4 2 6"
+      },
+      {
+        "page": 502,
+        "y": 448,
+        "text": "Overheating ..........................3 9 3 Engine Oil ........................ 425,475"
+      },
+      {
+        "page": 502,
+        "y": 432,
+        "text": "Starting .............................2 9 9 Engine Oil Disposal ....................4 2 5"
+      },
+      {
+        "page": 502,
+        "y": 424,
+        "text": "Temperature Gauge .....................2 0 7 Flashers"
+      },
+      {
+        "page": 502,
+        "y": 408,
+        "text": "Engine Oil Viscosity ................... 423,424 Hazard Warning .......................3 9 2"
+      },
+      {
+        "page": 502,
+        "y": 400,
+        "text": "Enhanced Accident Response Feature ..........6 3 Turn Signal ...................... 79,135,202"
+      },
+      {
+        "page": 502,
+        "y": 384,
+        "text": "Entry System, Illuminated ..................2 0 Flash-To-Pass ...........................1 3 6"
+      },
+      {
+        "page": 502,
+        "y": 376,
+        "text": "Ethanol ...............................3 6 6 Flat Tire Changing .......................3 9 4"
+      },
+      {
+        "page": 502,
+        "y": 360,
+        "text": "Event Data Recorder ......................6 5 Flooded Engine Starting ...................3 0 2"
+      },
+      {
+        "page": 502,
+        "y": 352,
+        "text": "Exhaust Gas Caution ................ 78,368,435 Floor Console ..........................1 9 0"
+      },
+      {
+        "page": 502,
+        "y": 336,
+        "text": "Exhaust System ....................... 78,434 Fluid, Brake ...........................4 7 6"
+      },
+      {
+        "page": 502,
+        "y": 328,
+        "text": "Exterior Folding Mirrors ...................8 8 Fluid Capacities .........................4 7 3"
+      },
+      {
+        "page": 502,
+        "y": 312,
+        "text": "Exterior Lighting ........................1 3 0 Fluid Leaks .............................8 0"
+      },
+      {
+        "page": 502,
+        "y": 304,
+        "text": "Exterior Lights ..........................7 9 Fluid Level Checks"
+      },
+      {
+        "page": 502,
+        "y": 288,
+        "text": "Automatic Transmission .................4 4 4"
+      },
+      {
+        "page": 502,
+        "y": 280,
+        "text": "Filler Location Fuel ......................3 6 9 Brake ...............................4 4 3"
+      }
+    ]
+  },
+  {
+    "gen_id": 86,
+    "label": "Chrysler Pacifica RU 2020",
+    "spec_pages": [
+      395
+    ],
+    "lines": [
+      {
+        "page": 395,
+        "y": 520,
+        "text": "20_RU_OM_EN_US_t.book  Page 393"
+      },
+      {
+        "page": 395,
+        "y": 464,
+        "text": "TECHNICAL SPECIFICATIONS 393"
+      },
+      {
+        "page": 395,
+        "y": 440,
+        "text": "FLUID CAPACITIES"
+      },
+      {
+        "page": 395,
+        "y": 424,
+        "text": "US Metric"
+      },
+      {
+        "page": 395,
+        "y": 408,
+        "text": "Fuel (Approximate)"
+      },
+      {
+        "page": 395,
+        "y": 392,
+        "text": "3.6L Engine 19 Gallons 71 Liters"
+      },
+      {
+        "page": 395,
+        "y": 376,
+        "text": "Engine Oil With Filter"
+      },
+      {
+        "page": 395,
+        "y": 264,
+        "text": "3.6L Engine (SAE 0W-20 , API Certified) 5 Quarts 4.7 Liters"
+      },
+      {
+        "page": 395,
+        "y": 248,
+        "text": "Cooling System* 8"
+      },
+      {
+        "page": 395,
+        "y": 136,
+        "text": "3.6L Engine (Mopar Antifreeze/Engine Coolant 13.1 Quarts — Standard Duty Cooling 12.4 Liters — Standard Duty Cooling"
+      },
+      {
+        "page": 395,
+        "y": 128,
+        "text": "10 Year/150,000 Mile (240,000 km) Formula) 13.4 Quarts — Heavy Duty Cooling 12.7 Liters — Heavy Duty Cooling"
+      },
+      {
+        "page": 395,
+        "y": 112,
+        "text": "* Includes heater and coolant reservoir filled to MAX level."
+      }
+    ]
+  },
+  {
+    "gen_id": 123,
+    "label": "Dodge Charger LX 2008",
+    "spec_pages": [
+      450
+    ],
+    "lines": [
+      {
+        "page": 450,
+        "y": 512,
+        "text": "450 INDEX"
+      },
+      {
+        "page": 450,
+        "y": 496,
+        "text": "Oil Filter Disposal ......................3 7 8 Filters"
+      },
+      {
+        "page": 450,
+        "y": 480,
+        "text": "Oil Selection ....................... 376,419 Air Cleaner ..........................3 7 9"
+      },
+      {
+        "page": 450,
+        "y": 472,
+        "text": "Oil Synthetic .........................3 7 7 Air Conditioning .................... 248,384"
+      },
+      {
+        "page": 450,
+        "y": 456,
+        "text": "Operation ............................7 4 Engine Fuel ..........................3 7 9"
+      },
+      {
+        "page": 450,
+        "y": 448,
+        "text": "Overheating ..........................3 4 5 Engine Oil ........................ 378,421"
+      },
+      {
+        "page": 450,
+        "y": 432,
+        "text": "Starting .............................2 5 5 Engine Oil Disposal ....................3 7 8"
+      },
+      {
+        "page": 450,
+        "y": 424,
+        "text": "Temperature Gauge .....................1 6 5 Flashers"
+      },
+      {
+        "page": 450,
+        "y": 408,
+        "text": "Engine Oil Viscosity ................... 376,377 Hazard Warning .......................3 4 4"
+      },
+      {
+        "page": 450,
+        "y": 400,
+        "text": "Enhanced Accident Response Feature ..........6 1 Turn Signal ...................... 78,127,166"
+      },
+      {
+        "page": 450,
+        "y": 384,
+        "text": "Entry System, Illuminated ..................2 0 Flash-To-Pass ...........................1 2 8"
+      },
+      {
+        "page": 450,
+        "y": 376,
+        "text": "Ethanol ...............................3 2 0 Flat Tire Changing .......................3 4 6"
+      },
+      {
+        "page": 450,
+        "y": 360,
+        "text": "Event Data Recorder ......................6 3 Flooded Engine Starting ...................2 5 7"
+      },
+      {
+        "page": 450,
+        "y": 352,
+        "text": "Exhaust Gas Caution .............. 75,76,322,387 Floor Console ..........................1 5 3"
+      },
+      {
+        "page": 450,
+        "y": 336,
+        "text": "Exhaust System ....................... 75,387 Fluid, Brake ...........................4 2 3"
+      },
+      {
+        "page": 450,
+        "y": 328,
+        "text": "Exterior Folding Mirrors ...................8 5 Fluid Capacities .........................4 1 9"
+      },
+      {
+        "page": 450,
+        "y": 312,
+        "text": "Exterior Lighting ........................1 2 3 Fluid Leaks .............................7 8"
+      },
+      {
+        "page": 450,
+        "y": 304,
+        "text": "Exterior Lights ..........................7 8 Fluid Level Checks"
+      },
+      {
+        "page": 450,
+        "y": 288,
+        "text": "Automatic Transmission .................3 9 6"
+      },
+      {
+        "page": 450,
+        "y": 280,
+        "text": "Filler Location Fuel ......................3 2 3 Brake ...............................3 9 5"
+      }
+    ]
+  },
+  {
+    "gen_id": 122,
+    "label": "Dodge Charger LD 2017",
+    "spec_pages": [
+      499,
+      500,
+      501
+    ],
+    "lines": [
+      {
+        "page": 499,
+        "y": 552,
+        "text": "MAINTAINING YOUR VEHICLE 497"
+      },
+      {
+        "page": 499,
+        "y": 536,
+        "text": "Backup Lamps License Lamp"
+      },
+      {
+        "page": 499,
+        "y": 512,
+        "text": "The Backup Lamps use LED sources that are not service- The License Lamp uses an LED source that is not service-"
+      },
+      {
+        "page": 499,
+        "y": 504,
+        "text": "able separately. The Applique must be replaced as an"
+      },
+      {
+        "page": 499,
+        "y": 472,
+        "text": "Center High Mounted Stop Lamp (CHMSL)"
+      },
+      {
+        "page": 499,
+        "y": 456,
+        "text": "The CHMSL Lamp uses LED sources that are not service-"
+      },
+      {
+        "page": 499,
+        "y": 424,
+        "text": "FLUID CAPACITIES"
+      },
+      {
+        "page": 499,
+        "y": 408,
+        "text": "Fluid Capacities — 3.6L"
+      },
+      {
+        "page": 499,
+        "y": 400,
+        "text": "able separately. The License Lamp must be replaced as an 7"
+      },
+      {
+        "page": 499,
+        "y": 392,
+        "text": "assembly, see your authorized dealer."
+      },
+      {
+        "page": 499,
+        "y": 384,
+        "text": "U.S. Metric"
+      },
+      {
+        "page": 499,
+        "y": 368,
+        "text": "Fuel (Approximate)"
+      },
+      {
+        "page": 499,
+        "y": 352,
+        "text": "87 Octane, 0-15% Ethanol or up to 85% Ethanol for Flex Fuel (E-85) 18.5 Gallons 70 Liters"
+      },
+      {
+        "page": 499,
+        "y": 344,
+        "text": "able separately. The CHMSL Lamp must be replaced as an Engine"
+      },
+      {
+        "page": 499,
+        "y": 328,
+        "text": "Engine Oil With Filter"
+      },
+      {
+        "page": 499,
+        "y": 312,
+        "text": "SAE 5W-20, API Certified 6 Quarts 5.6 Liters"
+      },
+      {
+        "page": 499,
+        "y": 296,
+        "text": "Cooling System*"
+      },
+      {
+        "page": 499,
+        "y": 288,
+        "text": "assembly, see your authorized dealer."
+      },
+      {
+        "page": 499,
+        "y": 232,
+        "text": "assembly, see your authorized dealer."
+      },
+      {
+        "page": 499,
+        "y": 160,
+        "text": "Mopar Antifreeze/Engine Coolant 10 Year/150,000 Mile Formula or 10 Quarts 9.5 Liters"
+      },
+      {
+        "page": 499,
+        "y": 152,
+        "text": "equivalent"
+      },
+      {
+        "page": 499,
+        "y": 136,
+        "text": "* Includes heater and coolant recovery bottle filled to MAX level."
+      },
+      {
+        "page": 500,
+        "y": 552,
+        "text": "498 MAINTAINING YOUR VEHICLE"
+      },
+      {
+        "page": 500,
+        "y": 536,
+        "text": "Fluid Capacities — 5.7L"
+      },
+      {
+        "page": 500,
+        "y": 504,
+        "text": "U.S. Metric"
+      },
+      {
+        "page": 500,
+        "y": 496,
+        "text": "Fuel (Approximate)"
+      },
+      {
+        "page": 500,
+        "y": 480,
+        "text": "89 Octane Recommended – 87 Octane Acceptable, 0-15% Ethanol 18.5 Gallons 70 Liters"
+      },
+      {
+        "page": 500,
+        "y": 464,
+        "text": "Engine Oil With Filter"
+      },
+      {
+        "page": 500,
+        "y": 328,
+        "text": "SAE 5W-20, API Certified 7 Quarts 6.6 Liters"
+      },
+      {
+        "page": 500,
+        "y": 312,
+        "text": "Cooling System*"
+      },
+      {
+        "page": 500,
+        "y": 176,
+        "text": "Mopar Antifreeze/Engine Coolant 10 Year/150,000 Mile Formula or 14.5 Quarts 13.9 Liters"
+      },
+      {
+        "page": 500,
+        "y": 160,
+        "text": "equivalent – without Severe Duty II Cooling System"
+      },
+      {
+        "page": 500,
+        "y": 152,
+        "text": "Mopar Antifreeze/Engine Coolant 10 Year/150,000 Mile Formula or"
+      },
+      {
+        "page": 500,
+        "y": 48,
+        "text": "15 Quarts 14.3 Liters"
+      },
+      {
+        "page": 500,
+        "y": 32,
+        "text": "equivalent – with Severe Duty II Cooling System"
+      },
+      {
+        "page": 500,
+        "y": 24,
+        "text": "* Includes heater and coolant recovery bottle filled to MAX level."
+      },
+      {
+        "page": 501,
+        "y": 552,
+        "text": "MAINTAINING YOUR VEHICLE 499"
+      },
+      {
+        "page": 501,
+        "y": 536,
+        "text": "Fluid Capacities — 6.4L"
+      },
+      {
+        "page": 501,
+        "y": 504,
+        "text": "U.S. Metric"
+      },
+      {
+        "page": 501,
+        "y": 496,
+        "text": "Fuel (Approximate)"
+      },
+      {
+        "page": 501,
+        "y": 480,
+        "text": "91 Octane or higher, 0-15% Ethanol 18.5 Gallons 70 Liters"
+      },
+      {
+        "page": 501,
+        "y": 464,
+        "text": "Engine Oil With Filter"
+      },
+      {
+        "page": 501,
+        "y": 400,
+        "text": "7"
+      },
+      {
+        "page": 501,
+        "y": 376,
+        "text": "FLUIDS, LUBRICANTS, AND GENUINE PARTS"
+      },
+      {
+        "page": 501,
+        "y": 368,
+        "text": "(Continued) CAUTION!"
+      },
+      {
+        "page": 501,
+        "y": 360,
+        "text": "Important Information"
+      },
+      {
+        "page": 501,
+        "y": 352,
+        "text": "not be mixed with Hybrid Organic Additive T echnol-"
+      },
+      {
+        "page": 501,
+        "y": 336,
+        "text": "CAUTION!"
+      },
+      {
+        "page": 501,
+        "y": 328,
+        "text": "SAE 0W-40, Synthetic API Certified 7 Quarts 6.6 Liters"
+      },
+      {
+        "page": 501,
+        "y": 312,
+        "text": "Cooling System* Mixing of engine coolant (antifreeze) other than speci- •"
+      },
+      {
+        "page": 501,
+        "y": 304,
+        "text": "fied Organic Additive T echnology (OAT) engine cool-"
+      },
+      {
+        "page": 501,
+        "y": 248,
+        "text": "ogy (HOAT) engine coolant (antifreeze) or any “glob- (Continued)"
+      },
+      {
+        "page": 501,
+        "y": 240,
+        "text": "(Continued)"
+      },
+      {
+        "page": 501,
+        "y": 192,
+        "text": "ant (antifreeze), may result in engine damage and may"
+      },
+      {
+        "page": 501,
+        "y": 176,
+        "text": "Mopar Antifreeze/Engine Coolant (OAT coolant conforming to 15 Quarts 14.4 Liters"
+      },
+      {
+        "page": 501,
+        "y": 160,
+        "text": "MS.90032) 10 Year/150,000 Mile Formula or equivalent"
+      },
+      {
+        "page": 501,
+        "y": 152,
+        "text": "* Includes heater and coolant recovery bottle filled to MAX level."
+      },
+      {
+        "page": 501,
+        "y": 136,
+        "text": "ally compatible” coolant (antifreeze). If a non-OAT"
+      },
+      {
+        "page": 501,
+        "y": 80,
+        "text": "decrease corrosion protection. Organic Additive T ech-"
+      },
+      {
+        "page": 501,
+        "y": 24,
+        "text": "engine coolant (antifreeze) is introduced into the cool-"
+      },
+      {
+        "page": 501,
+        "y": -24,
+        "text": "nology (OAT) engine coolant is different and should"
+      },
+      {
+        "page": 501,
+        "y": -88,
+        "text": "ing system in an emergency, the cooling system will"
+      },
+      {
+        "page": 501,
+        "y": -192,
+        "text": "need to be drained, flushed, and refilled with fresh"
+      },
+      {
+        "page": 501,
+        "y": -304,
+        "text": "OAT coolant (conforming to MS.90032), by an autho-"
+      },
+      {
+        "page": 501,
+        "y": -416,
+        "text": "rized dealer as soon as possible."
+      }
+    ]
+  },
+  {
+    "gen_id": 69,
+    "label": "Jeep Grand Cherokee WL 2023",
+    "spec_pages": [
+      325
+    ],
+    "lines": [
+      {
+        "page": 325,
+        "y": 464,
+        "text": "TECHNICALSPECIFICATIONS 323"
+      },
+      {
+        "page": 325,
+        "y": 440,
+        "text": "FLUID CAPACITIES — GRAND CHEROKEE"
+      },
+      {
+        "page": 325,
+        "y": 416,
+        "text": "US Metric"
+      },
+      {
+        "page": 325,
+        "y": 408,
+        "text": "Fuel (Approximate)"
+      },
+      {
+        "page": 325,
+        "y": 400,
+        "text": "AllEngines 23gal 87L"
+      },
+      {
+        "page": 325,
+        "y": 328,
+        "text": "Engine Oil With Filter"
+      },
+      {
+        "page": 325,
+        "y": 264,
+        "text": "ENGINE FLUIDS AND LUBRICANTS — GRAND CHEROKEE 2.0LEngine 5qt 4.7L"
+      },
+      {
+        "page": 325,
+        "y": 240,
+        "text": "Component Fluid, Lubricant, or Genuine Part"
+      },
+      {
+        "page": 325,
+        "y": 232,
+        "text": "WerecommendusingMopar®Antifreeze/Coolant10year/150,000mile"
+      },
+      {
+        "page": 325,
+        "y": 224,
+        "text": "EngineCoolant (240,000km)FormulaOAT(OrganicAdditiveTechnology)meetingtherequirementsof"
+      },
+      {
+        "page": 325,
+        "y": 208,
+        "text": "9"
+      },
+      {
+        "page": 325,
+        "y": 192,
+        "text": "3.6LEngine 5qt 4.7L"
+      },
+      {
+        "page": 325,
+        "y": 168,
+        "text": "themanufacturerMaterialStandardMS.90032."
+      },
+      {
+        "page": 325,
+        "y": 160,
+        "text": "WerecommendusingMopar®Antifreeze/Coolant10year/150,000mile"
+      },
+      {
+        "page": 325,
+        "y": 152,
+        "text": "Intercooler"
+      },
+      {
+        "page": 325,
+        "y": 128,
+        "text": "5.7LEngine 7qt 6.6L"
+      },
+      {
+        "page": 325,
+        "y": 112,
+        "text": "5754794_23_WL_OM_EN_USC_t_E5.pdf   323"
+      },
+      {
+        "page": 325,
+        "y": 104,
+        "text": "(240,000km)FormulaOAT(OrganicAdditiveTechnology)orequivalentmeetingthe"
+      },
+      {
+        "page": 325,
+        "y": 56,
+        "text": "Cooling System *"
+      },
+      {
+        "page": 325,
+        "y": 48,
+        "text": "requirementsofthemanufacturerMaterialStandardMS.90032."
+      },
+      {
+        "page": 325,
+        "y": 0,
+        "text": "10/5/2023   10:16:47 AM"
+      },
+      {
+        "page": 325,
+        "y": -8,
+        "text": "2.0LEngine 10.4qt 9.8L"
+      },
+      {
+        "page": 325,
+        "y": -80,
+        "text": "2.0LEngineIntercooler 4.4qt 4.2L"
+      },
+      {
+        "page": 325,
+        "y": -144,
+        "text": "3.6LEngine–WithoutTrailerTowPackage 11qt 10.4L"
+      },
+      {
+        "page": 325,
+        "y": -216,
+        "text": "3.6LEngine–WithTrailerTowPackage 11.5qt 10.9L"
+      },
+      {
+        "page": 325,
+        "y": -280,
+        "text": "5.7LEngine 15qt 14.2L"
+      },
+      {
+        "page": 325,
+        "y": -352,
+        "text": "*IncludesheaterandcoolantrecoverybottlefilledtoMAXlevel."
+      }
+    ]
+  },
+  {
+    "gen_id": 37,
+    "label": "Jeep Wrangler JL 2020",
+    "spec_pages": [
+      286
+    ],
+    "lines": [
+      {
+        "page": 286,
+        "y": 520,
+        "text": "20_JL_OM_EN_USC_t.book  Page 284"
+      },
+      {
+        "page": 286,
+        "y": 464,
+        "text": "284 TECHNICAL SPECIFICATIONS"
+      },
+      {
+        "page": 286,
+        "y": 440,
+        "text": "FUEL SYSTEM CAUTIONS"
+      },
+      {
+        "page": 286,
+        "y": 424,
+        "text": "CAUTION!"
+      },
+      {
+        "page": 286,
+        "y": 408,
+        "text": "Follow these guidelines to maintain your vehicle’s performance:"
+      },
+      {
+        "page": 286,
+        "y": 392,
+        "text": "The use of leaded gasoline is prohibited by Federal law. Using leaded gasoline can impair engine performance and damage the emissions control system. "
+      },
+      {
+        "page": 286,
+        "y": 384,
+        "text": "An out-of-tune engine or certain fuel or ignition malfunctions can cause the catalytic converter to overheat. If you notice a pungent burning odor or some light smoke, your engine "
+      },
+      {
+        "page": 286,
+        "y": 376,
+        "text": "may be out of tune or malfunctioning and may require immediate service. Contact an authorized dealer for service assistance."
+      },
+      {
+        "page": 286,
+        "y": 360,
+        "text": "The use of fuel additives, which are now being sold as octane enhancers, is not recommended. Most of these products contain high concentrations of methanol. Fuel system "
+      },
+      {
+        "page": 286,
+        "y": 320,
+        "text": "NOTE:"
+      },
+      {
+        "page": 286,
+        "y": 312,
+        "text": "Intentional tampering with the emissions control system can result in civil penalties being assessed against you."
+      },
+      {
+        "page": 286,
+        "y": 304,
+        "text": "damage or vehicle performance problems resulting from the use of such fuels or additives is not the responsibility of the manufacturer and may void or not be covered under the"
+      },
+      {
+        "page": 286,
+        "y": 296,
+        "text": "FLUID CAPACITIES"
+      },
+      {
+        "page": 286,
+        "y": 280,
+        "text": "US Metric"
+      },
+      {
+        "page": 286,
+        "y": 264,
+        "text": "Fuel (Approximate)"
+      },
+      {
+        "page": 286,
+        "y": 256,
+        "text": "Two Door Models 17.5 Gallons 66 Liters"
+      },
+      {
+        "page": 286,
+        "y": 240,
+        "text": "Four Door Models 21.5 Gallons 81 Liters New Vehicle Limited Warranty."
+      },
+      {
+        "page": 286,
+        "y": 232,
+        "text": "Engine Oil with Filter"
+      },
+      {
+        "page": 286,
+        "y": 144,
+        "text": "2.0L Engine 5 Quarts 4.73 Liters"
+      },
+      {
+        "page": 286,
+        "y": 136,
+        "text": "3.6L Engine 5 Quarts 4.73 Liters"
+      },
+      {
+        "page": 286,
+        "y": 120,
+        "text": "Cooling System *"
+      },
+      {
+        "page": 286,
+        "y": 40,
+        "text": "2.0L Engine (Mopar Antifreeze/Engine Coolant 10 Year/150,000 Mile (240,000 km) Formula or equivalent) 10.3 Quarts 9.7 Liters"
+      },
+      {
+        "page": 286,
+        "y": 24,
+        "text": "2.0L Engine Intercooler without Motor Generator Unit (MGU) (Mopar Antifreeze/Engine Coolant 10 Year/"
+      },
+      {
+        "page": 286,
+        "y": 16,
+        "text": "150,000 Mile (240,000 km) Formula or equivalent) 3.2 Quarts 3.0 Liters"
+      }
+    ]
+  },
+  {
+    "gen_id": 43,
+    "label": "Ram 1500 DT 2022",
+    "spec_pages": [
+      372
+    ],
+    "lines": [
+      {
+        "page": 372,
+        "y": 552,
+        "text": "370 TECHNICALSPECIFICATIONS"
+      },
+      {
+        "page": 372,
+        "y": 536,
+        "text": "Biodiesel Fuel Filter Change Intervals"
+      },
+      {
+        "page": 372,
+        "y": 520,
+        "text": "NOTE:"
+      },
+      {
+        "page": 372,
+        "y": 512,
+        "text": "Use only maximum blends of Biodiesel 5%."
+      },
+      {
+        "page": 372,
+        "y": 488,
+        "text": "FLUID CAPACITIES"
+      },
+      {
+        "page": 372,
+        "y": 472,
+        "text": "US Metric"
+      },
+      {
+        "page": 372,
+        "y": 464,
+        "text": "Fuel (Approximate)"
+      },
+      {
+        "page": 372,
+        "y": 448,
+        "text": "1500RegularCabShortbed/CrewQuadCabModels 23Gallons 87Liters"
+      },
+      {
+        "page": 372,
+        "y": 440,
+        "text": "1500RegularCabShortbed/CrewQuadCabModels 26Gallons 98Liters"
+      },
+      {
+        "page": 372,
+        "y": 432,
+        "text": "1500RegularCabLongbed/CrewQuadCabModels(Optional) 33Gallons 121Liters"
+      },
+      {
+        "page": 372,
+        "y": 416,
+        "text": "Engine Oil With Filter"
+      },
+      {
+        "page": 372,
+        "y": 344,
+        "text": "3.6LEngine 5Quarts 4.7Liters"
+      },
+      {
+        "page": 372,
+        "y": 336,
+        "text": "5.7LEngine 7Quarts 6.6Liters"
+      },
+      {
+        "page": 372,
+        "y": 320,
+        "text": "Cooling System US Metric"
+      },
+      {
+        "page": 372,
+        "y": 312,
+        "text": "Fuel (Approximate)"
+      },
+      {
+        "page": 372,
+        "y": 248,
+        "text": "3.6LEngine 13.7Quarts 13Liters"
+      },
+      {
+        "page": 372,
+        "y": 240,
+        "text": "3.0LTurboDieselEngine 26Gallons 98.5Liters 3.6LMotorGeneratorUnit 1.8Quarts 1.7Liters"
+      },
+      {
+        "page": 372,
+        "y": 224,
+        "text": "5.7LEngine 18.3Quarts 17.3Liters Diesel Exhaust Fluid Tank"
+      },
+      {
+        "page": 372,
+        "y": 152,
+        "text": "Tradesman/RebelModels 5.14Gallons 19.5Liters"
+      },
+      {
+        "page": 372,
+        "y": 144,
+        "text": "AllOtherModels 5.74Gallons 21.7Liters"
+      },
+      {
+        "page": 372,
+        "y": 128,
+        "text": "Engine Oil With Filter"
+      },
+      {
+        "page": 372,
+        "y": 56,
+        "text": "3.0LTurboDieselEngine 8.5Quarts 8.0Liters"
+      }
+    ]
+  }
+]
