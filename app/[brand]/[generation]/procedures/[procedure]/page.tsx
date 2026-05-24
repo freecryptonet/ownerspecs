@@ -29,12 +29,17 @@ type ProcRow = {
 type SiblingRow = { slug: string; title: string; procedure_type: string };
 
 export async function generateStaticParams(): Promise<Params[]> {
+  // Only generate procedure pages where body_md is filled. Auto-imported
+  // rows with empty body_md (waiting for restating from body_md_source_text)
+  // are NOT publishable as standalone pages — they 404 until populated.
+  // This keeps the public site free of empty 'HowTo' schema'd pages.
   return query<Params>(
     "SELECT mk.slug AS brand, g.slug AS generation, p.slug AS `procedure` " +
     "FROM procedures p " +
     "JOIN generations g ON g.id = p.generation_id " +
     "JOIN models m      ON m.id = g.model_id " +
-    "JOIN makes mk      ON mk.id = m.make_id",
+    "JOIN makes mk      ON mk.id = m.make_id " +
+    "WHERE p.body_md IS NOT NULL AND p.body_md != ''",
   );
 }
 

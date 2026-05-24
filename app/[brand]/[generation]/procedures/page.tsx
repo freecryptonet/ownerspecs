@@ -66,10 +66,14 @@ export default async function Page({ params }: { params: Promise<Params> }) {
   if (!base) notFound();
   const { make, model, gen } = base;
 
+  // Only list procedures whose body_md is populated — auto-imported rows
+  // with empty body_md (HaynesPro source captured in body_md_source_text but
+  // not yet restated) are hidden from the public list to avoid broken-looking
+  // links pointing at empty procedure pages.
   const procs = await query<ProcRow>(
     `SELECT id, procedure_type, slug, title, body_md
      FROM procedures
-     WHERE generation_id = ?
+     WHERE generation_id = ? AND body_md IS NOT NULL AND body_md != ''
      ORDER BY FIELD(procedure_type,
        'oil_life_reset','maintenance_minder_reset','service_reminder_reset',
        'tpms_relearn','throttle_adapt','steering_angle_calibration','battery_register',
