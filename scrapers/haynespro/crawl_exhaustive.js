@@ -271,13 +271,80 @@ function parseLubricants(text) {
 }
 
 function parseAdjustmentData(text) {
-  // Torque pairs — any "Fastener  N (Nm)" in the page
+  // Torque pairs — HaynesPro DOM splits each row across 3-4 lines after
+  // .innerText extraction:
+  //   <fastener name>             e.g. "Cylinder head bolts"
+  //   <qualifier>                 e.g. "(Bolts A)" or "Stage 1" (optional)
+  //   <numeric value>             e.g. "30"
+  //   "(Nm)"                      unit on its own line
+  // So we anchor on "(Nm)" lines, walk backward past qualifiers/numerics, and
+  // merge with the nearest plain-text header for full context.
   const torques = [];
-  for (const m of text.matchAll(/([A-Z][a-zA-Z\s,()/-]{3,60}?)\s+(\d+)\s*\(Nm\)/g)) {
-    const fastener = m[1].trim().replace(/\s+/g, ' ');
-    if (fastener.length >= 4 && fastener.length <= 60 && !/^[A-Z]\s*$/.test(fastener)) {
-      torques.push({ fastener, torque_nm: parseInt(m[2], 10) });
+  const seen = new Set();
+  const lines = text.split('\n').map(l => l.replace(/\s+/g, ' ').trim()).filter(l => l.length > 0);
+  // Lines that are bare units (e.g. "(Nm)", "(°)", "(°C)", "(Ah)")
+  const UNIT_LINE = /^\(\s*(?:Nm|N\.m|°|°C|°F|Ah|A|l|bar|psi|mm|kPa|mph|km\/h)\s*\)$/i;
+  // HaynesPro instruction sub-headers — NOT fastener names. The parser must
+  // walk past these to find the real fastener heading above.
+  const INSTRUCTION_HEADER = /^(?:Z?Enlarge\b|ZExpand\b|Renew(?:al)?\b|Use\b|Apply\b|Carry out\b|Note\b|Notes?\s*$|Tighten\b|Pre[- ]tighten\b|Loosen\b|Lubric|Final tightening|Initial tightening|Threads? and\b|Important|Caution|Warning|Optional\b|If \w+|Re-?fit\b|Removed\b|Removal\b|Installation\b|Refitting\b)/i;
+  const isQualifier = (s) =>
+    (/^\(.+\)$/.test(s) && !UNIT_LINE.test(s)) ||
+    /^Stage\s+\d+/i.test(s) ||
+    /^Step\s+\d+/i.test(s) ||
+    /^Angle\b/i.test(s) ||
+    /^\+\s*\d+°/.test(s);
+  const isHeader = (s) =>
+    /^[A-Z]/.test(s) &&
+    !isQualifier(s) &&
+    !UNIT_LINE.test(s) &&
+    !INSTRUCTION_HEADER.test(s) &&
+    !/^\d/.test(s) &&
+    s.length >= 3 && s.length <= 90 &&
+    !/\(Nm\)|\(Ah\)|\(A\)|\(l\)|\(bar\)|\(°C\)|\(mm\)/.test(s);
+  for (let i = 0; i < lines.length; i++) {
+    if (lines[i] !== '(Nm)') continue;
+    const val = lines[i - 1];
+    if (!val || !/^\d+$/.test(val)) continue;
+    const nm = parseInt(val, 10);
+    if (nm <= 0 || nm > 999) continue;
+    // Walk back past qualifiers + numeric stages to find the nearest plain header
+    const qualifiers = [];
+    let j = i - 2;
+    let header = null;
+    while (j >= 0) {
+      const l = lines[j];
+      if (isHeader(l)) { header = l; break; }
+      if (isQualifier(l)) qualifiers.unshift(l);
+      // Skip numeric-only stage values and short connectors
+      j--;
+      if (qualifiers.length + (i - 1 - j) > 10) break; // safety
     }
+    if (!header) continue;
+    let fastener = header;
+    if (qualifiers.length > 0) {
+      // Keep at most 2 qualifiers; drop bare "Stage N" if there's a more
+      // specific parenthetical qualifier. Drop overly-long "(Note: …)" or
+      // "(Tighten in sequence …)" qualifiers — they're prose, not identity.
+      const paren = qualifiers
+        .filter(q => /^\(.+\)$/.test(q))
+        .filter(q => q.length <= 40)
+        .filter(q => !/^\(Note:|^\(Tighten/i.test(q));
+      const stage = qualifiers.filter(q => /^Stage\s+\d+/i.test(q));
+      const pick = [...paren, ...stage].slice(0, 2);
+      if (pick.length) fastener = `${header} ${pick.join(' ')}`;
+    }
+    fastener = fastener.replace(/\s+/g, ' ').trim();
+    // Truncate at last word boundary to avoid mid-word cuts
+    if (fastener.length > 64) {
+      const slice = fastener.slice(0, 64);
+      const lastSp = slice.lastIndexOf(' ');
+      fastener = lastSp > 30 ? slice.slice(0, lastSp) : slice;
+    }
+    if (fastener.length < 4) continue;
+    const key = `${fastener}|${nm}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    torques.push({ fastener, torque_nm: nm });
   }
   // Battery info
   const electrical = [];
