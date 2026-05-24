@@ -74,11 +74,18 @@ function sha256(file: string): string {
 function detectBrand(text: string, filename: string): string | null {
   // Filename hint takes precedence for Nissan EUR pattern (omYYxx-...eur.pdf)
   if (/^om\d{2}[a-z]{2}-.+eur\.pdf$/i.test(filename)) return "nissan";
+  // Suzuki filename hints take precedence over text-match. Suzuki rebadges
+  // (Across = Toyota RAV4 PHEV, Swace = Toyota Corolla TS) carry "Toyota" in
+  // their text but are SOLD as Suzuki — categorise by selling brand.
+  // Use lookahead `(?=[_\-. ]|$)` instead of `\b` because "_" is a word char
+  // (so \b after "ACROSS" before "_" doesn't match).
+  if (/(?:^|[_\-. ])(?:Vitara|Swift|Jimny|S-?Cross|Scross|Ignis|Celerio|Baleno|Fronx|Across|ACROSS|Swace|SWACE|NewSwift)(?=[_\-. ]|$)/i.test(filename)) return "suzuki";
+  if (/99011[-_]?[A-Z0-9]{3,}/i.test(filename)) return "suzuki";   // Suzuki OEM part-number prefix (matches anywhere)
   const haystack = (text.slice(0, 4000) + " " + filename).toLowerCase();
   const brands = [
     "audi", "volkswagen", "vw", "bmw", "mercedes-benz", "mercedes", "honda", "acura",
     "toyota", "lexus", "ford", "chevrolet", "gmc", "cadillac", "chrysler", "dodge",
-    "jeep", "ram", "fiat", "alfa romeo", "mazda", "subaru", "nissan", "infiniti",
+    "jeep", "ram", "fiat", "alfa romeo", "mazda", "subaru", "suzuki", "nissan", "infiniti",
     "hyundai", "kia", "genesis", "volvo", "porsche", "mini", "land rover", "jaguar",
     "tesla", "polestar", "renault", "peugeot", "citroën", "citroen", "opel", "vauxhall",
     "seat", "škoda", "skoda", "cupra"
@@ -91,13 +98,51 @@ function detectBrand(text: string, filename: string): string | null {
   return null;
 }
 
-// Nissan EUR model code → human model name mapping (drawn from filename position 4-7)
+// Suzuki filename → model mapping. Returns canonical model name matching how we'd
+// store it in the models table. Used analogous to nissanModelFromFilename.
+// Patterns use lookahead `(?=[^A-Za-z]|$)` instead of `\b` because `_` is a
+// word char (so `\bVitara\b` won't match `_Vitara_`). The end-bound allows
+// digits or WEB-style suffixes directly after the model name (e.g.
+// "NewSwift2024", "S-CrossWEB").
+const BOUND = "(?:^|[_\\-. ])";
+const BEND = "(?=[^A-Za-z]|$)";
+const SUZUKI_MODEL_PATTERNS: Array<[RegExp, string]> = [
+  // Jimny variants ordered MOST-SPECIFIC FIRST (3-door / 5-door before plain "Jimny")
+  [new RegExp(`${BOUND}Jimny[_\\-]?5d?r${BEND}`, "i"), "Jimny 5-door"],
+  [new RegExp(`${BOUND}Jimny[_\\-]?3Dr${BEND}`, "i"), "Jimny 3-door"],
+  [new RegExp(`${BOUND}Jimny${BEND}`, "i"), "Jimny"],
+  [new RegExp(`${BOUND}Vitara${BEND}`, "i"), "Vitara"],
+  [new RegExp(`${BOUND}(?:NewSwift|Swift)${BEND}`, "i"), "Swift"],
+  // S-Cross also matches "S-CrossWEB" (no separator before WEB suffix)
+  [new RegExp(`${BOUND}(?:S-?Cross|Scross)(?=[^A-Za-z]|WEB|$)`, "i"), "S-Cross"],
+  [new RegExp(`${BOUND}Ignis${BEND}`, "i"), "Ignis"],
+  [new RegExp(`${BOUND}Celerio${BEND}`, "i"), "Celerio"],
+  [new RegExp(`${BOUND}Baleno${BEND}`, "i"), "Baleno"],
+  [new RegExp(`${BOUND}Fronx${BEND}`, "i"), "Fronx"],
+  [new RegExp(`${BOUND}Across${BEND}`, "i"), "Across"],     // rebadge of Toyota RAV4 PHEV
+  [new RegExp(`${BOUND}Swace${BEND}`, "i"), "Swace"],       // rebadge of Toyota Corolla TS
+];
+function suzukiModelFromFilename(filename: string): string | null {
+  for (const [re, name] of SUZUKI_MODEL_PATTERNS) {
+    if (re.test(filename)) return name;
+  }
+  return null;
+}
+
+// Nissan EUR model code → human model name mapping. The 4 chars after the
+// "omYYnl-" prefix encode the chassis code; the leading "0" or "H" marks
+// non-hybrid vs e-Power. So 0F16=Juke (F16), HJ12=Qashqai e-Power (J12),
+// HT33=X-Trail e-Power (T33), etc.
 const NISSAN_MODEL_CODES: Record<string, string> = {
   "0F16": "Juke",
   "HF16": "Juke Hybrid",
   "0FE0": "Ariya",
-  "HJ12": "X-Trail e-Power",
-  "HT33": "Qashqai e-Power",
+  "0J12": "Qashqai",             // J12 = Qashqai 3rd gen (2021+)
+  "HJ12": "Qashqai e-Power",
+  "0T33": "X-Trail",             // T33 = X-Trail 4th gen (2022+); not yet in our manuals
+  "HT33": "X-Trail e-Power",
+  "0ZE1": "Leaf",                // ZE1 2nd gen
+  "0K14": "Micra",               // K14 5th gen
 };
 function nissanModelFromFilename(filename: string): string | null {
   const m = filename.match(/^om\d{2}[a-z]{2}-([0-9hH][a-zA-Z0-9]{3})/i);
@@ -134,6 +179,11 @@ function extractPublicationDate(text: string): string | null {
 
 function extractEditionCode(text: string, brand: string | null): string | null {
   const hay = text.slice(0, 6000) + " " + text.slice(-2000);
+  // Suzuki OEM part-number patterns: "99011-69TB2-25D", "99011U63TB4-02E", "99011M68P15-01E"
+  if (brand === "suzuki") {
+    const sm = hay.match(/\b99011[-_]?[A-Z0-9]{3,7}-\d{2}[A-Z]\b/i);
+    if (sm) return sm[0].toUpperCase().replace(/_/g, "-");
+  }
   // Honda: 31TBA610-style (2 digits + 3 letters + 3 digits, optional A-Z suffix)
   let m = hay.match(/\b(\d{2}[A-Z]{3}\d{3}[A-Z]?)\b/);
   if (m) return m[1];
@@ -197,7 +247,12 @@ function extractRegion(text: string): string | null {
 // Nissan EUR filename pattern: omYYxx-<modelCode><rev><variant>eur.pdf — extract the model+rev as edition code
 function extractFilenameCode(filename: string): string | null {
   const m = filename.match(/^(om\d{2}[a-z]{2}-[0-9a-z]+eur)\.pdf$/i);
-  return m ? m[1].toUpperCase() : null;
+  if (m) return m[1].toUpperCase();
+  // Suzuki: edition code embedded in filename when text-extract fails. Matches
+  // "99011-XX-NNN" or "99011XXXXX-NND" patterns.
+  const s = filename.match(/\b99011[-_]?[A-Z0-9]{3,7}-\d{2}[A-Z]\b/i);
+  if (s) return s[0].toUpperCase().replace(/_/g, "-");
+  return null;
 }
 
 function firstTitleLine(text: string): string {
@@ -232,7 +287,28 @@ async function parsePdf(filepath: string): Promise<ParsedManual & { pdf_info?: a
   // Nissan filenames are deterministic: omYY = MY, 4-char model code = vehicle.
   const nissanMy = brand === "nissan" ? nissanMyFromFilename(filename) : null;
   const nissanModel = brand === "nissan" ? nissanModelFromFilename(filename) : null;
-  const my = nissanMy ? { start: nissanMy, end: nissanMy } : extractMyRange(text.slice(0, 6000) + " " + filename);
+  const suzukiModel = brand === "suzuki" ? suzukiModelFromFilename(filename) : null;
+  // Mercedes filename hints: "a-klasse-limousine-2024-...-v177-..." → A-Class
+  let mbModel: string | null = null;
+  if (brand === "mercedes-benz") {
+    const lo = filename.toLowerCase();
+    if (/a-klasse|a-class/.test(lo)) mbModel = "A-Class";
+    else if (/b-klasse|b-class/.test(lo)) mbModel = "B-Class";
+    else if (/c-klasse|c-class/.test(lo)) mbModel = "C-Class";
+    else if (/e-klasse|e-class/.test(lo)) mbModel = "E-Class";
+    else if (/s-klasse|s-class/.test(lo)) mbModel = "S-Class";
+  }
+  const detectedModel = nissanModel ?? suzukiModel ?? mbModel;
+  // Suzuki: many filenames have a year in "_<YYYY>." or "_<YYYY>-" form. The
+  // generic \b regex misses these because `_` is a word char (no \b before).
+  let suzukiFnYear: number | null = null;
+  if (brand === "suzuki") {
+    const fm = filename.match(/[_\-. ](20[12]\d)(?=[._\-])/);
+    if (fm) suzukiFnYear = parseInt(fm[1], 10);
+  }
+  const my = nissanMy ? { start: nissanMy, end: nissanMy } :
+             suzukiFnYear ? { start: suzukiFnYear, end: suzukiFnYear } :
+             extractMyRange(text.slice(0, 6000) + " " + filename);
   // Prefer PDF metadata date if present, else text-extracted
   const publication_date = pdf_creation || extractPublicationDate(text);
   const edition_code = extractEditionCode(text, brand) || extractFilenameCode(filename);
@@ -246,6 +322,8 @@ async function parsePdf(filepath: string): Promise<ParsedManual & { pdf_info?: a
   if (/(workshop|service)\s*manual|werkstatthandbuch/.test(ftLower)) manual_type = "workshop";
   else if (/parts\s*catalog|teilekatalog/.test(ftLower)) manual_type = "parts";
   else if (/quick\s*(reference|start)/.test(ftLower)) manual_type = "quickref";
+  else if (/mediahandleiding|multimediahandleiding|infotainment|navigatie/.test(ftLower)) manual_type = "quickref";
+  else if (/aanvullende\s+handleiding|supplementary|aanvullend/.test(ftLower)) manual_type = "quickref";
 
   const title_text = firstTitleLine(text);
 
@@ -254,7 +332,7 @@ async function parsePdf(filepath: string): Promise<ParsedManual & { pdf_info?: a
     sha256: sha,
     manual_type,
     brand,
-    model: nissanModel,
+    model: detectedModel,
     model_year_start: my.start,
     model_year_end: my.end,
     edition_code,
@@ -301,8 +379,8 @@ async function main() {
       if (DRY) continue;
       if (existing.has(hash)) {
         await conn.query(
-          `UPDATE manual_inventory SET file_path=?, manual_type=?, brand=?, model_year_start=?, model_year_end=?, edition_code=?, publication_date=?, language=?, region=?, page_count=?, title_text=?, extracted_at=NOW() WHERE sha256=?`,
-          [parsed.file_path, parsed.manual_type, parsed.brand, parsed.model_year_start, parsed.model_year_end, parsed.edition_code, parsed.publication_date, parsed.language, parsed.region, parsed.page_count, parsed.title_text, hash]
+          `UPDATE manual_inventory SET file_path=?, manual_type=?, brand=?, model=?, model_year_start=?, model_year_end=?, edition_code=?, publication_date=?, language=?, region=?, page_count=?, title_text=?, extracted_at=NOW() WHERE sha256=?`,
+          [parsed.file_path, parsed.manual_type, parsed.brand, parsed.model, parsed.model_year_start, parsed.model_year_end, parsed.edition_code, parsed.publication_date, parsed.language, parsed.region, parsed.page_count, parsed.title_text, hash]
         );
         reindexed++;
       } else {
