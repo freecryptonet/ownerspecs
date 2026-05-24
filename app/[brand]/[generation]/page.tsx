@@ -68,6 +68,7 @@ type Market = { id: number; code: string; name: string };
 type Engine = {
   id: number;
   code: string;
+  slug: string;
   display_name: string;
   displacement_cc: number | null;
   fuel: string;
@@ -202,7 +203,7 @@ async function getGenerationData(brand: string, generation: string) {
   );
 
   const engines = await query<Engine>(
-    `SELECT DISTINCT e.id, e.code, e.display_name, e.displacement_cc, e.fuel,
+    `SELECT DISTINCT e.id, e.code, e.slug, e.display_name, e.displacement_cc, e.fuel,
             e.aspiration, e.valvetrain, e.cylinders, e.bore_mm, e.stroke_mm, e.compression
      FROM engines e
      JOIN trims t ON t.engine_id = e.id
@@ -737,15 +738,12 @@ export default async function Page({ params }: { params: Promise<Params> }) {
                   {gen.platform && <tr><th>Platform</th><td className="alt">{gen.platform}</td></tr>}
                   {engines.length > 0 && (
                     <tr><th>Engines</th><td>
-                      {engines.map((e, i) => {
-                        const slug = e.code.replace(/[\s/]/g, "-").replace(/[^a-zA-Z0-9-]/g, "").replace(/-+/g, "-").toLowerCase();
-                        return (
-                          <span key={e.id}>
-                            {i > 0 && " · "}
-                            <a href={`/engines/${slug}`} style={{ color: "var(--accent)" }}>{e.code}</a>
-                          </span>
-                        );
-                      })}
+                      {engines.map((e, i) => (
+                        <span key={e.id}>
+                          {i > 0 && " · "}
+                          <a href={`/engines/${e.slug}`} style={{ color: "var(--accent)" }}>{e.code}</a>
+                        </span>
+                      ))}
                     </td></tr>
                   )}
                   <tr><th>Markets</th><td>{markets.length > 0 ? markets.map((m) => m.code).join(" · ") : "Global · multi-market"}</td></tr>
@@ -1005,11 +1003,10 @@ export default async function Page({ params }: { params: Promise<Params> }) {
               }}
             >
               {engines.map((e) => {
-                const slug = e.code.replace(/[\s/]/g, "-").replace(/[^a-zA-Z0-9-]/g, "").replace(/-+/g, "-").toLowerCase();
                 return (
                   <li key={e.id} style={{ borderBottom: "1px solid var(--rule)" }}>
                     <a
-                      href={`/engines/${slug}`}
+                      href={`/engines/${e.slug}`}
                       style={{
                         display: "grid",
                         gridTemplateColumns: "140px 1fr auto",

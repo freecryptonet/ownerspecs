@@ -11,6 +11,7 @@ export const metadata: Metadata = {
 
 type EngineRow = {
   code: string;
+  slug: string;
   display_name: string;
   displacement_cc: number | null;
   cylinders: number | null;
@@ -20,12 +21,9 @@ type EngineRow = {
   brands: string;
 };
 
-const slugFromCode = (code: string) =>
-  code.replace(/[\s/]/g, "-").replace(/[^a-zA-Z0-9-]/g, "").replace(/-+/g, "-").toLowerCase();
-
 export default async function EnginesIndex() {
   const engines = await query<EngineRow>(
-    `SELECT e.code, e.display_name, e.displacement_cc, e.cylinders, e.aspiration, e.fuel,
+    `SELECT e.code, e.slug, e.display_name, e.displacement_cc, e.cylinders, e.aspiration, e.fuel,
             COUNT(DISTINCT t.generation_id) AS app_count,
             GROUP_CONCAT(DISTINCT mk.name SEPARATOR ' · ') AS brands
      FROM engines e
@@ -34,7 +32,7 @@ export default async function EnginesIndex() {
      JOIN models m ON m.id = g.model_id
      JOIN makes mk ON mk.id = m.make_id
      WHERE e.code IS NOT NULL AND e.code != ''
-     GROUP BY e.code, e.display_name, e.displacement_cc, e.cylinders, e.aspiration, e.fuel
+     GROUP BY e.code, e.slug, e.display_name, e.displacement_cc, e.cylinders, e.aspiration, e.fuel
      ORDER BY app_count DESC, e.code`,
   );
 
@@ -84,14 +82,14 @@ export default async function EnginesIndex() {
           >
             {multi.map((e) => (
               <li
-                key={e.code}
+                key={e.slug}
                 style={{
                   borderRight: "1px solid var(--rule)",
                   borderBottom: "1px solid var(--rule)",
                 }}
               >
                 <a
-                  href={`/engines/${slugFromCode(e.code)}`}
+                  href={`/engines/${e.slug}`}
                   style={{
                     display: "block",
                     padding: "12px 16px",
@@ -132,9 +130,9 @@ export default async function EnginesIndex() {
             }}
           >
             {single.map((e) => (
-              <li key={e.code}>
+              <li key={e.slug}>
                 <a
-                  href={`/engines/${slugFromCode(e.code)}`}
+                  href={`/engines/${e.slug}`}
                   style={{
                     display: "block",
                     padding: "8px 12px",

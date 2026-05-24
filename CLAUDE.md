@@ -81,7 +81,8 @@ ssh -i ~/.ssh/autodtcs_key root@72.62.154.119 'sudo -u deploy pm2 restart os'
 
 ## Deployment quirks (each cost 5–15 min before being captured)
 
-- **`rm -rf .next` (not just `.next/cache`) before `npm run build`.** Cache-only clean intermittently fails with `ENOTEMPTY: rmdir '.next/server/app/<brand>'` on multi-brand rebuilds. Full clean is reliable. pm2 restart alone does NOT force regen — without it deploys look successful but SSG pages don't change.
+- **`rm -rf .next` (not just `.next/cache`) before `npm run build`.** Cache-only clean intermittently fails with `ENOTEMPTY: rmdir '.next/server/app/<brand>'` on multi-brand rebuilds. pm2 restart alone does NOT force regen — without it deploys look successful but SSG pages don't change.
+- **NEVER run two rebuilds concurrently.** Each does `rm -rf .next && npm run build`; if two overlap they race on `.next`, the `rm` fails with `ENOTEMPTY` mid-delete (leaving `.next` half-removed), `&&` aborts the chain so pm2 never restarts, and pm2 ends up `errored` → **whole-site 502** (mig 403/404 incident, 2026-05-25). If you background a rebuild, wait for its completion notification before starting another. Recovery from a corrupted `.next` / errored pm2: ensure no `next build` process is running (`ps aux | grep 'next build'`), then ONE sequential `rm -rf .next && npm run build && pm2 restart os`. The "full clean is reliable" claim only holds when no other build is touching `.next`.
 - **`scp` only to `root@72.62.154.119`**, never `deploy@`. The `deploy` user has no `authorized_keys` for `autodtcs_key`. Then `ssh root@... 'sudo -u deploy install -m 644 /tmp/x /home/deploy/ownerspecs/path'` to land it as deploy.
 - **No `db/migrations/` dir on VPS.** Migrations are scp'd to `/tmp/NNN.sql` and piped: `mariadb ownerspecs < /tmp/NNN.sql`. Don't try to `install` into a migrations dir — it doesn't exist on prod.
 - **Files can drift VPS-only.** `app/globals.css` was only on VPS at one point. Before editing anything you suspect is VPS-only, `scp root@...:/home/deploy/ownerspecs/<path> <local-path>` first to seed local.
@@ -113,7 +114,8 @@ ssh -i ~/.ssh/autodtcs_key root@72.62.154.119 'sudo -u deploy pm2 restart os'
 
 ## Schema column names that get misnamed
 
-- **`engines` table columns are easy to misname.** Actual: `code` (UNIQUE) · `display_name` (NOT NULL) · `displacement_cc` · `fuel` (not `fuel_type`) · `aspiration` · `valvetrain` · `cylinders` (not `valves_per_cyl`) · `bore_mm` · `stroke_mm` · `compression`. Always supply `display_name` on `INSERT IGNORE INTO engines`.
+- **`engines` table columns are easy to misname.** Actual: `code` (UNIQUE) · `slug` (UNIQUE, the URL key — see below) · `display_name` (NOT NULL) · `displacement_cc` · `fuel` (not `fuel_type`) · `aspiration` · `valvetrain` · `cylinders` (not `valves_per_cyl`) · `bore_mm` · `stroke_mm` · `compression`. Always supply `display_name` on `INSERT IGNORE INTO engines`.
+- **`engines.slug` is the frozen `/engines/[slug]` URL key — NEVER recompute the URL from `code` (mig 389).** The route, the engine index, the gen-hub "Available engines" / "Engines" rows, and `sitemap.ts` all read `engines.slug` directly. Editing `code`/`display_name` for accuracy must NOT change the URL — that was the 404 bug (changing `5.7 HEMI`→`EZB/EZH 5.7 HEMI` orphaned `/engines/57-hemi`). A `BEFORE INSERT` trigger auto-derives `slug` from `code` when not supplied, so plain `INSERT IGNORE INTO engines` is safe; the slug is frozen thereafter. If you ever need a clean slug for a code with punctuation (sales-code prefixes, slashes), set `slug` explicitly in the INSERT. Don't reintroduce a `slugFromCode(code)` helper in any page/link.
 - **`generations.layout` is varchar(16) drivetrain, not engine layout.** Existing convention: `'RWD'` / `'AWD'` / `'FWD'`. Don't write `'Front engine, longitudinal'` — overflows + breaks the rendering convention.
 - **Mixed `fluid_specs` multi-row INSERTs need consistent column counts.** Engine_oil rows usually supply `viscosity` + `drain_interval_mi` + `drain_interval_km`; coolant rows don't. If you bundle both in one VALUES clause, supply `NULL` placeholders for the missing columns on coolant rows — otherwise ERROR 1136 aborts the whole migration.
 
@@ -172,6 +174,16 @@ Full recipe in memory: `reference_nameplate_add_workflow.md`. Short form:
 6. scp the hero + the migration to the VPS, run the migration, `npm run build && pm2 restart os`. **Rebuild is required** — `generateStaticParams` snapshots gens at build time.
 7. Smoke-test the 6 routes (`/`, `/oil-capacity`, `/maintenance-schedule`, `/torque`, `/electrical`, `/tires`) for HTTP 200.
 
+## Extracting text from manual PDFs on the VPS
+
+- No `pdftotext`, and `pdf-parse` (npm) is NOT installed. Use **pypdf**: `python3 -m pip install --break-system-packages pypdf` (VPS python is 3.14). Then a small `/tmp/pdfx.py` helper with modes: scan for section-header pages, dump a page range, page count. Manuals live at `/home/deploy/ownerspecs/manuals/`.
+- Older Mopar OMs print spark-plug PN + gap and fixed maintenance-mileage tables; newer OMs (2015+) just say "Mopar Spark Plugs" and use an oil-change-indicator (no fixed interval) — expect to source plug gap elsewhere on the newer ones.
+
+## The recurring US OM-gaps: tyre PSI + 12V battery
+
+- Both the owner manual AND HaynesPro frequently defer cold **tyre pressure** to the door-jamb placard, and the OM never prints the **12V battery** group/CCA. Fill these from a third-party aggregator (tirepressure.org / startmycar / battery-fitment) as a NEW `reference` source, `public_link=0`, with citation + notes that explicitly say "aggregated reference, NOT OEM documentation". Flag provenance — don't pass it off as OEM.
+- HaynesPro's `adjustmentData` page DOES publish battery (Ah/CCA), spark-plug gap, engine torques, and (for some models) tyre pressure — always check it before falling back to a flagged source. FCA model-group IDs + the page URL are in memory `reference_haynespro_url_patterns.md`.
+
 ## Where the moat data should come from (priority order)
 
 Real sources beat lore. See `feedback_data_sources_hierarchy.md`.
@@ -194,6 +206,11 @@ Why this matters: the whole moat is data the incumbents miss. If the moat tables
 Why: (1) stop SEO link-equity leakage to top-3 competitors (auto-data / ultimatespecs / startmycar), (2) avoid copyright invitations from paid datasets like HaynesPro — a live link to `workshopdata.com/.../storyId=N` is the easiest argument for "you republished our content" in a DMCA notice. Restated procedures per Feist v. Rural are defensible; an explicit source link weakens that posture.
 
 When adding a new source row in a migration, decide `public_link` deliberately. Default to 0 unless you have a specific reason it should be 1.
+
+## Vendor/sibling-brand leaks: scrub EVERY rendered text column
+
+- The never-name-vendor rule covers all rendered text, not just `sources.citation`: also `sources.notes`, `*_specs.notes`, `parts.notes`, `generations.family_label`, `procedures.body_md`. The leak usually hides in the *justification* for a flagged value ("…HaynesPro has no Challenger…").
+- Post-push smoke grep must include rebadge-donor / sibling brands too, not only the paid-vendor list (e.g. `tonale` for the Hornet): `curl -s <url> | grep -ioE 'haynespro|workshopdata|auto-data|ultimatespecs|<sibling>'`. Source notes/citation are SSG → a scrub needs a rebuild to take effect.
 
 ## Aggregators are research aids, NOT citation sources
 

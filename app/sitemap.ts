@@ -265,18 +265,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "weekly",
       priority: 0.7,
     });
-    const engines = await query<{ code: string }>(
-      `SELECT DISTINCT e.code
+    const engines = await query<{ slug: string }>(
+      `SELECT DISTINCT e.slug
        FROM engines e
        JOIN trims t ON t.engine_id = e.id
        JOIN generations g ON g.id = t.generation_id
-       WHERE g.is_active = 1 AND e.code IS NOT NULL AND e.code != ''`,
+       WHERE g.is_active = 1 AND e.slug IS NOT NULL AND e.slug != ''`,
     );
-    const slugFromCode = (code: string) =>
-      code.replace(/[\s/]/g, "-").replace(/[^a-zA-Z0-9-]/g, "").replace(/-+/g, "-").toLowerCase();
     for (const e of engines) {
       pages.push({
-        url: `${BASE}/engines/${slugFromCode(e.code)}`,
+        url: `${BASE}/engines/${e.slug}`,
         lastModified: new Date(),
         changeFrequency: "monthly",
         priority: 0.6,

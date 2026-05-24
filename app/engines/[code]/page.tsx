@@ -57,29 +57,25 @@ type PartEntry = {
   gen_slug: string;
 };
 
-const codeFromSlug = (slug: string) => slug.replace(/-/g, "/").toUpperCase();
-const slugFromCode = (code: string) =>
-  code.replace(/[\s/]/g, "-").replace(/[^a-zA-Z0-9-]/g, "").replace(/-+/g, "-").toLowerCase();
-
 export async function generateStaticParams(): Promise<Params[]> {
-  const rows = await query<{ code: string }>(
-    `SELECT DISTINCT e.code
+  const rows = await query<{ slug: string }>(
+    `SELECT DISTINCT e.slug
      FROM engines e
      JOIN trims t ON t.engine_id = e.id
      JOIN generations g ON g.id = t.generation_id
-     WHERE g.is_active = 1 AND e.code IS NOT NULL AND e.code != ''`,
+     WHERE g.is_active = 1 AND e.slug IS NOT NULL AND e.slug != ''`,
   );
-  return rows.map((r) => ({ code: slugFromCode(r.code) }));
+  return rows.map((r) => ({ code: r.slug }));
 }
 
 async function findEngine(slug: string): Promise<Engine | null> {
-  // Slug-to-code is lossy (case + separators); search all engines case-insensitively
-  const rows = await query<Engine>(
+  // `slug` is the frozen URL key (engines.slug), decoupled from the mutable code.
+  return queryOne<Engine>(
     `SELECT id, code, display_name, displacement_cc, fuel, aspiration,
             valvetrain, cylinders, bore_mm, stroke_mm, compression
-     FROM engines`,
+     FROM engines WHERE slug = ?`,
+    [slug],
   );
-  return rows.find((e) => slugFromCode(e.code) === slug) ?? null;
 }
 
 export async function generateMetadata({
