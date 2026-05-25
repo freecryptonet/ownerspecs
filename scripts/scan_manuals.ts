@@ -19,12 +19,11 @@
  * Connect via the MariaDB tunnel ~/start-mariadb-tunnel.bat first.
  */
 
-import { readFileSync, readdirSync, statSync } from "node:fs";
+import { readFileSync, readdirSync, statSync, existsSync, writeFileSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { resolve, relative, join } from "node:path";
 import { config as loadEnv } from "dotenv";
 import mysql from "mysql2/promise";
-// @ts-expect-error — pdf-parse v2 ESM types
 import { PDFParse } from "pdf-parse";
 
 loadEnv({ path: ".env.local" });
@@ -33,6 +32,19 @@ loadEnv({ path: ".env" });
 const ROOT = resolve(process.cwd(), "manuals");
 const REINDEX = process.argv.includes("--reindex");
 const DRY = process.argv.includes("--dry-run");
+
+// Local stat-cache: maps relative path → {size, mtimeMs, sha256}. Lets the scan
+// skip reading + hashing files whose size and mtime are unchanged since last run,
+// so an "all already indexed" scan costs N stat() calls instead of hashing GBs.
+const CACHE_FILE = join(ROOT, ".scan-cache.json");
+type CacheEntry = { size: number; mtimeMs: number; sha256: string };
+function loadCache(): Record<string, CacheEntry> {
+  if (!existsSync(CACHE_FILE)) return {};
+  try { return JSON.parse(readFileSync(CACHE_FILE, "utf8")); } catch { return {}; }
+}
+function saveCache(cache: Record<string, CacheEntry>): void {
+  writeFileSync(CACHE_FILE, JSON.stringify(cache, null, 0));
+}
 
 type ParsedManual = {
   file_path: string;
@@ -67,21 +79,50 @@ function collectPdfs(dir: string, acc: string[] = []): string[] {
   return acc;
 }
 
-function sha256(file: string): string {
-  return createHash("sha256").update(readFileSync(file)).digest("hex");
+// Model name → brand, for files where the badge name is the reliable signal.
+// Ordered: Suzuki-fleet entries (incl. the Toyota-built Across/Swace rebadges
+// sold under the Suzuki badge in Europe) come first, so a Swace is detected as
+// Suzuki even though its text mentions Toyota. SEAT/MINI are gated here behind
+// their models because the bare brand words collide with common manual phrases
+// ("seat belt", "mini fuse").
+// Letter-only boundaries, not \b: \b treats "_" and digits as word chars, so
+// \byaris\b fails inside "YARIS_F" and \bswace\b fails inside "_Swace_". These
+// lookarounds key off letters only, so model tokens still match when joined to
+// underscores/digits in part-number filenames.
+const MODEL_BRAND: Array<[RegExp, string]> = [
+  [/(?<![a-z])(swift|vitara|jimny|ignis|baleno|celerio|fronx|s[-\s]?cross|across|swace)(?![a-z])/i, "suzuki"],
+  [/(?<![a-z])(yaris|aygo|corolla|rav4|c[-\s]?hr|hilux|prius|land\s*cruiser)(?![a-z])/i, "toyota"],
+  [/(?<![a-z])(ibiza|leon|ateca|arona|tarraco|alhambra)(?![a-z])/i, "seat"],
+  [/(?<![a-z])(countryman|clubman)(?![a-z])/i, "mini"],
+];
+function modelBrand(s: string): string | null {
+  for (const [re, brand] of MODEL_BRAND) if (re.test(s)) return brand;
+  return null;
 }
 
 function detectBrand(text: string, filename: string): string | null {
   // Filename hint takes precedence for Nissan EUR pattern (omYYxx-...eur.pdf)
   if (/^om\d{2}[a-z]{2}-.+eur\.pdf$/i.test(filename)) return "nissan";
-  const haystack = (text.slice(0, 4000) + " " + filename).toLowerCase();
+  // 99011[U] is Suzuki's owner's-manual publication-number prefix — reliable for
+  // the part-number-named files that carry no model word (e.g. Web99011-58UA1).
+  if (/99011[-A-Za-z0-9]/.test(filename)) return "suzuki";
+  const head = text.slice(0, 4000);
+  // Model-name detection — filename first (no rebadge text contamination), then text.
+  const byModel = modelBrand(filename) || modelBrand(head);
+  if (byModel) return byModel;
+  // Styled uppercase badge for marques whose lowercase name is a common manual
+  // word — only "SEAT"/"MINI" as a standalone caps token counts as the brand.
+  if (/\bSEAT\b/.test(head) || /\bSEAT\b/.test(filename)) return "seat";
+  if (/\bMINI\b/.test(head)) return "mini";
+  // Generic brand-name scan ("seat"/"mini" handled above and removed here).
+  const haystack = (head + " " + filename).toLowerCase();
   const brands = [
     "audi", "volkswagen", "vw", "bmw", "mercedes-benz", "mercedes", "honda", "acura",
     "toyota", "lexus", "ford", "chevrolet", "gmc", "cadillac", "chrysler", "dodge",
     "jeep", "ram", "fiat", "alfa romeo", "mazda", "subaru", "nissan", "infiniti",
-    "hyundai", "kia", "genesis", "volvo", "porsche", "mini", "land rover", "jaguar",
+    "hyundai", "kia", "genesis", "volvo", "porsche", "land rover", "jaguar",
     "tesla", "polestar", "renault", "peugeot", "citroën", "citroen", "opel", "vauxhall",
-    "seat", "škoda", "skoda", "cupra"
+    "škoda", "skoda", "cupra", "suzuki"
   ];
   for (const b of brands) {
     // Word boundary — "audi" must NOT match inside "audio"
@@ -214,15 +255,19 @@ function pdfDateToISO(raw: string | undefined | null): string | null {
   return m ? `${m[1]}-${m[2]}-${m[3]}` : null;
 }
 
-async function parsePdf(filepath: string): Promise<ParsedManual & { pdf_info?: any }> {
-  const buf = readFileSync(filepath);
+async function parsePdf(filepath: string, buf: Buffer, sha: string): Promise<ParsedManual & { pdf_info?: any }> {
   const file_path = relative(process.cwd(), filepath).replace(/\\/g, "/");
-  const sha = createHash("sha256").update(buf).digest("hex");
   const parser = new PDFParse({ data: buf });
   const infoResult = await parser.getInfo();
-  const textResult = await parser.getText();
-  const text = textResult.text || "";
   const page_count = infoResult.total || 0;
+  // Heuristics only read the title pages + colophon, so decode just the
+  // first 5 + last 2 pages instead of the whole (often 700-page) manual.
+  const wanted = new Set<number>();
+  for (let i = 1; i <= Math.min(5, page_count); i++) wanted.add(i);
+  for (let i = Math.max(1, page_count - 1); i <= page_count; i++) wanted.add(i);
+  const pages = [...wanted].sort((a, b) => a - b);
+  const textResult = await parser.getText(pages.length ? { partial: pages } : undefined);
+  const text = textResult.text || "";
   const pdf_info = infoResult.info || {};
   const pdf_creation = pdfDateToISO(pdf_info.CreationDate);
 
@@ -278,25 +323,40 @@ async function main() {
 
   let conn: any = null;
   let existing = new Map<string, number>();
-  if (!DRY) {
-    conn = await mysql.createConnection({
-      host: process.env.DB_HOST,
-      port: parseInt(process.env.DB_PORT || "3306", 10),
-      user: process.env.DB_USER,
-      password: process.env.DB_PASSWORD,
-      database: process.env.DB_NAME,
-      multipleStatements: false,
-    });
-    const [existingRows] = (await conn.query("SELECT sha256, id FROM manual_inventory")) as any;
-    existing = new Map<string, number>(existingRows.map((r: any) => [r.sha256, r.id]));
-  }
-  let inserted = 0, skipped = 0, reindexed = 0, errors = 0;
+  // Always load the existing-SHA map (even in dry-run) so incremental scans —
+  // dry or not — skip already-indexed PDFs instead of re-parsing every file.
+  conn = await mysql.createConnection({
+    host: process.env.DB_HOST,
+    port: parseInt(process.env.DB_PORT || "3306", 10),
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
+    multipleStatements: false,
+  });
+  const [existingRows] = (await conn.query("SELECT sha256, id FROM manual_inventory")) as any;
+  existing = new Map<string, number>(existingRows.map((r: any) => [r.sha256, r.id]));
+  if (DRY) { await conn.end(); conn = null; }
+  const cache = loadCache();
+  let inserted = 0, skipped = 0, reindexed = 0, errors = 0, cacheHits = 0;
 
   for (const pdf of pdfs) {
     try {
-      const hash = sha256(pdf);
+      const rel = relative(process.cwd(), pdf).replace(/\\/g, "/");
+      const st = statSync(pdf);
+      const ce = cache[rel];
+
+      // Fast path: size+mtime unchanged since last scan → reuse the cached SHA.
+      // If that SHA is already indexed, skip without ever opening the file.
+      if (ce && ce.size === st.size && ce.mtimeMs === st.mtimeMs && !REINDEX) {
+        cacheHits++;
+        if (existing.has(ce.sha256)) { skipped++; continue; }
+      }
+
+      const buf = readFileSync(pdf);
+      const hash = createHash("sha256").update(buf).digest("hex");
+      cache[rel] = { size: st.size, mtimeMs: st.mtimeMs, sha256: hash };
       if (existing.has(hash) && !REINDEX) { skipped++; continue; }
-      const parsed = await parsePdf(pdf);
+      const parsed = await parsePdf(pdf, buf, hash);
       console.log(`  ${parsed.file_path} — brand=${parsed.brand ?? "?"} my=${parsed.model_year_start ?? "?"}-${parsed.model_year_end ?? "?"} edition=${parsed.edition_code ?? "?"} pages=${parsed.page_count}`);
       if (DRY) continue;
       if (existing.has(hash)) {
@@ -319,7 +379,8 @@ async function main() {
   }
 
   if (conn) await conn.end();
-  console.log(`\nDone. inserted=${inserted} skipped=${skipped} reindexed=${reindexed} errors=${errors}`);
+  saveCache(cache);
+  console.log(`\nDone. inserted=${inserted} skipped=${skipped} reindexed=${reindexed} errors=${errors} (stat-cache hits=${cacheHits})`);
 }
 
 main().catch(e => { console.error(e); process.exit(1); });
