@@ -91,6 +91,38 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       });
     }
 
+    // Brand index pages (hub pages — breadcrumb-linked but were missing from the sitemap)
+    const brands = await query<{ slug: string }>(
+      `SELECT DISTINCT mk.slug
+       FROM makes mk
+       JOIN models m ON m.make_id = mk.id
+       JOIN generations g ON g.model_id = m.id
+       WHERE g.is_active = 1`,
+    );
+    for (const b of brands) {
+      pages.push({
+        url: `${BASE}/${b.slug}`,
+        lastModified: new Date(),
+        changeFrequency: "weekly",
+        priority: 0.7,
+      });
+    }
+
+    // Family (shared-chassis) comparison pages — also previously absent
+    const families = await query<{ family_slug: string }>(
+      `SELECT DISTINCT g.family_slug
+       FROM generations g
+       WHERE g.is_active = 1 AND g.family_slug IS NOT NULL AND g.family_slug <> ''`,
+    );
+    for (const f of families) {
+      pages.push({
+        url: `${BASE}/family/${f.family_slug}`,
+        lastModified: new Date(),
+        changeFrequency: "monthly",
+        priority: 0.6,
+      });
+    }
+
     // Conditional sub-topic pages — only emit if data exists for the gen
     const conditionalTopics: Array<{ slug: string; existsSql: string; params: string[] }> = [
       { slug: "oil-capacity", existsSql: "EXISTS (SELECT 1 FROM fluid_specs WHERE generation_id = g.id AND fluid_type = 'engine_oil')", params: [] },

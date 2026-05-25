@@ -5,22 +5,23 @@ import {
   getGenerationBase,
   getGenerationHero,
   getAllGenerationParams,
-  getSourcesFor,
   yearRange,
   reviewDate,
-  type SourceRow,
 } from "@/lib/generation";
+import { buildCitationIndex, type RenderedRow } from "@/lib/citations";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { GenerationTabs } from "@/components/GenerationTabs";
 import { VerifyBadge } from "@/components/VerifyBadge";
 import { SourcesBlock } from "@/components/SourcesBlock";
+import { Cites } from "@/components/Cites";
 import { bulbLabel, fuseLocationLabel } from "@/lib/labels";
 import { pageMetadata, faqJsonLd } from "@/lib/seo";
 
 type Params = { brand: string; generation: string };
 
 type Electrical = {
+  id: number;
   battery_group: string | null;
   cca: number | null;
   ah: number | null;
@@ -73,9 +74,9 @@ export default async function Page({ params }: { params: Promise<Params> }) {
   if (!base) notFound();
   const { make, model, gen } = base;
 
-  const [electrical, bulbs, fuses, srcEl, srcBulb, srcFuse] = await Promise.all([
+  const [electrical, bulbs, fuses] = await Promise.all([
     queryOne<Electrical>(
-      `SELECT battery_group, cca, ah, alternator_amps
+      `SELECT id, battery_group, cca, ah, alternator_amps
        FROM electrical_specs WHERE generation_id = ? LIMIT 1`,
       [gen.id],
     ),
@@ -96,17 +97,21 @@ export default async function Page({ params }: { params: Promise<Params> }) {
                 LENGTH(position), position`,
       [gen.id],
     ),
-    getSourcesFor(gen.id, "electrical_specs"),
-    getSourcesFor(gen.id, "bulbs"),
-    getSourcesFor(gen.id, "fuses"),
   ]);
 
   if (!electrical && bulbs.length === 0 && fuses.length === 0) notFound();
 
-  // Union of sources from all 3 tables on this page
-  const sourcesMap = new Map<number, SourceRow>();
-  for (const s of [...srcEl, ...srcBulb, ...srcFuse]) sourcesMap.set(s.id, s);
-  const sources = [...sourcesMap.values()].sort((a, b) => a.id - b.id);
+  // Per-row citation index — drives the inline [n] footnotes AND the Sources block,
+  // so the two stay in lockstep. Section-level Cites merge the [n]s of the rows in
+  // each block (battery / bulb manifest / each fuse box).
+  const renderedRows: RenderedRow[] = [];
+  if (electrical) renderedRows.push({ table: "electrical_specs", id: electrical.id });
+  for (const b of bulbs) renderedRows.push({ table: "bulbs", id: b.id });
+  for (const f of fuses) renderedRows.push({ table: "fuses", id: f.id });
+  const citations = await buildCitationIndex(gen.id, renderedRows);
+  const sources = citations.sources;
+  const mergeCites = (table: string, ids: number[]) =>
+    [...new Set(ids.flatMap((id) => citations.citationsFor(table, id)))].sort((a, b) => a - b);
   const rev = reviewDate(sources);
   const yrs = yearRange(gen.start_year, gen.end_year);
 
@@ -206,11 +211,14 @@ export default async function Page({ params }: { params: Promise<Params> }) {
         {/* BATTERY + ALTERNATOR */}
         {electrical && (
           <section style={{ paddingTop: "var(--s-5)" }}>
-            <h2 className="section-h">Battery &amp; charging system</h2>
+            <h2 className="section-h">
+              Battery &amp; charging system
+              <Cites nums={citations.citationsFor("electrical_specs", electrical.id)} />
+            </h2>
             <div
               style={{
                 display: "grid",
-                gridTemplateColumns: "repeat(4, 1fr)",
+                gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))",
                 gap: 16,
               }}
             >
@@ -297,7 +305,9 @@ export default async function Page({ params }: { params: Promise<Params> }) {
             <h2 className="section-h">
               Bulb manifest
               <span className="count">{bulbs.length} positions</span>
+              <Cites nums={mergeCites("bulbs", bulbs.map((b) => b.id))} />
             </h2>
+            <div className="table-scroll">
             <table className="spec-table">
               <thead style={{ background: "var(--bg-alt)" }}>
                 <tr>
@@ -332,6 +342,7 @@ export default async function Page({ params }: { params: Promise<Params> }) {
                 ))}
               </tbody>
             </table>
+            </div>
           </section>
         )}
 
@@ -341,7 +352,9 @@ export default async function Page({ params }: { params: Promise<Params> }) {
             <h2 className="section-h">
               Fuse box · {location.replace(/_/g, " ")}
               <span className="count">{rows.length} positions</span>
+              <Cites nums={mergeCites("fuses", rows.map((f) => f.id))} />
             </h2>
+            <div className="table-scroll">
             <table className="spec-table">
               <thead style={{ background: "var(--bg-alt)" }}>
                 <tr>
@@ -376,6 +389,7 @@ export default async function Page({ params }: { params: Promise<Params> }) {
                 ))}
               </tbody>
             </table>
+            </div>
           </section>
         ))}
 

@@ -40,6 +40,8 @@ export const metadata: Metadata = {
   title: "Search",
   description: "Search across every make, model, generation, trim, and service procedure in the ownerspecs catalogue.",
   alternates: { canonical: "/search" },
+  // Result pages (incl. ?q= variants) are thin/duplicate — keep them out of the index, still follow links.
+  robots: { index: false, follow: true },
 };
 
 const yrs = (s: number, e: number | null) =>

@@ -6,8 +6,8 @@ export function SourcesBlock({ sources }: { sources: SourceRow[] }) {
     <section className="sources-block">
       <h3>Sources</h3>
       <ol className="sources-list">
-        {sources.map((s) => (
-          <li key={s.id}>
+        {sources.map((s, i) => (
+          <li key={s.id} id={`src-${i + 1}`}>
             <span>
               <span className="who">
                 {s.public_link === 1 && s.url ? (
