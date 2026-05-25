@@ -40,6 +40,20 @@ else
   fi
 fi
 
+# Detect BEV: gen's powertrain engines (via trims OR fluid_specs.engine_id) are all electric.
+# BEVs physically have ~5-6 fluids (no engine oil / engine coolant / gearbox), so the fluid
+# minimum is lowered for them (Tim's call 2026-05-25). Detection needs the electric motor
+# linked to at least one trim or fluid row.
+IS_BEV=$(ssh $SSH_OPTS "$SSH_HOST" "mariadb ownerspecs -BNe \"
+  SELECT CASE WHEN
+    EXISTS(SELECT 1 FROM engines e WHERE e.fuel='electric' AND e.id IN (
+      SELECT engine_id FROM trims       WHERE generation_id=$GEN_ID AND engine_id IS NOT NULL
+      UNION SELECT engine_id FROM fluid_specs WHERE generation_id=$GEN_ID AND engine_id IS NOT NULL))
+    AND NOT EXISTS(SELECT 1 FROM engines e WHERE e.fuel<>'electric' AND e.id IN (
+      SELECT engine_id FROM trims       WHERE generation_id=$GEN_ID AND engine_id IS NOT NULL
+      UNION SELECT engine_id FROM fluid_specs WHERE generation_id=$GEN_ID AND engine_id IS NOT NULL))
+  THEN 1 ELSE 0 END;\"" 2>/dev/null)
+
 # Fetch counts in a single round-trip
 COUNTS=$(ssh $SSH_OPTS "$SSH_HOST" "mariadb ownerspecs -BNe \"
   SELECT g.slug,
@@ -74,6 +88,12 @@ TARGET[fluids]=15 ; TARGET[elec]=1   ; TARGET[bulbs]=10 ; TARGET[fuses]=8
 TARGET[tires]=5   ; TARGET[torques]=5; TARGET[svc]=10   ; TARGET[parts]=4
 TARGET[procs]=2
 
+# BEVs have no engine oil/coolant/gearbox — a fully documented BEV has ~5 fluids.
+if [ "${IS_BEV:-0}" = "1" ]; then
+  MIN[fluids]=5
+  TARGET[fluids]=6
+fi
+
 declare -A VALS
 VALS[fluids]=$FLUIDS ; VALS[elec]=$ELEC ; VALS[bulbs]=$BULBS ; VALS[fuses]=$FUSES
 VALS[tires]=$TIRES   ; VALS[torques]=$TORQUES ; VALS[svc]=$SVC ; VALS[parts]=$PARTS
@@ -89,6 +109,7 @@ fi
 echo
 echo "${BOLD}Gen audit:${RESET} ${CYAN}$SLUG${RESET} (id=$GEN_ID)"
 echo "          ${NAME:-(no display_name)}"
+[ "${IS_BEV:-0}" = "1" ] && echo "          ${YELLOW}BEV detected — fluid floor lowered to ${MIN[fluids]}${RESET}"
 echo
 printf "  %-12s %5s   %5s   %5s   %s\n" "Table" "rows" "min" "target" "Status"
 echo  "  -----------+-------+-------+-------+----------"
