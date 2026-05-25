@@ -79,24 +79,65 @@ function collectPdfs(dir: string, acc: string[] = []): string[] {
   return acc;
 }
 
-// Model name → brand, for files where the badge name is the reliable signal.
-// Ordered: Suzuki-fleet entries (incl. the Toyota-built Across/Swace rebadges
-// sold under the Suzuki badge in Europe) come first, so a Swace is detected as
-// Suzuki even though its text mentions Toyota. SEAT/MINI are gated here behind
-// their models because the bare brand words collide with common manual phrases
-// ("seat belt", "mini fuse").
+// Single source of truth for model-name detection, used for BOTH brand and the
+// model column. Ordered: Suzuki-fleet entries (incl. the Toyota-built Across/Swace
+// rebadges sold under the Suzuki badge in Europe) come first, so a Swace resolves
+// to Suzuki even though its text mentions Toyota. SEAT/MINI live here because the
+// bare brand words collide with common manual phrases ("seat belt", "mini fuse").
+//
 // Letter-only boundaries, not \b: \b treats "_" and digits as word chars, so
 // \byaris\b fails inside "YARIS_F" and \bswace\b fails inside "_Swace_". These
 // lookarounds key off letters only, so model tokens still match when joined to
 // underscores/digits in part-number filenames.
-const MODEL_BRAND: Array<[RegExp, string]> = [
-  [/(?<![a-z])(swift|vitara|jimny|ignis|baleno|celerio|fronx|s[-\s]?cross|across|swace)(?![a-z])/i, "suzuki"],
-  [/(?<![a-z])(yaris|aygo|corolla|rav4|c[-\s]?hr|hilux|prius|land\s*cruiser)(?![a-z])/i, "toyota"],
-  [/(?<![a-z])(ibiza|leon|ateca|arona|tarraco|alhambra)(?![a-z])/i, "seat"],
-  [/(?<![a-z])(countryman|clubman)(?![a-z])/i, "mini"],
+const MODEL_TABLE: Array<{ re: RegExp; model: string; brand: string }> = [
+  { re: /(?<![a-z])swift(?![a-z])/i, model: "Swift", brand: "suzuki" },
+  { re: /(?<![a-z])vitara(?![a-z])/i, model: "Vitara", brand: "suzuki" },
+  { re: /(?<![a-z])jimny(?![a-z])/i, model: "Jimny", brand: "suzuki" },
+  { re: /(?<![a-z])ignis(?![a-z])/i, model: "Ignis", brand: "suzuki" },
+  { re: /(?<![a-z])baleno(?![a-z])/i, model: "Baleno", brand: "suzuki" },
+  { re: /(?<![a-z])celerio(?![a-z])/i, model: "Celerio", brand: "suzuki" },
+  { re: /(?<![a-z])fronx(?![a-z])/i, model: "Fronx", brand: "suzuki" },
+  { re: /(?<![a-z])s[-\s]?cross(?![a-z])/i, model: "S-Cross", brand: "suzuki" },
+  { re: /(?<![a-z])across(?![a-z])/i, model: "Across", brand: "suzuki" },
+  { re: /(?<![a-z])swace(?![a-z])/i, model: "Swace", brand: "suzuki" },
+  { re: /(?<![a-z])yaris(?![a-z])/i, model: "Yaris", brand: "toyota" },
+  { re: /(?<![a-z])aygo(?![a-z])/i, model: "Aygo", brand: "toyota" },
+  { re: /(?<![a-z])corolla(?![a-z])/i, model: "Corolla", brand: "toyota" },
+  { re: /(?<![a-z])rav4(?![a-z])/i, model: "RAV4", brand: "toyota" },
+  { re: /(?<![a-z])c[-\s]?hr(?![a-z])/i, model: "C-HR", brand: "toyota" },
+  { re: /(?<![a-z])hilux(?![a-z])/i, model: "Hilux", brand: "toyota" },
+  { re: /(?<![a-z])prius(?![a-z])/i, model: "Prius", brand: "toyota" },
+  { re: /(?<![a-z])land\s*cruiser(?![a-z])/i, model: "Land Cruiser", brand: "toyota" },
+  { re: /(?<![a-z])ibiza(?![a-z])/i, model: "Ibiza", brand: "seat" },
+  { re: /(?<![a-z])leon(?![a-z])/i, model: "Leon", brand: "seat" },
+  { re: /(?<![a-z])ateca(?![a-z])/i, model: "Ateca", brand: "seat" },
+  { re: /(?<![a-z])arona(?![a-z])/i, model: "Arona", brand: "seat" },
+  { re: /(?<![a-z])tarraco(?![a-z])/i, model: "Tarraco", brand: "seat" },
+  { re: /(?<![a-z])alhambra(?![a-z])/i, model: "Alhambra", brand: "seat" },
+  { re: /(?<![a-z])countryman(?![a-z])/i, model: "Countryman", brand: "mini" },
+  { re: /(?<![a-z])clubman(?![a-z])/i, model: "Clubman", brand: "mini" },
+  { re: /(?<![a-z])a[-\s]?(?:klasse|class)(?![a-z])/i, model: "A-Class", brand: "mercedes-benz" },
+  { re: /(?<![\dA-Za-z])300c(?![a-z])/i, model: "300C", brand: "chrysler" },
 ];
 function modelBrand(s: string): string | null {
-  for (const [re, brand] of MODEL_BRAND) if (re.test(s)) return brand;
+  for (const e of MODEL_TABLE) if (e.re.test(s)) return e.brand;
+  return null;
+}
+// Insert a space at lowercase→uppercase transitions so a model token glued to an
+// adjacent word in a filename ("NewSwift2024", "S-CrossWEB") becomes a standalone
+// word the letter-boundary model regexes can match.
+function spreadCamel(s: string): string {
+  return s.replace(/([a-z])([A-Z])/g, "$1 $2");
+}
+// Model column. Nissan EUR files carry their model in the filename code; everyone
+// else resolves from the model table — filename first (the badge name is reliable
+// and free of rebadge text contamination), then the title pages.
+function detectModel(text: string, filename: string, brand: string | null): string | null {
+  if (brand === "nissan") return nissanModelFromFilename(filename);
+  const head = text.slice(0, 4000);
+  const fn = spreadCamel(filename);
+  for (const e of MODEL_TABLE) if (e.re.test(fn)) return e.model;
+  for (const e of MODEL_TABLE) if (e.re.test(head)) return e.model;
   return null;
 }
 
@@ -108,7 +149,7 @@ function detectBrand(text: string, filename: string): string | null {
   if (/99011[-A-Za-z0-9]/.test(filename)) return "suzuki";
   const head = text.slice(0, 4000);
   // Model-name detection — filename first (no rebadge text contamination), then text.
-  const byModel = modelBrand(filename) || modelBrand(head);
+  const byModel = modelBrand(spreadCamel(filename)) || modelBrand(head);
   if (byModel) return byModel;
   // Styled uppercase badge for marques whose lowercase name is a common manual
   // word — only "SEAT"/"MINI" as a standalone caps token counts as the brand.
@@ -133,12 +174,19 @@ function detectBrand(text: string, filename: string): string | null {
 }
 
 // Nissan EUR model code → human model name mapping (drawn from filename position 4-7)
+// Code = [powertrain prefix][chassis code]: 0=ICE/base, H=hybrid/e-Power.
+// Chassis codes are Nissan-standard: F16=Juke, K14=Micra, ZE1=Leaf, FE0=Ariya,
+// J12=Qashqai, T33=X-Trail. (ZE1→Leaf confirmed from the PDF body.)
 const NISSAN_MODEL_CODES: Record<string, string> = {
   "0F16": "Juke",
   "HF16": "Juke Hybrid",
+  "0K14": "Micra",
   "0FE0": "Ariya",
-  "HJ12": "X-Trail e-Power",
-  "HT33": "Qashqai e-Power",
+  "0J12": "Qashqai",
+  "HJ12": "Qashqai e-Power",
+  "0ZE1": "Leaf",
+  "0T33": "X-Trail",
+  "HT33": "X-Trail e-Power",
 };
 function nissanModelFromFilename(filename: string): string | null {
   const m = filename.match(/^om\d{2}[a-z]{2}-([0-9hH][a-zA-Z0-9]{3})/i);
@@ -276,7 +324,7 @@ async function parsePdf(filepath: string, buf: Buffer, sha: string): Promise<Par
   const brand = detectBrand(text, filename);
   // Nissan filenames are deterministic: omYY = MY, 4-char model code = vehicle.
   const nissanMy = brand === "nissan" ? nissanMyFromFilename(filename) : null;
-  const nissanModel = brand === "nissan" ? nissanModelFromFilename(filename) : null;
+  const model = detectModel(text, filename, brand);
   const my = nissanMy ? { start: nissanMy, end: nissanMy } : extractMyRange(text.slice(0, 6000) + " " + filename);
   // Prefer PDF metadata date if present, else text-extracted
   const publication_date = pdf_creation || extractPublicationDate(text);
@@ -299,7 +347,7 @@ async function parsePdf(filepath: string, buf: Buffer, sha: string): Promise<Par
     sha256: sha,
     manual_type,
     brand,
-    model: nissanModel,
+    model,
     model_year_start: my.start,
     model_year_end: my.end,
     edition_code,
@@ -361,8 +409,8 @@ async function main() {
       if (DRY) continue;
       if (existing.has(hash)) {
         await conn.query(
-          `UPDATE manual_inventory SET file_path=?, manual_type=?, brand=?, model_year_start=?, model_year_end=?, edition_code=?, publication_date=?, language=?, region=?, page_count=?, title_text=?, extracted_at=NOW() WHERE sha256=?`,
-          [parsed.file_path, parsed.manual_type, parsed.brand, parsed.model_year_start, parsed.model_year_end, parsed.edition_code, parsed.publication_date, parsed.language, parsed.region, parsed.page_count, parsed.title_text, hash]
+          `UPDATE manual_inventory SET file_path=?, manual_type=?, brand=?, model=?, model_year_start=?, model_year_end=?, edition_code=?, publication_date=?, language=?, region=?, page_count=?, title_text=?, extracted_at=NOW() WHERE sha256=?`,
+          [parsed.file_path, parsed.manual_type, parsed.brand, parsed.model, parsed.model_year_start, parsed.model_year_end, parsed.edition_code, parsed.publication_date, parsed.language, parsed.region, parsed.page_count, parsed.title_text, hash]
         );
         reindexed++;
       } else {
