@@ -52,7 +52,13 @@ export const fluidLabels: Record<string, string> = {
   brake: "Brake fluid",
   ps: "Power steering",
   ac_refrigerant: "A/C refrigerant",
+  ac_compressor_oil: "A/C compressor oil",
   washer: "Washer fluid",
+  washer_fluid: "Washer fluid",
+  brake_fluid: "Brake fluid",
+  transmission_ecvt: "Transmission (eCVT)",
+  inverter_coolant: "Inverter / motor coolant",
+  reduction_gear: "Reduction gear oil",
 };
 
 export const fluidLabel = (t: string) => fluidLabels[t] ?? humanize(t);
