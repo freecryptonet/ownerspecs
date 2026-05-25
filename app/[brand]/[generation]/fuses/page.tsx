@@ -13,7 +13,7 @@ import { SiteFooter } from "@/components/SiteFooter";
 import { GenerationTabs } from "@/components/GenerationTabs";
 import { VerifyBadge } from "@/components/VerifyBadge";
 import { SourcesBlock } from "@/components/SourcesBlock";
-import { fuseLocationLabel } from "@/lib/labels";
+import { fuseLocationLabel, fuseLocationWhere } from "@/lib/labels";
 import { pageMetadata, faqJsonLd } from "@/lib/seo";
 
 type Params = { brand: string; generation: string };
@@ -156,6 +156,19 @@ export default async function Page({ params }: { params: Promise<Params> }) {
               {fuseLocationLabel(location)} fuse box
               <span className="count">{rows.length}</span>
             </h2>
+            {fuseLocationWhere(location) && (
+              <p
+                style={{
+                  margin: "0 0 10px",
+                  fontSize: 13,
+                  color: "var(--ink-soft)",
+                  lineHeight: 1.5,
+                }}
+              >
+                <strong style={{ color: "var(--ink)" }}>Where to find it:</strong>{" "}
+                {fuseLocationWhere(location)}
+              </p>
+            )}
             <table className="spec-table">
               <thead style={{ background: "var(--bg-alt)" }}>
                 <tr>

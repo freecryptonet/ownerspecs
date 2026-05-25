@@ -156,10 +156,40 @@ export const fuseLocationLabels: Record<string, string> = {
   frunk: "Frunk",
   trunk: "Trunk",
   rear: "Rear",
+  // raw scraped variants → readable
+  "Underhood PDC": "Under-hood power distribution",
+  "Front PDC": "Front power distribution",
+  "Rear PDC": "Rear power distribution",
+  "BCM PDC": "Body-control-module power distribution",
+  PDC: "Power distribution centre",
+  TIPM: "Integrated power module (TIPM)",
 };
 
 export const fuseLocationLabel = (l: string) =>
   fuseLocationLabels[l] ?? humanize(l);
+
+// Physical "where is this box" hint, keyed by location. Generic but accurate —
+// answers the owner's real question without copying any layout diagram.
+const fuseLocationWhereByKey: Record<string, string> = {
+  engine_bay: "Under the hood — usually near the battery or on the inner wing.",
+  under_hood: "Under the hood — usually near the battery or on the inner wing.",
+  "Underhood PDC":
+    "Under the hood — main power-distribution box, typically beside the battery.",
+  PDC: "Under the hood — main power-distribution box, typically beside the battery.",
+  "Front PDC": "Under the hood — front power-distribution box.",
+  TIPM: "Under the hood near the battery — the combined fuse and relay module.",
+  cabin:
+    "Inside the car — commonly behind the glovebox, in the lower dash, or on the end of the dashboard (visible with the door open).",
+  "BCM PDC":
+    "Inside the car — at the body-control module, usually behind the lower dash or kick panel.",
+  trunk: "In the boot / cargo area — commonly behind a side trim panel.",
+  "Rear PDC": "In the boot / cargo area — rear power-distribution box.",
+  rear: "In the boot / cargo area — commonly behind a side trim panel.",
+  frunk: "In the front storage compartment (frunk).",
+};
+
+export const fuseLocationWhere = (l: string): string | null =>
+  fuseLocationWhereByKey[l] ?? null;
 
 // ───────────────────────── tire_pressures.position / load ─────────────────
 
