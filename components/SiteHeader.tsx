@@ -1,5 +1,3 @@
-import { SearchKbd } from "./SearchKbd";
-
 export function SiteHeader() {
   return (
     <header className="site-header">
@@ -37,7 +35,6 @@ export function SiteHeader() {
             placeholder="Make, model, VIN or part number"
             aria-label="Search ownerspecs catalogue"
           />
-          <SearchKbd />
         </form>
       </div>
       <script
