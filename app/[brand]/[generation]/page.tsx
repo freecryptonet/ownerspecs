@@ -868,7 +868,7 @@ export default async function Page({ params }: { params: Promise<Params> }) {
               engine.
             </p>
             <div style={{ overflowX: "auto", border: "1px solid var(--rule)" }}>
-              <table className="spec-table" style={{ minWidth: 900, borderCollapse: "collapse", width: "100%" }}>
+              <table className="spec-table" style={{ minWidth: 900, borderCollapse: "collapse", width: "100%", whiteSpace: "nowrap" }}>
                 <thead>
                   <tr style={{ background: "var(--bg-alt)", borderBottom: "1px solid var(--rule)" }}>
                     <th style={{ textAlign: "left", padding: "10px 12px", fontSize: 11, letterSpacing: "0.06em", textTransform: "uppercase" }}>Trim</th>
@@ -899,6 +899,23 @@ export default async function Page({ params }: { params: Promise<Params> }) {
                         .replace(/\s+xDrive\s*$/i, "");
                     const variantSuffix = (n: string, base: string) =>
                       n.slice(base.length).trim() || "Base · manual RWD";
+                    // Compact the verbose transmission display_name
+                    // ("6 gears, manual transmission" -> "6-spd manual") so the
+                    // Trans column doesn't need to hog table width.
+                    const compactTrans = (n: string | null) => {
+                      if (!n) return "—";
+                      const g = n.match(/(\d+)\s*gear/i)?.[1];
+                      const ty = /DCT/i.test(n)
+                        ? "DCT"
+                        : /CVT/i.test(n)
+                          ? "CVT"
+                          : /manual/i.test(n)
+                            ? "manual"
+                            : /automatic|auto/i.test(n)
+                              ? "auto"
+                              : "";
+                      return g ? `${g}-spd${ty ? " " + ty : ""}` : ty || n;
+                    };
                     type Group = { base: string; rep: Trim; rows: Trim[] };
                     const groups: Group[] = [];
                     const gmap = new Map<string, Group>();
@@ -929,7 +946,7 @@ export default async function Page({ params }: { params: Promise<Params> }) {
                             <td style={{ padding: "10px 12px", fontFamily: '"IBM Plex Mono", monospace', fontSize: 12 }}>{t.engine_code ?? "—"}</td>
                             <td style={{ padding: "10px 12px", textAlign: "right" }}>{t.hp ?? "—"}</td>
                             <td style={{ padding: "10px 12px", textAlign: "right" }}>{t.torque_nm ? `${t.torque_nm} N·m` : "—"}</td>
-                            <td style={{ padding: "10px 12px", fontSize: 12 }}>{t.transmission_name ?? "—"}</td>
+                            <td style={{ padding: "10px 12px", fontSize: 12 }}>{compactTrans(t.transmission_name)}</td>
                             <td style={{ padding: "10px 12px", fontSize: 12 }}>{t.drive_wheel ?? "—"}</td>
                             <td style={{ padding: "10px 12px", textAlign: "right" }}>{t.zero_100_kmh_s ? `${t.zero_100_kmh_s} s` : "—"}</td>
                             <td style={{ padding: "10px 12px", textAlign: "right" }}>{t.top_speed_kmh ? `${t.top_speed_kmh} km/h` : "—"}</td>
@@ -968,7 +985,7 @@ export default async function Page({ params }: { params: Promise<Params> }) {
                                 </a>
                               </td>
                               <td colSpan={3}></td>
-                              <td style={{ padding: "8px 12px", fontSize: 12 }}>{t.transmission_name ?? "—"}</td>
+                              <td style={{ padding: "8px 12px", fontSize: 12 }}>{compactTrans(t.transmission_name)}</td>
                               <td style={{ padding: "8px 12px", fontSize: 12 }}>{t.drive_wheel ?? "—"}</td>
                               <td style={{ padding: "8px 12px", textAlign: "right" }}>{t.zero_100_kmh_s ? `${t.zero_100_kmh_s} s` : "—"}</td>
                               <td style={{ padding: "8px 12px", textAlign: "right" }}>{t.top_speed_kmh ? `${t.top_speed_kmh} km/h` : "—"}</td>
