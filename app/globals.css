@@ -450,6 +450,11 @@ section { padding: var(--s-7) 0; }
   color: var(--ink-soft);
   width: 35%;
 }
+/* Multi-column data tables (with a <thead>) must NOT force the 35% label width
+   on every header — that bloats the left columns and cramps the right (the
+   engine fluids/parts + trim comparison tables). Size those columns to content.
+   Key-value tables keep their <th> in <tbody>, so they're unaffected. */
+.spec-table thead th { width: auto; }
 .spec-table td {
   color: var(--ink);
   font-family: "IBM Plex Mono", monospace;
