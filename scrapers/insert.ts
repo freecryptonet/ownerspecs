@@ -203,7 +203,7 @@ async function findOrCreateGeneration(
 
 /** Normalize a verbose fuel-type string to the short code our schema uses. */
 function normalizeFuel(raw: string | null): string {
-  if (!raw) return "gasoline";
+  if (!raw) return "petrol";
   const v = raw.toLowerCase();
   if (/diesel/.test(v)) return "diesel";
   if (/electric/.test(v) && !/hybrid/.test(v)) return "electric";
@@ -211,7 +211,7 @@ function normalizeFuel(raw: string | null): string {
   if (/cng|natural gas/.test(v)) return "cng";
   if (/lpg/.test(v)) return "lpg";
   if (/hydrogen|fuel cell/.test(v)) return "hydrogen";
-  return "gasoline";
+  return "petrol";
 }
 
 /** Normalize aspiration to a short code: NA / turbo / supercharged / twin-turbo. */
