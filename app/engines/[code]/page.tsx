@@ -144,7 +144,7 @@ export default async function Page({ params }: { params: Promise<Params> }) {
      JOIN makes mk      ON mk.id = m.make_id
      WHERE g.is_active = 1
        AND p.part_type IN ('spark_plug','oil_filter','oil_filter_v6','air_filter')
-       AND g.id IN (SELECT DISTINCT generation_id FROM trims WHERE engine_id = ?)
+       AND p.engine_id = ?
      ORDER BY p.part_type, g.start_year DESC`,
     [engine.id],
   );
