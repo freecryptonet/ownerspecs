@@ -1175,6 +1175,16 @@ export default async function Page({ params }: { params: Promise<Params> }) {
                 <span className="arrow">→</span>
               </a>
             )}
+            {partCount > 0 && (
+              <a className="moat-row" href={`/${make.slug}/${gen.slug}/parts`}>
+                <svg className="icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="10" cy="10" r="3" /><path d="M10 1v3M10 16v3M1 10h3M16 10h3M4 4l1.5 1.5M14.5 14.5 16 16M16 4l-1.5 1.5M5.5 14.5 4 16" /></svg>
+                <span>
+                  <span className="name">Service parts &amp; consumables</span>
+                  <span className="peek">{partCount} parts · wiper, filter &amp; OE part numbers</span>
+                </span>
+                <span className="arrow">→</span>
+              </a>
+            )}
             {procCount > 0 && (
               <a className="moat-row" href={`/${make.slug}/${gen.slug}/procedures`}>
                 <svg className="icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M3 5h14M3 10h14M3 15h9" /></svg>

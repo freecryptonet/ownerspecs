@@ -122,6 +122,16 @@ const dataCategories = [
     icon: <path d="M3 5h14M3 10h14M3 15h9" />,
   },
   {
+    name: "Parts & consumables",
+    peek: "Wiper blades · filters · spark plugs · OE part numbers",
+    icon: (
+      <>
+        <circle cx="10" cy="10" r="3" />
+        <path d="M10 1v3M10 16v3M1 10h3M16 10h3M4 4l1.5 1.5M14.5 14.5 16 16M16 4l-1.5 1.5M5.5 14.5 4 16" />
+      </>
+    ),
+  },
+  {
     name: "Towing & load",
     peek: "Braked & unbraked · payload · roof · trailer wiring",
     icon: <path d="M3 7 10 3l7 4M3 7v7l7 4 7-4V7" />,
@@ -302,7 +312,7 @@ export default async function Home() {
 
         <section id="owner-manual-data">
           <h2 className="section-h">
-            Owner-manual data <span className="count">8 categories</span>
+            Owner-manual data <span className="count">9 categories</span>
           </h2>
           <div className="moat-list">
             {dataCategories.map((c) => (
