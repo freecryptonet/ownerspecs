@@ -110,6 +110,7 @@ export const serviceLabels: Record<string, string> = {
   rear_differential_fluid: "Rear diff fluid",
   brake_fluid_flush: "Brake fluid flush",
   spark_plugs: "Spark plugs",
+  fuel_filter: "Fuel filter",
   coolant_flush: "Coolant flush",
   valve_clearance: "Valve clearance inspect & adjust",
   drive_belt_inspection: "Drive belt inspection",
