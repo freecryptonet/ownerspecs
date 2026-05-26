@@ -243,6 +243,8 @@ section { padding: var(--s-7) 0; }
   padding: 1px 5px;
   border-radius: 3px;
   background: var(--bg);
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .accent-toggle {
