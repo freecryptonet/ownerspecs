@@ -111,6 +111,8 @@ export const serviceLabels: Record<string, string> = {
   brake_fluid_flush: "Brake fluid flush",
   spark_plugs: "Spark plugs",
   fuel_filter: "Fuel filter",
+  running_in_service: "Running-in service",
+  oxygen_sensor: "Oxygen sensor",
   coolant_flush: "Coolant flush",
   valve_clearance: "Valve clearance inspect & adjust",
   drive_belt_inspection: "Drive belt inspection",
