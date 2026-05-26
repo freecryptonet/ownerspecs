@@ -136,7 +136,7 @@ const ENGINE_SLUG_REDIRECTS: Array<[string, string]> = [
   ["57-hemi", "ezh"], ["ezb-ezh", "ezh"], ["pentastar-erc", "erc"], ["pentastar-erg", "erg"],
   ["kona-ev-pe", "em16"], ["g20-mpi-nu", "g4na"], ["gme-t4-20t", "gme-t4"],
   ["gme-t4-20t-phev", "gme-t4-phev"], ["gse-t4-13t", "gse-t4"], ["30-ecodiesel-v6", "exf"],
-  ["pentastar", "erb-erc-erg"], ["ecoboost", "2-3-ecoboost"], ["27-ecoboost", "nano"],
+  ["pentastar", "erb"], ["erb-erc-erg", "erb"], ["ecoboost", "2-3-ecoboost"], ["27-ecoboost", "nano"],
   ["37-ti-vct-v6", "duratec-37"], ["24-tigershark-ma2", "ed6"], ["35-ecoboost", "d35"],
 ];
 
