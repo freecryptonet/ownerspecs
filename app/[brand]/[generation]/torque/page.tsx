@@ -102,10 +102,23 @@ export default async function Page({ params }: { params: Promise<Params> }) {
   if (torques.length === 0) notFound();
 
   // Multi-engine detection (same heuristic as gen and fluid topic pages).
-  const engineList = await query<EngineLite>(
-    `SELECT DISTINCT e.id FROM engines e JOIN trims t ON t.engine_id = e.id WHERE t.generation_id = ?`,
+  const engineList = await query<EngineLite & { fuel: string | null }>(
+    `SELECT DISTINCT e.id, e.fuel FROM engines e JOIN trims t ON t.engine_id = e.id WHERE t.generation_id = ?`,
     [gen.id],
   );
+  // Fuel-aware suppression: a gen with no diesel engine cannot have glow plugs;
+  // one with no petrol cannot have spark plugs/ignition coils. Bulk-ingested
+  // gen-wide torques are a model's whole-family aggregate, so these wrong-fuel
+  // rows leak onto single-fuel gens (e.g. glow plugs on the petrol-only M3 F80).
+  // engines.fuel is unnormalised (petrol / Petrol / gasoline / diesel / Diesel /
+  // electric) — match case-insensitively and treat gasoline as petrol.
+  const genFuelStr = engineList.map((e) => (e.fuel ?? "").toLowerCase()).join(",");
+  const hasPetrol = /petrol|gasoline/.test(genFuelStr);
+  const hasDiesel = /diesel/.test(genFuelStr);
+  const DIESEL_ONLY_RE = /glow.?plug/i;
+  const PETROL_IGNITION_RE = /spark.?plug|ignition.?coil/i;
+  const wrongFuelFastener = (f: string) =>
+    (!hasDiesel && DIESEL_ONLY_RE.test(f)) || (!hasPetrol && PETROL_IGNITION_RE.test(f));
   const trimList = await query<TrimLite>(
     `SELECT id, hp, engine_id FROM trims WHERE generation_id = ?`,
     [gen.id],
@@ -117,6 +130,11 @@ export default async function Page({ params }: { params: Promise<Params> }) {
   const rendered: TorqueRow[] = [];
   const suppressedFasteners = new Set<string>();
   for (const t of torques) {
+    if (wrongFuelFastener(t.fastener)) {
+      // Categorically impossible for this gen's fuel mix — drop silently
+      // (it's contamination, not a legitimately-suppressed engine-scoped row).
+      continue;
+    }
     if (t.engine_id == null && multiEngine && ENGINE_SCOPED_FASTENERS.has(t.fastener)) {
       suppressedFasteners.add(t.fastener);
     } else {

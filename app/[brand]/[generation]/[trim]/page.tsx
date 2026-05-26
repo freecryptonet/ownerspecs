@@ -358,7 +358,11 @@ export default async function Page({ params }: { params: Promise<Params> }) {
   };
   // Battery-electric trim: hard-suppress every combustion-only spec. A BEV has no
   // spark plugs, fuel system, exhaust, engine oil, etc. — showing them destroys trust.
-  const isEV = trimRow.engine_fuel === "electric";
+  // engines.fuel is unnormalised (petrol/Petrol/gasoline/diesel/Diesel/electric).
+  const fuelNorm = (trimRow.engine_fuel ?? "").toLowerCase();
+  const isEV = fuelNorm === "electric";
+  const isDiesel = fuelNorm.includes("diesel");
+  const isPetrol = fuelNorm.includes("petrol") || fuelNorm.includes("gasoline");
 
   const fluids = fluidsAll.filter(
     (f) =>
@@ -385,8 +389,8 @@ export default async function Page({ params }: { params: Promise<Params> }) {
     (t) =>
       !(t.engine_id == null && multiEngine && ENGINE_SCOPED_FASTENERS.has(t.fastener)) &&
       !(isEV && COMBUSTION_FASTENER_RE.test(t.fastener)) &&
-      !(trimRow.engine_fuel === "diesel" && PETROL_IGNITION_RE.test(t.fastener)) &&
-      !(trimRow.engine_fuel === "petrol" && DIESEL_ONLY_RE.test(t.fastener)),
+      !(isDiesel && PETROL_IGNITION_RE.test(t.fastener)) &&
+      !(isPetrol && DIESEL_ONLY_RE.test(t.fastener)),
   );
 
   const partsAll = await query<PartRow>(
@@ -435,8 +439,8 @@ export default async function Page({ params }: { params: Promise<Params> }) {
   const serviceIntervals = serviceIntervalsAll.filter(
     (s) =>
       !(isEV && COMBUSTION_SERVICES.has(s.service)) &&
-      !(trimRow.engine_fuel !== "petrol" && s.service === "spark_plugs") &&
-      !(trimRow.engine_fuel === "petrol" && s.service === "fuel_filter"),
+      !(!isPetrol && s.service === "spark_plugs") &&
+      !(isPetrol && s.service === "fuel_filter"),
   );
 
   // Citation index restricted to rows this trim's page actually renders
