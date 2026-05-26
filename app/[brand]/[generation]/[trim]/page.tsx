@@ -630,13 +630,14 @@ export default async function Page({ params }: { params: Promise<Params> }) {
               {trimRow.zero_100_kmh_s && <tr><th>0-100 km/h (0-62 mph)</th><td>{trimRow.zero_100_kmh_s} s</td></tr>}
               {trimRow.top_speed_kmh && <tr><th>Top speed</th><td>{speedDual(trimRow.top_speed_kmh)}</td></tr>}
               {trimRow.fuel_combined_l_100km && <tr><th>Fuel (combined)</th><td>{consumptionDual(trimRow.fuel_combined_l_100km)}</td></tr>}
-              {trimRow.co2_g_km && <tr><th>CO₂ emissions</th><td>{trimRow.co2_g_km} g/km · WLTP combined</td></tr>}
+              {trimRow.co2_g_km != null && <tr><th>CO₂ emissions</th><td>{trimRow.co2_g_km} g/km · WLTP combined</td></tr>}
             </tbody>
           </table>
         </section>
 
-        {/* ENGINE BLOCK */}
-        {trimRow.engine_displacement_cc && (
+        {/* ENGINE BLOCK — ternary (not &&) so a 0cc electric drive hides the
+            block cleanly instead of leaking a stray "0". */}
+        {trimRow.engine_displacement_cc ? (
           <section>
             <h2 className="section-h">Engine — {trimRow.engine_display ?? trimRow.engine_code}</h2>
             <table className="spec-table">
@@ -654,7 +655,7 @@ export default async function Page({ params }: { params: Promise<Params> }) {
               </tbody>
             </table>
           </section>
-        )}
+        ) : null}
 
         {/* DIMENSIONS — herstructureringsplan Fase 1.3. Renders the trim's own
             measurements when present (M-package width, xDrive height, etc.); falls
