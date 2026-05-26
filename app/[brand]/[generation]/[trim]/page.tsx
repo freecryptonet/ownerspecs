@@ -155,6 +155,31 @@ const ENGINE_SCOPED_PARTS = new Set([
   "pcv_valve",
 ]);
 
+// Combustion-only specs that must NEVER appear on a battery-electric trim. The
+// `fastener` strings are often raw HaynesPro text ("Spark plugs", "Fuel rail"),
+// so torques are matched by keyword; services/parts/fluids by their enum key.
+const COMBUSTION_FASTENER_RE =
+  /spark.?plug|glow.?plug|\bfuel\b|injector|ignition.?coil|exhaust.?manifold|cylinder.?head|valve.?cover|camshaft|crankshaft|timing.?(chain|belt)|flywheel|flexplate|dual.?mass|clutch.?press|\bsump\b|engine.?oil|oil.?filter|oxygen.?sensor|nox.?sensor|knock.?sensor|in(let|take).?manifold|big.?end|main.?bearing|rod.?bolt|starter.?motor|turbo|alternator|coolant.?pump|manual.?transmission|dual.?clutch/i;
+const COMBUSTION_SERVICES = new Set([
+  "engine_oil_and_filter", "engine_oil_check", "oil_leak_check", "spark_plugs",
+  "fuel_filter", "fuel_line_inspection", "engine_air_filter", "valve_clearance",
+  "drive_belt_inspection", "drive_belt_replacement", "timing_belt_replacement",
+  "exhaust_emissions_check", "transmission_at_fluid", "transmission_mt_fluid",
+  "transmission_dct_fluid", "transmission_cvt_fluid",
+]);
+const COMBUSTION_PARTS = new Set([
+  "spark_plug", "air_filter", "oil_filter", "pcv_valve", "drive_belt", "fuel_filter",
+]);
+const COMBUSTION_FLUIDS = new Set([
+  "engine_oil", "engine_oil_2_0", "engine_oil_1_0t", "engine_oil_diesel",
+  "transmission_at", "transmission_mt", "transmission_cvt", "transmission_dct", "transmission_ecvt",
+]);
+// Cross-fuel categorical impossibilities: a diesel has no spark plug/ignition
+// coil; a petrol has no glow plug. (Gen-wide torques are often one engine's
+// values leaking onto sibling trims of a multi-engine gen.)
+const PETROL_IGNITION_RE = /spark.?plug|ignition.?coil/i;
+const DIESEL_ONLY_RE = /glow.?plug/i;
+
 function fmtCap(l: string | null, qt: string | null): string {
   if (!l && !qt) return "—";
   if (l && qt) return `${Number(qt).toFixed(1)} qt · ${Number(l).toFixed(1)} L`;
@@ -331,10 +356,15 @@ export default async function Page({ params }: { params: Promise<Params> }) {
     if (expected === "CVT" && trimTransType === "eCVT") return false;
     return expected !== trimTransType;
   };
+  // Battery-electric trim: hard-suppress every combustion-only spec. A BEV has no
+  // spark plugs, fuel system, exhaust, engine oil, etc. — showing them destroys trust.
+  const isEV = trimRow.engine_fuel === "electric";
+
   const fluids = fluidsAll.filter(
     (f) =>
       !(f.engine_id == null && multiEngine && ENGINE_SCOPED_FLUIDS.has(f.fluid_type)) &&
-      !transmissionFluidMismatch(f.fluid_type),
+      !transmissionFluidMismatch(f.fluid_type) &&
+      !(isEV && COMBUSTION_FLUIDS.has(f.fluid_type)),
   );
 
   const torquesAll = await query<TorqueRow>(
@@ -352,7 +382,11 @@ export default async function Page({ params }: { params: Promise<Params> }) {
     [gen.id, trimRow.engine_id],
   );
   const torques = torquesAll.filter(
-    (t) => !(t.engine_id == null && multiEngine && ENGINE_SCOPED_FASTENERS.has(t.fastener)),
+    (t) =>
+      !(t.engine_id == null && multiEngine && ENGINE_SCOPED_FASTENERS.has(t.fastener)) &&
+      !(isEV && COMBUSTION_FASTENER_RE.test(t.fastener)) &&
+      !(trimRow.engine_fuel === "diesel" && PETROL_IGNITION_RE.test(t.fastener)) &&
+      !(trimRow.engine_fuel === "petrol" && DIESEL_ONLY_RE.test(t.fastener)),
   );
 
   const partsAll = await query<PartRow>(
@@ -367,7 +401,9 @@ export default async function Page({ params }: { params: Promise<Params> }) {
     [gen.id, trimRow.engine_id],
   );
   const parts = partsAll.filter(
-    (p) => !(p.engine_id == null && multiEngine && ENGINE_SCOPED_PARTS.has(p.part_type)),
+    (p) =>
+      !(p.engine_id == null && multiEngine && ENGINE_SCOPED_PARTS.has(p.part_type)) &&
+      !(isEV && COMBUSTION_PARTS.has(p.part_type)),
   );
 
   // Tire pressures: rows tied to this trim, OR rows tied to no trim (gen-wide
@@ -388,13 +424,19 @@ export default async function Page({ params }: { params: Promise<Params> }) {
   // trim. Engine-scoped rows (spark plugs, timing belt, accessory drive belt)
   // appear only on the matching engine's trim. Matches the trim-focused IA:
   // visitors only see schedule items that apply to their car.
-  const serviceIntervals = await query<ServiceIntervalRow>(
+  const serviceIntervalsAll = await query<ServiceIntervalRow>(
     `SELECT id, service, miles_normal, km_normal, months, notes
      FROM service_intervals
      WHERE generation_id = ?
        AND (engine_id IS NULL OR engine_id = ?)
      ORDER BY COALESCE(miles_normal, miles_severe, 999999)`,
     [gen.id, trimRow.engine_id ?? 0],
+  );
+  const serviceIntervals = serviceIntervalsAll.filter(
+    (s) =>
+      !(isEV && COMBUSTION_SERVICES.has(s.service)) &&
+      !(trimRow.engine_fuel !== "petrol" && s.service === "spark_plugs") &&
+      !(trimRow.engine_fuel === "petrol" && s.service === "fuel_filter"),
   );
 
   // Citation index restricted to rows this trim's page actually renders
