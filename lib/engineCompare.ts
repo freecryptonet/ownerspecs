@@ -13,6 +13,12 @@ export const ENGINE_PAIRS: Array<[string, string]> = [
   ["ezh", "esg"], // 5.7 vs 6.4 HEMI — "which HEMI"
   // BMW modular turbo — 4-cyl vs 6-cyl (e.g. 330i vs M340i)
   ["b48b20", "b58b30o1"],
+  // BMW M S-series — 3.0 twin-turbo I6 generations (M3/M4 F8x vs G8x)
+  ["s55b30", "s58b30"],
+  // Chrysler 3.6 Pentastar V6 evolution: original / upgrade / eTorque mild-hybrid
+  ["erb", "erc"],
+  ["erc", "erg"],
+  ["erb", "erg"],
 ];
 
 export function enginePairSlug(a: string, b: string): string {

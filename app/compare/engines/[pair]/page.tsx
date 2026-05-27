@@ -160,7 +160,7 @@ export default async function Page({ params }: { params: Promise<Params> }) {
   // Key differences (computed from data) — the answer content + SEO body.
   const diffs: string[] = [];
   const dA = num(eA.displacement_cc), dB = num(eB.displacement_cc);
-  if (dA != null && dB != null && dA !== dB) {
+  if (dA != null && dB != null && Math.abs(dA - dB) >= 15) {
     const [big, small] = dA > dB ? [eA, eB] : [eB, eA];
     diffs.push(`The ${big.code} displaces ${big.displacement_cc} cm³ — ${Math.abs(dA - dB)} cm³ more than the ${small.code} (${small.displacement_cc} cm³).`);
   }
