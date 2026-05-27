@@ -93,6 +93,11 @@ type Trim = {
   top_speed_kmh: number | null;
   fuel_combined_l_100km: string | null;
   co2_g_km: number | null;
+  battery_kwh_usable: string | null;
+  battery_kwh_total: string | null;
+  range_epa_km: number | null;
+  range_wltp_km: number | null;
+  dc_charge_kw: number | null;
   curb_weight_kg: number | null;
   max_weight_kg: number | null;
   trailer_braked_kg: number | null;
@@ -217,7 +222,9 @@ async function getGenerationData(brand: string, generation: string) {
             t.engine_id, e.code AS engine_code,
             tx.display_name AS transmission_name, t.hp, t.torque_nm,
             t.zero_100_kmh_s, t.top_speed_kmh, t.fuel_combined_l_100km,
-            t.co2_g_km, t.curb_weight_kg,
+            t.co2_g_km,
+            t.battery_kwh_usable, t.battery_kwh_total, t.range_epa_km, t.range_wltp_km, t.dc_charge_kw,
+            t.curb_weight_kg,
             t.max_weight_kg, t.trailer_braked_kg, t.trailer_unbraked_kg,
             t.drive_wheel, t.tire_size, t.rim_size,
             t.length_mm, t.width_mm, t.height_mm, t.wheelbase_mm
@@ -228,6 +235,11 @@ async function getGenerationData(brand: string, generation: string) {
      WHERE t.generation_id = ?
      ORDER BY t.hp ASC, t.name`,
     [gen.id],
+  );
+
+  // EV gens swap the Fuel/CO₂/Oil comparison columns for Range/Battery/DC kW.
+  const genIsEV = trims.some(
+    (t) => t.battery_kwh_usable != null || t.range_epa_km != null || t.range_wltp_km != null,
   );
 
   const fluids = await query<FluidSpec>(
@@ -346,6 +358,7 @@ async function getGenerationData(brand: string, generation: string) {
     make,
     model,
     gen,
+    genIsEV,
     markets,
     engines,
     trims,
@@ -472,6 +485,7 @@ export default async function Page({ params }: { params: Promise<Params> }) {
     make,
     model,
     gen,
+    genIsEV,
     markets,
     engines,
     trims,
@@ -879,9 +893,9 @@ export default async function Page({ params }: { params: Promise<Params> }) {
                     <th style={{ textAlign: "left", padding: "10px 12px", fontSize: 11, letterSpacing: "0.06em", textTransform: "uppercase" }}>Drive</th>
                     <th style={{ textAlign: "right", padding: "10px 12px", fontSize: 11, letterSpacing: "0.06em", textTransform: "uppercase" }}>0-100</th>
                     <th style={{ textAlign: "right", padding: "10px 12px", fontSize: 11, letterSpacing: "0.06em", textTransform: "uppercase" }}>Top</th>
-                    <th style={{ textAlign: "right", padding: "10px 12px", fontSize: 11, letterSpacing: "0.06em", textTransform: "uppercase" }}>Fuel</th>
-                    <th style={{ textAlign: "right", padding: "10px 12px", fontSize: 11, letterSpacing: "0.06em", textTransform: "uppercase" }}>CO₂</th>
-                    <th style={{ textAlign: "right", padding: "10px 12px", fontSize: 11, letterSpacing: "0.06em", textTransform: "uppercase" }}>Oil</th>
+                    <th style={{ textAlign: "right", padding: "10px 12px", fontSize: 11, letterSpacing: "0.06em", textTransform: "uppercase" }}>{genIsEV ? "Range" : "Fuel"}</th>
+                    <th style={{ textAlign: "right", padding: "10px 12px", fontSize: 11, letterSpacing: "0.06em", textTransform: "uppercase" }}>{genIsEV ? "Battery" : "CO₂"}</th>
+                    <th style={{ textAlign: "right", padding: "10px 12px", fontSize: 11, letterSpacing: "0.06em", textTransform: "uppercase" }}>{genIsEV ? "DC kW" : "Oil"}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -950,9 +964,19 @@ export default async function Page({ params }: { params: Promise<Params> }) {
                             <td style={{ padding: "10px 12px", fontSize: 12 }}>{t.drive_wheel ?? "—"}</td>
                             <td style={{ padding: "10px 12px", textAlign: "right" }}>{t.zero_100_kmh_s ? `${t.zero_100_kmh_s} s` : "—"}</td>
                             <td style={{ padding: "10px 12px", textAlign: "right" }}>{t.top_speed_kmh ? `${t.top_speed_kmh} km/h` : "—"}</td>
-                            <td style={{ padding: "10px 12px", textAlign: "right" }}>{t.fuel_combined_l_100km ? `${t.fuel_combined_l_100km} L/100` : "—"}</td>
-                            <td style={{ padding: "10px 12px", textAlign: "right" }}>{t.co2_g_km ? `${t.co2_g_km} g/km` : "—"}</td>
-                            <td style={{ padding: "10px 12px", textAlign: "right", fontSize: 12 }}>{oilCap}</td>
+                            {genIsEV ? (
+                              <>
+                                <td style={{ padding: "10px 12px", textAlign: "right" }}>{(t.range_epa_km ?? t.range_wltp_km) ? `${t.range_epa_km ?? t.range_wltp_km} km` : "—"}</td>
+                                <td style={{ padding: "10px 12px", textAlign: "right" }}>{(t.battery_kwh_usable ?? t.battery_kwh_total) ? `${t.battery_kwh_usable ?? t.battery_kwh_total} kWh` : "—"}</td>
+                                <td style={{ padding: "10px 12px", textAlign: "right", fontSize: 12 }}>{t.dc_charge_kw ? `${t.dc_charge_kw} kW` : "—"}</td>
+                              </>
+                            ) : (
+                              <>
+                                <td style={{ padding: "10px 12px", textAlign: "right" }}>{t.fuel_combined_l_100km ? `${t.fuel_combined_l_100km} L/100` : "—"}</td>
+                                <td style={{ padding: "10px 12px", textAlign: "right" }}>{t.co2_g_km ? `${t.co2_g_km} g/km` : "—"}</td>
+                                <td style={{ padding: "10px 12px", textAlign: "right", fontSize: 12 }}>{oilCap}</td>
+                              </>
+                            )}
                           </tr>
                         );
                       }
@@ -973,9 +997,19 @@ export default async function Page({ params }: { params: Promise<Params> }) {
                             <td colSpan={4} style={{ padding: "10px 12px", fontSize: 11, color: "var(--ink-mute)" }}>
                               variants below ↓
                             </td>
-                            <td style={{ padding: "10px 12px", textAlign: "right" }}>{rep.fuel_combined_l_100km ? `${rep.fuel_combined_l_100km} L/100` : "—"}</td>
-                            <td style={{ padding: "10px 12px", textAlign: "right" }}>{rep.co2_g_km ? `${rep.co2_g_km} g/km` : "—"}</td>
-                            <td style={{ padding: "10px 12px", textAlign: "right", fontSize: 12 }}>{oilCap}</td>
+                            {genIsEV ? (
+                              <>
+                                <td style={{ padding: "10px 12px", textAlign: "right" }}>{(rep.range_epa_km ?? rep.range_wltp_km) ? `${rep.range_epa_km ?? rep.range_wltp_km} km` : "—"}</td>
+                                <td style={{ padding: "10px 12px", textAlign: "right" }}>{(rep.battery_kwh_usable ?? rep.battery_kwh_total) ? `${rep.battery_kwh_usable ?? rep.battery_kwh_total} kWh` : "—"}</td>
+                                <td style={{ padding: "10px 12px", textAlign: "right", fontSize: 12 }}>{rep.dc_charge_kw ? `${rep.dc_charge_kw} kW` : "—"}</td>
+                              </>
+                            ) : (
+                              <>
+                                <td style={{ padding: "10px 12px", textAlign: "right" }}>{rep.fuel_combined_l_100km ? `${rep.fuel_combined_l_100km} L/100` : "—"}</td>
+                                <td style={{ padding: "10px 12px", textAlign: "right" }}>{rep.co2_g_km ? `${rep.co2_g_km} g/km` : "—"}</td>
+                                <td style={{ padding: "10px 12px", textAlign: "right", fontSize: 12 }}>{oilCap}</td>
+                              </>
+                            )}
                           </tr>
                           {g.rows.map((t) => (
                             <tr key={`v-${t.id}`} style={{ borderBottom: "1px solid var(--rule)" }}>
