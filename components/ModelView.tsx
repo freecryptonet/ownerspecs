@@ -77,85 +77,34 @@ export function ModelView({
             All {make.name} {model.name} generations
             <span className="count">{generations.length}</span>
           </h2>
-          <ul
-            style={{
-              listStyle: "none",
-              padding: 0,
-              margin: 0,
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))",
-              gap: 16,
-            }}
-          >
-            {generations.map((g) => {
-              const yrs = g.end_year
-                ? `${g.start_year} – ${g.end_year}`
-                : `${g.start_year} – present`;
-              return (
-                <li
-                  key={g.generation_slug}
-                  style={{
-                    border: "1px solid var(--rule)",
-                    background: "var(--bg-alt)",
-                    overflow: "hidden",
-                  }}
-                >
-                  <a
-                    href={`/${make.slug}/${g.generation_slug}`}
-                    style={{ color: "var(--ink)", display: "block" }}
-                  >
-                    {g.hero_url && (
-                      <div style={{ aspectRatio: "16 / 9", overflow: "hidden" }}>
-                        <img
-                          src={g.hero_url}
-                          alt={`${make.name} ${g.display_name}`}
-                          style={{
-                            width: "100%",
-                            height: "100%",
-                            objectFit: "cover",
-                            display: "block",
-                          }}
-                        />
-                      </div>
-                    )}
-                    <div style={{ padding: "14px 18px" }}>
-                      <div
-                        style={{
-                          fontSize: 11,
-                          fontWeight: 600,
-                          letterSpacing: "0.08em",
-                          textTransform: "uppercase",
-                          color: "var(--ink-soft)",
-                          marginBottom: 4,
-                        }}
-                      >
-                        {g.codename ?? g.body_type}
-                      </div>
-                      <div
-                        style={{
-                          fontSize: 17,
-                          fontWeight: 600,
-                          marginBottom: 4,
-                          lineHeight: 1.25,
-                        }}
+          <div className="table-scroll">
+            <table className="spec-table" style={{ width: "100%" }}>
+              <tbody>
+                {generations.map((g) => (
+                  <tr key={g.generation_slug}>
+                    <td>
+                      <a
+                        href={`/${make.slug}/${g.generation_slug}`}
+                        style={{ color: "var(--ink)", fontWeight: 600 }}
                       >
                         {g.display_name}
-                      </div>
-                      <div
-                        style={{
-                          fontFamily: "var(--font-mono)",
-                          fontSize: 12,
-                          color: "var(--ink-mute)",
-                        }}
-                      >
-                        {yrs} · {g.body_type} · {g.trim_count} trim{g.trim_count !== 1 ? "s" : ""}
-                      </div>
-                    </div>
-                  </a>
-                </li>
-              );
-            })}
-          </ul>
+                      </a>
+                    </td>
+                    <td style={{ fontFamily: "var(--font-mono)", fontSize: 12, whiteSpace: "nowrap" }}>
+                      {g.start_year}–{g.end_year ?? "present"}
+                    </td>
+                    <td style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: "var(--ink-mute)" }}>
+                      {g.codename ?? "—"}
+                    </td>
+                    <td style={{ textTransform: "capitalize" }}>{g.body_type}</td>
+                    <td style={{ textAlign: "right", whiteSpace: "nowrap", fontFamily: "var(--font-mono)", fontSize: 12 }}>
+                      {g.trim_count} trim{g.trim_count === 1 ? "" : "s"}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </section>
 
         <section>
