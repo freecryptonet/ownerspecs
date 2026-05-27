@@ -132,91 +132,33 @@ export default async function BrandPage({
                 {gens.length} generation{gens.length === 1 ? "" : "s"}
               </span>
             </h2>
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
-                gap: 16,
-              }}
-            >
-              {gens.map((g) => (
-                <a
-                  key={g.generation_slug}
-                  href={`/${g.brand_slug}/${g.generation_slug}`}
-                  style={{
-                    border: "1px solid var(--rule)",
-                    background: "var(--bg)",
-                    color: "var(--ink)",
-                    textDecoration: "none",
-                    display: "block",
-                  }}
-                >
-                  <div
-                    style={{
-                      aspectRatio: "4/3",
-                      background:
-                        "linear-gradient(135deg, #20263A, #2D3550)",
-                      position: "relative",
-                      overflow: "hidden",
-                    }}
-                  >
-                    {g.hero_url ? (
-                      <img
-                        src={g.hero_url}
-                        alt={g.display_name}
-                        style={{
-                          width: "100%",
-                          height: "100%",
-                          objectFit: "cover",
-                          display: "block",
-                        }}
-                      />
-                    ) : (
-                      <svg
-                        viewBox="0 0 800 600"
-                        stroke="rgba(255,255,255,0.65)"
-                        fill="none"
-                        strokeWidth="1.5"
-                        style={{
-                          position: "absolute",
-                          inset: 0,
-                          width: "100%",
-                          height: "100%",
-                        }}
-                      >
-                        <path d="M90 410c0-32 22-52 58-52h92l72-104c12-19 30-29 56-29h190c26 0 44 10 56 29l72 104h92c36 0 58 20 58 52v52H90z" />
-                        <circle cx="245" cy="462" r="48" />
-                        <circle cx="775" cy="462" r="48" />
-                      </svg>
-                    )}
-                  </div>
-                  <div style={{ padding: "12px 16px" }}>
-                    <div
-                      style={{
-                        fontSize: 14,
-                        fontWeight: 600,
-                        color: "var(--ink)",
-                        lineHeight: 1.3,
-                      }}
-                    >
-                      {g.display_name}
-                    </div>
-                    <div
-                      style={{
-                        fontFamily: "var(--font-mono)",
-                        fontSize: 11,
-                        color: "var(--ink-mute)",
-                        marginTop: 4,
-                      }}
-                    >
-                      {g.start_year} – {g.end_year ?? "present"}
-                      {g.codename && ` · ${g.codename}`}
-                      {" · "}
-                      {g.trim_count} trim{g.trim_count === 1 ? "" : "s"}
-                    </div>
-                  </div>
-                </a>
-              ))}
+            <div className="table-scroll">
+              <table className="spec-table" style={{ width: "100%" }}>
+                <tbody>
+                  {gens.map((g) => (
+                    <tr key={g.generation_slug}>
+                      <td>
+                        <a
+                          href={`/${g.brand_slug}/${g.generation_slug}`}
+                          style={{ color: "var(--ink)", fontWeight: 600 }}
+                        >
+                          {g.display_name}
+                        </a>
+                      </td>
+                      <td style={{ fontFamily: "var(--font-mono)", fontSize: 12, whiteSpace: "nowrap" }}>
+                        {g.start_year}–{g.end_year ?? "present"}
+                      </td>
+                      <td style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: "var(--ink-mute)" }}>
+                        {g.codename ?? "—"}
+                      </td>
+                      <td style={{ textTransform: "capitalize" }}>{g.body_type}</td>
+                      <td style={{ textAlign: "right", whiteSpace: "nowrap", fontFamily: "var(--font-mono)", fontSize: 12 }}>
+                        {g.trim_count} trim{g.trim_count === 1 ? "" : "s"}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </section>
         ))}
