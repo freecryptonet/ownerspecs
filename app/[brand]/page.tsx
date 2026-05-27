@@ -13,20 +13,15 @@ type Make = {
   country_of_origin: string | null;
 };
 
-type GenerationRow = {
-  brand_slug: string;
-  generation_slug: string;
-  model_name: string;
+type ModelRow = {
   model_slug: string;
-  display_name: string;
-  body_type: string;
-  codename: string | null;
-  start_year: number;
-  end_year: number | null;
+  model_name: string;
+  gen_count: number;
+  first_year: number;
+  last_end: number;
+  has_current: number;
   trim_count: number;
-  hero_url: string | null;
-  hero_attribution: string | null;
-  updated: string;
+  bodies: string | null;
 };
 
 async function getBrandData(brand: string) {
@@ -36,30 +31,27 @@ async function getBrandData(brand: string) {
   );
   if (!make) return null;
 
-  const generations = await query<GenerationRow>(
-    `SELECT mk.slug AS brand_slug, g.slug AS generation_slug,
-            m.name AS model_name, m.slug AS model_slug,
-            g.display_name, g.body_type, g.codename,
-            g.start_year, g.end_year,
-            (SELECT COUNT(*) FROM trims WHERE generation_id = g.id) AS trim_count,
-            (SELECT url FROM images WHERE generation_id = g.id LIMIT 1) AS hero_url,
-            (SELECT attribution FROM images WHERE generation_id = g.id LIMIT 1) AS hero_attribution,
-            g.updated_at AS updated
-     FROM generations g
-     JOIN models m ON m.id = g.model_id
-     JOIN makes mk ON mk.id = m.make_id
-     WHERE mk.id = ? AND g.is_active = 1
-     ORDER BY m.name, g.start_year DESC`,
+  const models = await query<ModelRow>(
+    `SELECT m.slug AS model_slug, m.name AS model_name,
+            COUNT(g.id) AS gen_count,
+            MIN(g.start_year) AS first_year,
+            MAX(COALESCE(g.end_year, 0)) AS last_end,
+            MAX(CASE WHEN g.end_year IS NULL THEN 1 ELSE 0 END) AS has_current,
+            (SELECT COUNT(*) FROM trims t JOIN generations g2 ON t.generation_id = g2.id
+              WHERE g2.model_id = m.id AND g2.is_active = 1) AS trim_count,
+            (SELECT GROUP_CONCAT(DISTINCT body_type ORDER BY body_type SEPARATOR ', ')
+              FROM generations WHERE model_id = m.id AND is_active = 1) AS bodies
+     FROM models m
+     JOIN generations g ON g.model_id = m.id AND g.is_active = 1
+     WHERE m.make_id = ?
+     GROUP BY m.id, m.slug, m.name
+     ORDER BY m.name`,
     [make.id],
   );
 
-  // Group by model for the listing
-  const byModel = generations.reduce<Record<string, GenerationRow[]>>((acc, g) => {
-    (acc[g.model_name] = acc[g.model_name] || []).push(g);
-    return acc;
-  }, {});
-
-  return { make, generations, byModel };
+  const totalGens = models.reduce((s, m) => s + m.gen_count, 0);
+  const totalTrims = models.reduce((s, m) => s + m.trim_count, 0);
+  return { make, models, totalGens, totalTrims };
 }
 
 export async function generateStaticParams(): Promise<Params[]> {
@@ -77,7 +69,7 @@ export async function generateMetadata({
   const { make } = data;
   return {
     title: `${make.name} — Specifications, fluids, maintenance & owner-manual data`,
-    description: `Complete reference for every ${make.name} generation: engine specs, fluid capacities, torque values, maintenance schedules, fuse maps. Cross-verified.`,
+    description: `Complete reference for every ${make.name} model and generation: engine specs, fluid capacities, torque values, maintenance schedules, fuse maps. Cross-verified.`,
     alternates: { canonical: `/${make.slug}` },
   };
 }
@@ -90,7 +82,7 @@ export default async function BrandPage({
   const { brand } = await params;
   const data = await getBrandData(brand);
   if (!data) notFound();
-  const { make, generations, byModel } = data;
+  const { make, models, totalGens, totalTrims } = data;
 
   return (
     <>
@@ -112,48 +104,49 @@ export default async function BrandPage({
                 <span className="pip"></span>
               </>
             )}
-            <span>
-              {generations.length} generation{generations.length === 1 ? "" : "s"}
-            </span>
+            <span>{models.length} model{models.length === 1 ? "" : "s"}</span>
             <span className="pip"></span>
-            <span>{Object.keys(byModel).length} models</span>
+            <span>{totalGens} generation{totalGens === 1 ? "" : "s"}</span>
             <span className="pip"></span>
-            <span>{generations.reduce((sum, g) => sum + g.trim_count, 0)} trims indexed</span>
+            <span>{totalTrims} trims indexed</span>
           </div>
         </div>
       </div>
 
       <main className="shell">
-        {Object.entries(byModel).map(([modelName, gens]) => (
-          <section key={modelName} style={{ paddingTop: "var(--s-5)" }}>
-            <h2 className="section-h">
-              {make.name} {modelName}
-              <span className="count">
-                {gens.length} generation{gens.length === 1 ? "" : "s"}
-              </span>
-            </h2>
+        {models.length > 0 ? (
+          <section style={{ paddingTop: "var(--s-5)" }}>
             <div className="table-scroll">
               <table className="spec-table" style={{ width: "100%" }}>
+                <thead style={{ background: "var(--bg-alt)" }}>
+                  <tr>
+                    <th>Model</th>
+                    <th>Generations</th>
+                    <th>Years</th>
+                    <th>Body</th>
+                    <th style={{ textAlign: "right" }}>Trims</th>
+                  </tr>
+                </thead>
                 <tbody>
-                  {gens.map((g) => (
-                    <tr key={g.generation_slug}>
+                  {models.map((m) => (
+                    <tr key={m.model_slug}>
                       <td>
                         <a
-                          href={`/${g.brand_slug}/${g.generation_slug}`}
+                          href={`/${make.slug}/${m.model_slug}`}
                           style={{ color: "var(--ink)", fontWeight: 600 }}
                         >
-                          {g.display_name}
+                          {make.name} {m.model_name}
                         </a>
                       </td>
+                      <td style={{ fontFamily: "var(--font-mono)", fontSize: 12 }}>
+                        {m.gen_count}
+                      </td>
                       <td style={{ fontFamily: "var(--font-mono)", fontSize: 12, whiteSpace: "nowrap" }}>
-                        {g.start_year}–{g.end_year ?? "present"}
+                        {m.first_year}–{m.has_current ? "present" : m.last_end}
                       </td>
-                      <td style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: "var(--ink-mute)" }}>
-                        {g.codename ?? "—"}
-                      </td>
-                      <td style={{ textTransform: "capitalize" }}>{g.body_type}</td>
-                      <td style={{ textAlign: "right", whiteSpace: "nowrap", fontFamily: "var(--font-mono)", fontSize: 12 }}>
-                        {g.trim_count} trim{g.trim_count === 1 ? "" : "s"}
+                      <td style={{ textTransform: "capitalize" }}>{m.bodies ?? "—"}</td>
+                      <td style={{ textAlign: "right", fontFamily: "var(--font-mono)", fontSize: 12, whiteSpace: "nowrap" }}>
+                        {m.trim_count}
                       </td>
                     </tr>
                   ))}
@@ -161,12 +154,10 @@ export default async function BrandPage({
               </table>
             </div>
           </section>
-        ))}
-
-        {generations.length === 0 && (
+        ) : (
           <section style={{ paddingTop: "var(--s-6)" }}>
             <p style={{ color: "var(--ink-mute)", fontSize: 14 }}>
-              No {make.name} generations indexed yet. Catalogue is expanding daily.
+              No {make.name} models indexed yet. Catalogue is expanding daily.
             </p>
           </section>
         )}
