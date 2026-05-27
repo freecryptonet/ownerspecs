@@ -653,7 +653,7 @@ export default async function Page({ params }: { params: Promise<Params> }) {
               <path d="m4 8 3 3 5-6" />
               <circle cx="8" cy="8" r="7" />
             </svg>
-            <span>Verified across {sourceCount} independent {sourceCount === 1 ? "source" : "sources"}</span>
+            <span>{sourceCount > 0 ? `Verified across ${sourceCount} independent ${sourceCount === 1 ? "source" : "sources"}` : "Catalogue data · owner-manual data in progress"}</span>
             <span className="div"></span>
             <span className="meta">Last reviewed {reviewDate}</span>
           </div>
@@ -663,11 +663,21 @@ export default async function Page({ params }: { params: Promise<Params> }) {
       <div className="tabs">
         <div className="tabs-inner">
           <a className="tab active" href={`/${make.slug}/${gen.slug}`}>Overview</a>
-          <a className="tab" href={`/${make.slug}/${gen.slug}/${fluids.some(f => f.fluid_type === "engine_oil") ? "oil-capacity" : "coolant"}`}>Fluids <span className="count">{fluids.length}</span></a>
-          <a className="tab" href={`/${make.slug}/${gen.slug}/torque`}>Torque <span className="count">{torques.length}</span></a>
-          <a className="tab" href={`/${make.slug}/${gen.slug}/maintenance-schedule`}>Maintenance <span className="count">{serviceIntervals.length}</span></a>
-          <a className="tab" href={`/${make.slug}/${gen.slug}/electrical`}>Electrical <span className="count">{bulbCount + fuseCount + 1}</span></a>
-          <a className="tab" href={`/${make.slug}/${gen.slug}/procedures`}>Procedures</a>
+          {(fluids.some(f => f.fluid_type === "engine_oil") || fluids.some(f => f.fluid_type === "coolant")) && (
+            <a className="tab" href={`/${make.slug}/${gen.slug}/${fluids.some(f => f.fluid_type === "engine_oil") ? "oil-capacity" : "coolant"}`}>Fluids <span className="count">{fluids.length}</span></a>
+          )}
+          {torques.length > 0 && (
+            <a className="tab" href={`/${make.slug}/${gen.slug}/torque`}>Torque <span className="count">{torques.length}</span></a>
+          )}
+          {serviceIntervals.length > 0 && (
+            <a className="tab" href={`/${make.slug}/${gen.slug}/maintenance-schedule`}>Maintenance <span className="count">{serviceIntervals.length}</span></a>
+          )}
+          {(electrical || bulbCount > 0 || fuseCount > 0) && (
+            <a className="tab" href={`/${make.slug}/${gen.slug}/electrical`}>Electrical <span className="count">{bulbCount + fuseCount + (electrical ? 1 : 0)}</span></a>
+          )}
+          {procCount > 0 && (
+            <a className="tab" href={`/${make.slug}/${gen.slug}/procedures`}>Procedures</a>
+          )}
         </div>
       </div>
 

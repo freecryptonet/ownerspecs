@@ -50,3 +50,6 @@ next-env.d.ts
 
 # Owner manual PDFs (large binaries, locally indexed via manual_inventory)
 manuals/
+
+# VIN-specific Certificate of Conformity (CoC) scans — personal vehicle docs, never commit
+/EEG/
