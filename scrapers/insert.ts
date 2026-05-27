@@ -499,15 +499,15 @@ export async function insertReconciled(reconciled: Reconciled): Promise<InsertRe
     const grabParen = (s: string): string | null => {
       for (const m of s.matchAll(/\(([^)]+)\)/g)) {
         if (isChassisCode(m[1])) return m[1];
-        // Comma-separated paren content like "(D3, 4E)" or "(8T3, facelift 2011)":
-        // return the most-specific (last) token that looks like a chassis code, so
-        // facelift / multi-code generations attach to the base gen by codename
-        // instead of forking a duplicate. Descriptive tokens ("facelift 2011",
-        // "245 Hp") fail isChassisCode and are ignored.
+        // Multi-token paren content like "(D3, 4E)", "(8T3, facelift 2011)" or the
+        // glued "(D4,4H facelift 2013)": tokenise on commas AND whitespace, then
+        // return the most-specific (last) chassis-code token, so facelift / multi-code
+        // generations attach to the base gen by codename instead of forking a duplicate.
+        // Descriptive words ("facelift", "2011") and trim specs ("245", "Hp") fail
+        // isChassisCode (no letter / lowercase / too long) and are ignored.
         let found: string | null = null;
-        for (const tok of m[1].split(",")) {
-          const t = tok.trim();
-          if (isChassisCode(t)) found = t;
+        for (const tok of m[1].split(/[,\s]+/)) {
+          if (isChassisCode(tok)) found = tok;
         }
         if (found) return found;
       }
