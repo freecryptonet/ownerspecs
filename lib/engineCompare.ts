@@ -7,6 +7,12 @@ export const ENGINE_PAIRS: Array<[string, string]> = [
   ["m13a", "m15a"],
   ["m15a", "m16a"],
   ["m13a", "m16a"],
+  // Chrysler/Dodge HEMI V8 family
+  ["ezb", "ezh"], // 5.7 HEMI: MDS (2003-08) vs Eagle/VVT (2009+)
+  ["esf", "esg"], // 6.1 SRT8 vs 6.4 392 HEMI
+  ["ezh", "esg"], // 5.7 vs 6.4 HEMI — "which HEMI"
+  // BMW modular turbo — 4-cyl vs 6-cyl (e.g. 330i vs M340i)
+  ["b48b20", "b58b30o1"],
 ];
 
 export function enginePairSlug(a: string, b: string): string {
