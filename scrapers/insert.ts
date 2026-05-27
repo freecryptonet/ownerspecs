@@ -489,8 +489,13 @@ export async function insertReconciled(reconciled: Reconciled): Promise<InsertRe
     // raw_label keeps it. Only accept tokens that look like a chassis code
     // (uppercase letters + optional digits, no spaces, no "Hp"/units) — never
     // a trim spec like "(245 Hp)".
+    // 2–6 alphanumerics with at least one letter. Accepts letter-leading codes
+    // (G20, W205, B9) AND digit-leading ones (Audi 8X / 4G / 8V / 4MN, etc., which
+    // the old letter-leading-only rule rejected → null codename → duplicate gens).
+    // The mandatory letter + no-space requirement still rejects trim specs like
+    // "245 Hp" / "190 Hp" (the Golf VIII over-fork bug, see CLAUDE.md).
     const isChassisCode = (s: string | null | undefined): s is string =>
-      !!s && /^[A-Z]{1,5}\d{0,4}[A-Z]?$/.test(s);
+      !!s && /^(?=.*[A-Z])[A-Z0-9]{2,6}$/.test(s);
     const grabParen = (s: string): string | null => {
       for (const m of s.matchAll(/\(([^)]+)\)/g)) {
         if (isChassisCode(m[1])) return m[1];
