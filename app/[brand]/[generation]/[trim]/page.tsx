@@ -38,6 +38,16 @@ type Trim = {
   top_speed_kmh: number | null;
   fuel_combined_l_100km: string | null;
   co2_g_km: number | null;
+  battery_kwh_usable: string | null;
+  battery_kwh_total: string | null;
+  pack_voltage: number | null;
+  range_epa_km: number | null;
+  range_wltp_km: number | null;
+  dc_charge_kw: number | null;
+  ac_charge_kw: string | null;
+  charge_10_80_min: number | null;
+  consumption_wh_km: number | null;
+  plug_type: string | null;
   curb_weight_kg: number | null;
   max_weight_kg: number | null;
   trailer_braked_kg: number | null;
@@ -234,7 +244,10 @@ export default async function Page({ params }: { params: Promise<Params> }) {
   const trimRow = await queryOne<Trim>(
     `SELECT
        t.id, t.slug, t.name, t.hp, t.torque_nm, t.zero_100_kmh_s, t.top_speed_kmh,
-       t.fuel_combined_l_100km, t.co2_g_km, t.curb_weight_kg, t.max_weight_kg,
+       t.fuel_combined_l_100km, t.co2_g_km,
+       t.battery_kwh_usable, t.battery_kwh_total, t.pack_voltage, t.range_epa_km, t.range_wltp_km,
+       t.dc_charge_kw, t.ac_charge_kw, t.charge_10_80_min, t.consumption_wh_km, t.plug_type,
+       t.curb_weight_kg, t.max_weight_kg,
        t.trailer_braked_kg, t.trailer_unbraked_kg, t.drive_wheel, t.tire_size, t.rim_size,
        t.length_mm, t.width_mm, t.height_mm, t.wheelbase_mm, t.front_track_mm, t.rear_track_mm,
        t.ground_clearance_mm, t.drag_coefficient, t.turning_circle_m,
@@ -634,6 +647,36 @@ export default async function Page({ params }: { params: Promise<Params> }) {
             </tbody>
           </table>
         </section>
+
+        {/* ELECTRIC POWERTRAIN — battery / range / charging. Renders only for BEVs
+            that have at least one EV figure; replaces the (hidden) engine block. */}
+        {isEV && (trimRow.battery_kwh_usable || trimRow.range_epa_km || trimRow.range_wltp_km || trimRow.dc_charge_kw) ? (
+          <section>
+            <h2 className="section-h">Electric powertrain</h2>
+            <table className="spec-table">
+              <tbody>
+                {trimRow.battery_kwh_usable && (
+                  <tr><th>Battery (usable)</th><td>{trimRow.battery_kwh_usable} kWh{trimRow.battery_kwh_total ? ` · ${trimRow.battery_kwh_total} kWh total` : ""}</td></tr>
+                )}
+                {trimRow.pack_voltage && <tr><th>Pack voltage</th><td>{trimRow.pack_voltage} V architecture</td></tr>}
+                {trimRow.range_epa_km && (
+                  <tr><th>Range (EPA)</th><td>{trimRow.range_epa_km} km · {Math.round(trimRow.range_epa_km * 0.621371)} mi</td></tr>
+                )}
+                {trimRow.range_wltp_km && (
+                  <tr><th>Range (WLTP)</th><td>{trimRow.range_wltp_km} km · {Math.round(trimRow.range_wltp_km * 0.621371)} mi</td></tr>
+                )}
+                {trimRow.consumption_wh_km && (
+                  <tr><th>Consumption</th><td>{trimRow.consumption_wh_km} Wh/km · {(trimRow.consumption_wh_km / 10).toFixed(1)} kWh/100 km</td></tr>
+                )}
+                {trimRow.dc_charge_kw && (
+                  <tr><th>DC fast charge</th><td>{trimRow.dc_charge_kw} kW peak{trimRow.charge_10_80_min ? ` · 10–80% in ${trimRow.charge_10_80_min} min` : ""}</td></tr>
+                )}
+                {trimRow.ac_charge_kw && <tr><th>AC charge</th><td>{trimRow.ac_charge_kw} kW onboard</td></tr>}
+                {trimRow.plug_type && <tr><th>Charge port</th><td>{trimRow.plug_type}</td></tr>}
+              </tbody>
+            </table>
+          </section>
+        ) : null}
 
         {/* ENGINE BLOCK — ternary (not &&) so a 0cc electric drive hides the
             block cleanly instead of leaking a stray "0". */}
