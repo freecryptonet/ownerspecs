@@ -76,6 +76,35 @@ async function getApplications(engineId: number): Promise<Application[]> {
   );
 }
 
+type Maint = {
+  oil_l: string | null;
+  viscosity: string | null;
+  plug_pn: string | null;
+  plug_brand: string | null;
+  plug_gap: string | null;
+};
+
+async function getMaint(engineId: number): Promise<Maint> {
+  const oil = await queryOne<{ oil_l: string | null; viscosity: string | null }>(
+    `SELECT capacity_l AS oil_l, viscosity FROM fluid_specs
+     WHERE engine_id = ? AND fluid_type = 'engine_oil' AND capacity_l IS NOT NULL
+     ORDER BY (viscosity IS NULL) ASC LIMIT 1`,
+    [engineId],
+  );
+  const plug = await queryOne<{ plug_pn: string | null; plug_brand: string | null; plug_gap: string | null }>(
+    `SELECT part_number AS plug_pn, source_brand AS plug_brand, gap_mm AS plug_gap
+     FROM parts WHERE engine_id = ? AND part_type = 'spark_plug' LIMIT 1`,
+    [engineId],
+  );
+  return {
+    oil_l: oil?.oil_l ?? null,
+    viscosity: oil?.viscosity ?? null,
+    plug_pn: plug?.plug_pn ?? null,
+    plug_brand: plug?.plug_brand ?? null,
+    plug_gap: plug?.plug_gap ?? null,
+  };
+}
+
 const num = (v: string | number | null | undefined): number | null => {
   if (v == null) return null;
   const n = typeof v === "string" ? parseFloat(v) : v;
@@ -119,11 +148,13 @@ export default async function Page({ params }: { params: Promise<Params> }) {
   const [eA, eB] = await Promise.all([getEngine(split[0]), getEngine(split[1])]);
   if (!eA || !eB) notFound();
 
-  const [oA, oB, aA, aB] = await Promise.all([
+  const [oA, oB, aA, aB, mA, mB] = await Promise.all([
     getOutput(eA.id),
     getOutput(eB.id),
     getApplications(eA.id),
     getApplications(eB.id),
+    getMaint(eA.id),
+    getMaint(eB.id),
   ]);
 
   // Key differences (computed from data) — the answer content + SEO body.
@@ -275,6 +306,26 @@ export default async function Page({ params }: { params: Promise<Params> }) {
             </tbody>
           </table>
         </section>
+
+        {(mA.oil_l || mB.oil_l || mA.plug_pn || mB.plug_pn) && (
+          <section>
+            <h2 className="section-h">Maintenance</h2>
+            <table className="spec-table">
+              <thead style={{ background: "var(--bg-alt)" }}>
+                <tr><th></th><th>{eA.code}</th><th>{eB.code}</th></tr>
+              </thead>
+              <tbody>
+                {cmpRow("Engine oil capacity",
+                  mA.oil_l ? `${Number(mA.oil_l).toFixed(1)} L · ${(Number(mA.oil_l) * 1.05669).toFixed(1)} qt` : "—",
+                  mB.oil_l ? `${Number(mB.oil_l).toFixed(1)} L · ${(Number(mB.oil_l) * 1.05669).toFixed(1)} qt` : "—")}
+                {cmpRow("Oil viscosity", mA.viscosity ?? "—", mB.viscosity ?? "—")}
+                {cmpRow("Spark plug",
+                  mA.plug_pn ? `${mA.plug_brand ? `${mA.plug_brand} ` : ""}${mA.plug_pn}${mA.plug_gap ? ` · ${Number(mA.plug_gap)} mm gap` : ""}` : "—",
+                  mB.plug_pn ? `${mB.plug_brand ? `${mB.plug_brand} ` : ""}${mB.plug_pn}${mB.plug_gap ? ` · ${Number(mB.plug_gap)} mm gap` : ""}` : "—")}
+              </tbody>
+            </table>
+          </section>
+        )}
 
         <section>
           <h2 className="section-h">Where each engine is used</h2>
