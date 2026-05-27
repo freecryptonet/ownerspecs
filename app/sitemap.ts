@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { query } from "@/lib/db";
+import { ENGINE_PAIRS } from "@/lib/engineCompare";
 
 const BASE = "https://ownerspecs.com";
 
@@ -310,6 +311,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         lastModified: new Date(),
         changeFrequency: "monthly",
         priority: 0.6,
+      });
+    }
+    for (const [a, b] of ENGINE_PAIRS) {
+      pages.push({
+        url: `${BASE}/compare/engines/${a}-vs-${b}`,
+        lastModified: new Date(),
+        changeFrequency: "monthly",
+        priority: 0.5,
       });
     }
 

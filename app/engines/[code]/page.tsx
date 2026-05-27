@@ -5,6 +5,7 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { pageMetadata, faqJsonLd } from "@/lib/seo";
 import { boreStrokeDual, displacementDual } from "@/lib/units";
+import { compareSiblings } from "@/lib/engineCompare";
 
 type Params = { code: string };
 
@@ -114,6 +115,16 @@ export default async function Page({ params }: { params: Promise<Params> }) {
      ORDER BY g.start_year DESC`,
     [engine.id, engine.id],
   );
+
+  // Curated engine-vs-engine comparisons available for this engine (param `code` = engine slug)
+  const siblingPairs = compareSiblings(code);
+  const siblingCodes = siblingPairs.length
+    ? await query<{ slug: string; code: string }>(
+        `SELECT slug, code FROM engines WHERE slug IN (${siblingPairs.map(() => "?").join(",")})`,
+        siblingPairs.map((s) => s.sibling),
+      )
+    : [];
+  const codeBySlug = new Map(siblingCodes.map((r) => [r.slug, r.code]));
 
   // Aggregated oil fluid data (each gen with this engine)
   const oilEntries = await query<FluidEntry>(
@@ -232,6 +243,21 @@ export default async function Page({ params }: { params: Promise<Params> }) {
             </tbody>
           </table>
         </section>
+
+        {siblingPairs.length > 0 && (
+          <section>
+            <h2 className="section-h">Compare {engine.code} with</h2>
+            <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexWrap: "wrap", gap: 8 }}>
+              {siblingPairs.map((s) => (
+                <li key={s.pair}>
+                  <a href={`/compare/engines/${s.pair}`} style={{ display: "inline-block", padding: "8px 14px", border: "1px solid var(--rule)", color: "var(--ink)", fontFamily: "var(--font-mono)", fontSize: 13 }}>
+                    {engine.code} vs {codeBySlug.get(s.sibling) ?? s.sibling.toUpperCase()} →
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
 
         {/* Applications */}
         <section>
