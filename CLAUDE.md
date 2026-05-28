@@ -183,7 +183,28 @@ Full recipe (batch ingest → patch metadata → hero image → moat migration �
 
 ## Manual PDF extraction & US OM gaps
 
-- VPS PDF extraction recipe (pypdf, `/tmp/pdfx.py` modes, mopar OM era differences) → [[reference_manual_inventory_system]].
+**Fast path — manual_query.py (mig 515, 2026-05-28):** PDFs are pre-converted to markdown alongside the PDF, with `<!--PAGE n-->` markers and a `section_map` JSON per manual (`fluids`/`torques`/`maintenance`/`fuses`/`bulbs`/`tire_pressures`/`specifications` → page ranges). Use this for ALL manual lookups; the old per-query pypdf flow is the fallback only.
+
+```bash
+# from the VPS (DB local, no tunnel needed)
+ssh -i ~/.ssh/autodtcs_key root@72.62.154.119 'cd /home/deploy/ownerspecs && set -a && source .env.local && set +a && ./.venv-manuals/bin/python scripts/manual_query.py <cmd>'
+
+# list manuals with markdown indexed
+manual_query.py list bmw
+manual_query.py list --brand suzuki --year 2018
+
+# dump one section of a manual (page range from section_map)
+manual_query.py show BMW_X7_G07_2019_OwnersManual fluids
+manual_query.py show 109 torques                 # by inventory id
+
+# corpus-wide grep, optionally scoped to a section
+manual_query.py grep "5W-30|0W-20" --topic fluids
+manual_query.py grep "ft-lb" --brand chrysler --topic torques
+```
+
+Pipeline (one-time per manual): `scripts/convert_manuals.py` (pymupdf4llm, ~0.17s/page on VPS, `--skip-large 1000` to skip FSMs) → writes sibling `.md` → `scripts/detect_sections.py --write-db` populates `manual_inventory.md_path` + `section_map` (and inserts a stub inventory row if the PDF was an orphan). Re-run after dropping new PDFs into `manuals/`.
+
+- Legacy VPS PDF extraction recipe (pypdf, `/tmp/pdfx.py` modes, mopar OM era differences) → [[reference_manual_inventory_system]]. Still useful when section_map missed a section or for the FSM (chrysler-300c, 9528p, skipped by `--skip-large`).
 - Tyre PSI + 12V battery group/CCA are the two specs US OMs (and HaynesPro) systematically omit; legitimate fill path (aggregator with `public_link=0` + "NOT OEM" note) → [[reference_us_om_gaps]].
 
 ## Where the moat data should come from (priority order)
