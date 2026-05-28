@@ -183,26 +183,32 @@ Full recipe (batch ingest → patch metadata → hero image → moat migration �
 
 ## Manual PDF extraction & US OM gaps
 
-**Fast path — manual_query.py (mig 515, 2026-05-28):** PDFs are pre-converted to markdown alongside the PDF, with `<!--PAGE n-->` markers and a `section_map` JSON per manual (`fluids`/`torques`/`maintenance`/`fuses`/`bulbs`/`tire_pressures`/`specifications` → page ranges). Use this for ALL manual lookups; the old per-query pypdf flow is the fallback only.
+**Fast path — manual_query.py (mig 515, 2026-05-28):** PDFs are pre-converted to markdown with `<!--PAGE n-->` markers, with a `section_map` JSON per manual (`fluids`/`torques`/`maintenance`/`fuses`/`bulbs`/`tire_pressures`/`specifications` → page ranges). Use this for ALL manual lookups; the old per-query pypdf flow is the fallback only.
+
+**Local-canonical architecture (2026-05-28).** PDFs are LOCAL ONLY (`F:\projects\ownerspecs\manuals\*.pdf` — ~5GB and growing). The VPS holds only the `.md` files and the DB. Reasoning: PDFs are cold storage we never serve; the markdown is what makes queries fast. Centralizing PDFs on a 96GB shared VPS would crowd vindecoder/freecrypto/build artifacts once we add Hyundai/Audi/Mopar US portals.
 
 ```bash
-# from the VPS (DB local, no tunnel needed)
+# QUERY (run on VPS — DB local, no tunnel)
 ssh -i ~/.ssh/autodtcs_key root@72.62.154.119 'cd /home/deploy/ownerspecs && set -a && source .env.local && set +a && ./.venv-manuals/bin/python scripts/manual_query.py <cmd>'
 
-# list manuals with markdown indexed
 manual_query.py list bmw
 manual_query.py list --brand suzuki --year 2018
-
-# dump one section of a manual (page range from section_map)
 manual_query.py show BMW_X7_G07_2019_OwnersManual fluids
 manual_query.py show 109 torques                 # by inventory id
-
-# corpus-wide grep, optionally scoped to a section
 manual_query.py grep "5W-30|0W-20" --topic fluids
 manual_query.py grep "ft-lb" --brand chrysler --topic torques
 ```
 
-Pipeline (one-time per manual): `scripts/convert_manuals.py` (pymupdf4llm, ~0.17s/page on VPS, `--skip-large 1000` to skip FSMs) → writes sibling `.md` → `scripts/detect_sections.py --write-db` populates `manual_inventory.md_path` + `section_map` (and inserts a stub inventory row if the PDF was an orphan). Re-run after dropping new PDFs into `manuals/`.
+**Pipeline for new PDFs** (everything runs LOCALLY — needs the MariaDB tunnel `~/start-mariadb-tunnel.bat` for `--write-db`):
+```
+F:\projects\ownerspecs\.venv-manuals\Scripts\python.exe scripts\convert_manuals.py --workers 4 --skip-large 1000
+# tar+ssh sync .md (~5 min for a couple GB, scales tiny since .md is ~5% of PDF size)
+tar c manuals/*.md | ssh -i ~/.ssh/autodtcs_key root@72.62.154.119 'cd /home/deploy/ownerspecs && tar x'
+# detect_sections runs locally (reads PDF for sha256/page_count, writes to VPS DB via tunnel)
+F:\projects\ownerspecs\.venv-manuals\Scripts\python.exe scripts\detect_sections.py --write-db
+```
+
+**Portal crawlers** auto-discover manufacturer-owned PDFs. Pattern: fetch index → regex `.pdf` links → download into `manuals/`, skip existing. Existing: `scripts/crawl_mitsubishi_nl.py` (84 PDFs, MY1998-2026). To add a brand: copy the Mitsubishi crawler, swap the index URL + filename regex + normalize_filename prefix.
 
 - Legacy VPS PDF extraction recipe (pypdf, `/tmp/pdfx.py` modes, mopar OM era differences) → [[reference_manual_inventory_system]]. Still useful when section_map missed a section or for the FSM (chrysler-300c, 9528p, skipped by `--skip-large`).
 - Tyre PSI + 12V battery group/CCA are the two specs US OMs (and HaynesPro) systematically omit; legitimate fill path (aggregator with `public_link=0` + "NOT OEM" note) → [[reference_us_om_gaps]].
