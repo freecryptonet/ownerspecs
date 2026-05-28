@@ -113,15 +113,8 @@ ssh -i ~/.ssh/autodtcs_key root@72.62.154.119 'sudo -u deploy pm2 restart os'
 - **Trims are catalog data, NOT citation-gated.** `trims` performance/dimension columns (hp, torque_nm, 0-100, top speed, fuel, CO2) come from auto-data.net per-variant pages (the source the scraper uses) and carry no `spec_sources`. This is the one place auto-data is the accepted source — unlike moat specs (fluids/torques/etc.), which need HaynesPro/OEM. Use the lower bound of auto-data's published fuel/CO2 range, consistently.
 - **`engines.fuel` is normalized lowercase** (`petrol`/`diesel`/`electric`/`hybrid`; mig 480 folded `Petrol`/`gasoline`→`petrol`). Any fuel check must still be case-insensitive AND treat `gasoline` as petrol (legacy rows / scraper drift). Fuel-aware suppression (no spark plugs on diesel/EV, no glow on petrol, no combustion on EV) lives on the trim + gen `/torque` pages.
 - **Specs are engine-specific** (Tim's rule). Engine oil, coolant, compression, spark plug → correct only the matching engine's row, and only from a source that covers THAT engine. Drivetrain fluids (ATF, transfer case, front/rear diff) are shared across a model's variants (same gearbox/AWD) → gen-wide is fine.
-- **A `spec_sources` link to an OM is a CLAIM, not proof.** Rows can cite an owner's manual yet hold lore values (CX-90 had wrong oil/coolant/compression/bulbs/intervals while citing the OM, migs 483-484). When correctness matters, pull the actual PDF (pypdf, see manual-extraction section) and verify. Likely systemic on pre-2026-05 gens.
-- **EV trim hp = headline PEAK power, not HaynesPro's figure.** HaynesPro lists the EU type-approval CONTINUOUS rating (Nennleistung) for electric motors (e.g. B250e shows 65 kW); the `hp` column wants the documented peak (132 kW / 179 PS). Cross-check peak across specs DBs.
-
-## EV (battery-electric) data model
-
-- BEV trims carry EV columns (mig 494): `battery_kwh_usable/total`, `pack_voltage`, `range_epa_km`, `range_wltp_km`, `dc_charge_kw`, `ac_charge_kw`, `charge_10_80_min`, `consumption_wh_km`, `plug_type`. Single-speed reducer = `transmissions` id 71; EV motors have no public sales code → descriptive `engines.code` (e.g. `iX1-eDU`).
-- These EV columns are **catalog data** (like hp/CO2) — NOT citation-gated.
-- Render: trim page shows an "Electric powertrain" section (when `isEV` + data; replaces the hidden 0cc engine block). Gen hub computes `genIsEV` (any trim w/ battery or range) and swaps the last 3 comparison columns Fuel/CO₂/Oil → Range/Battery/DC kW (same column count — no extra width).
-- Sourcing: EPA range from fueleconomy.gov (mi→km, `public_link=1`); WLTP + charging from OEM press; ev-database.org research-aid only (≥2 sources). **Tesla: leave `battery_kwh_usable` + `pack_voltage` NULL** (Tesla publishes neither; teardown figures aren't OEM-grade). EPA blank for non-US trims.
+- **A `spec_sources` link to an OM is a CLAIM, not proof.** Rows can cite an owner's manual yet hold lore values (CX-90 had wrong oil/coolant/compression/bulbs/intervals while citing the OM, migs 483-484). When correctness matters, pull the actual PDF and verify (pypdf — see [[reference_manual_inventory_system]] for the VPS extraction recipe). Likely systemic on pre-2026-05 gens.
+- **EV trim hp = headline PEAK power, not HaynesPro's continuous rating.** Full BEV data model (mig 494 schema, render rules, citation policy, sourcing) → [[reference_ev_data_model]]. Consult before adding/editing any BEV trim.
 
 ## Shared helpers (use these, don't reinline)
 
@@ -182,45 +175,16 @@ ssh -i ~/.ssh/autodtcs_key root@72.62.154.119 \
 - Never break the source-tracking invariant — if you add a spec value without inserting a `spec_sources` row, that spec won't carry a citation and the page won't show it in the sources block.
 - Never use `git push --force`, `pm2 delete vd/vd-staging/zw/fc`, or any destructive op on the shared VPS without explicit confirmation. Other production sites live there.
 
-## Backfilling per-engine moat data (multi-gen batching)
+## Adding a new generation / backfilling moat data
 
-For backfilling multiple gens of the same manufacturer family, batch into ONE migration file (see mig 101 Korean, 102 Toyota+Ford, 103 European, 104 VW Group, 105 BMW+MB, 106 Lexus). One scp + one apply + one rebuild covers the whole batch. Each gen subsection sets `@gen`, `@e_*` engine IDs, and `@s_sm` source IDs locally so they don't leak. Cut from ~30 min/gen to ~8 min/gen.
+Full recipe (batch ingest → patch metadata → hero image → moat migration → rebuild → smoke), the scraper operational gotchas (tsx-not-on-VPS, ultimatespecs-404-crash, codename exact-match for trim attachment, RS Q3 ↔ RSQ3 normalisation gap, current `isChassisCode` regex), AND the multi-gen batching patterns (idempotent inserts, compact UNION inserts across sibling gens, verifying `SET @src LIKE` resolved, what's safe to reuse engine-to-engine) → [[reference_nameplate_add_workflow]].
 
-- **Idempotent inserts: `INSERT … SELECT <literal vals> FROM DUAL WHERE NOT EXISTS(…)`, not `SELECT * FROM (SELECT …) v`.** MariaDB: `rows`/`groups` are reserved words as aliases; identifiers are case-insensitive, so derived columns differing only in case (`iX-xDrive50` vs `ix-xdrive50`) collide → ERROR 1060 duplicate column.
-- **Compact multi-gen inserts (sibling gens, identical rows):** `INSERT INTO <tbl> (...) SELECT g, <cols> FROM (SELECT 142 g UNION SELECT 143 UNION ...) x` writes the same rows for N gens in one statement. For per-gen sources use `CASE generation_id WHEN ... THEN <src> END` in the `spec_sources` INSERT. (Used for the BMW M5/M6/M8 + S55/S58 batches, migs 458-464.)
-- **When citing via `SET @src = (SELECT id FROM sources WHERE citation LIKE '%...%' LIMIT 1)`, verify it resolved.** A NULL `@src` makes the `INSERT IGNORE INTO spec_sources` insert nothing → those rows carry no citation and are suppressed at render (invisible page, no error). After apply, sanity-check e.g. `SELECT COUNT(*) FROM spec_sources ss JOIN bulbs b ON ss.spec_table='bulbs' AND ss.spec_id=b.id WHERE b.generation_id=<gen>`.
-- **Same engine across body styles → reuse the engine-specific values, verify chassis values per gen.** Oil capacity / spark plug / oil-filter PN are identical across siblings sharing one engine (e.g. M6←M5, M8←M5) and can be reused once verified; battery, tyres, bulbs, fuses differ by chassis and must be pulled per gen.
+**Always-load reminder:** rebuild is REQUIRED after any gen insert — `generateStaticParams` snapshots at build time.
 
-## Adding a new generation (the per-nameplate workflow)
+## Manual PDF extraction & US OM gaps
 
-Full recipe in memory: `reference_nameplate_add_workflow.md`. Short form:
-
-**Running `scrapers/batch.ts` (catalog/trim backfill) — operational gotchas:**
-- `tsx` is NOT installed on the VPS (devDep pruned) → invoke with `npx -y tsx scrapers/batch.ts …`.
-- batch.ts requires BOTH `--auto-data-gen` and `--ultimatespecs-gen`; a **404 on the ultimatespecs URL crashes it** (no graceful fallback) — pass any *loadable* sibling model page (e.g. `…/car-specs/Audi-models/Audi-A3`) as a non-pairing fallback to get auto-data-only ingest.
-- **The scraper attaches trims to an existing gen ONLY if the codename it extracts EXACTLY matches that gen's `codename`** — otherwise it forks a DUPLICATE generation. To backfill stub gens: align the stub `codename` to auto-data's value first (e.g. A7 4G→C7, Q8 4MN→4M), or dedup after (delete the bare stub, repatch the scraped gen's slug). auto-data splits each chassis by body+facelift into separate gen URLs sharing one codename — scrape ALL same-codename URLs to merge a full lineup (`upsertTrim` dedups by slug). Its pages sometimes list one trim under two URLs, so counting trim URLs overcounts.
-- **`findOrCreateModel` does NOT normalise "RS Q3"↔"RSQ3" or treat "TT RS" as distinct from "TT"** → halo/performance variants fork duplicate models or contaminate the base model. Unfixed: the Audi RS Q3 / RS Q8 / TT RS / SQ2 variants are intentionally left at base lineups because of this.
-- **`insert.ts` codename extractor handles digit-leading codes and multi-token parens.** `isChassisCode` = `/^(?=.*[A-Z])[A-Z0-9]{2,6}$/` (≥1 letter, no spaces → still rejects "245 Hp"); `grabParen` splits paren content on `/[,\s]+/` and returns the last chassis-code token, so `(8X)`, `(D3, 4E)`, `(8T3, facelift 2011)`, `(D4,4H facelift 2013)` all resolve. Don't revert to the old letter-leading-only rule — Audi 8X/4G/8V etc. would null-out and duplicate gens again.
-
-
-1. Find auto-data + ultimatespecs gen-index URLs (WebSearch / WebFetch).
-2. `npx tsx scrapers/batch.ts --auto-data-gen <url> --ultimatespecs-gen <url> --limit 6` on the VPS as deploy.
-   - If ultimatespecs has no index for the exact gen, pass any sibling — batch.ts auto-falls-back to auto-data-only.
-3. Patch gen metadata: set codename (e.g. `G20`, `P702`, `BT`), clean up slug (`<model>-<codename>-<body>-<years>`), rename OEM source citation to `'<Brand> <Model> (<Codename>) Service Manual'`.
-4. Hero image: `python scrapers/images/wikimedia.py search <Brand> <Model> <Codename>` → download a 1280px CC BY-SA thumb to `public/images/<brand>/<gen-slug>/hero.jpg`. Standard widths only (220/320/640/800/1024/1280/1920/2560) — others 400.
-5. Write `db/migrations/NNN_seed_<model>_<codename>_moat.sql` populating fluid_specs / torque_specs / electrical_specs / bulbs / fuses / parts / service_intervals / tire_pressures + an IGNORE-INSERT into `images`. Cite the public OEM-manual source via `INSERT IGNORE INTO spec_sources` per table.
-6. scp the hero + the migration to the VPS, run the migration, `npm run build && pm2 restart os`. **Rebuild is required** — `generateStaticParams` snapshots gens at build time.
-7. Smoke-test the 6 routes (`/`, `/oil-capacity`, `/maintenance-schedule`, `/torque`, `/electrical`, `/tires`) for HTTP 200.
-
-## Extracting text from manual PDFs on the VPS
-
-- No `pdftotext`, and `pdf-parse` (npm) is NOT installed. Use **pypdf**: `python3 -m pip install --break-system-packages pypdf` (VPS python is 3.14). Then a small `/tmp/pdfx.py` helper with modes: scan for section-header pages, dump a page range, page count. Manuals live at `/home/deploy/ownerspecs/manuals/`.
-- Older Mopar OMs print spark-plug PN + gap and fixed maintenance-mileage tables; newer OMs (2015+) just say "Mopar Spark Plugs" and use an oil-change-indicator (no fixed interval) — expect to source plug gap elsewhere on the newer ones.
-
-## The recurring US OM-gaps: tyre PSI + 12V battery
-
-- Both the owner manual AND HaynesPro frequently defer cold **tyre pressure** to the door-jamb placard, and the OM never prints the **12V battery** group/CCA. Fill these from a third-party aggregator (tirepressure.org / startmycar / battery-fitment) as a NEW `reference` source, `public_link=0`, with citation + notes that explicitly say "aggregated reference, NOT OEM documentation". Flag provenance — don't pass it off as OEM.
-- HaynesPro's `adjustmentData` page DOES publish battery (Ah/CCA), spark-plug gap, engine torques, and (for some models) tyre pressure — always check it before falling back to a flagged source. FCA model-group IDs + the page URL are in memory `reference_haynespro_url_patterns.md`.
+- VPS PDF extraction recipe (pypdf, `/tmp/pdfx.py` modes, mopar OM era differences) → [[reference_manual_inventory_system]].
+- Tyre PSI + 12V battery group/CCA are the two specs US OMs (and HaynesPro) systematically omit; legitimate fill path (aggregator with `public_link=0` + "NOT OEM" note) → [[reference_us_om_gaps]].
 
 ## Where the moat data should come from (priority order)
 
@@ -236,14 +200,9 @@ Why this matters: the whole moat is data the incumbents miss. If the moat tables
 
 ## Source citations: link-gating policy (mig 194)
 
-`sources.public_link` (tinyint(1), default 0) controls whether the Sources block renders the citation as a clickable link or as text-only. Set deliberately at source-row creation time.
+`sources.public_link` (tinyint(1), default 0): `1` = rendered as `<a>`, `0` = rendered as text-only `<cite>`. Set deliberately at source-row creation. **`public_link = 1` only for manufacturer-owned domains + NHTSA/vPIC + EPA/fueleconomy + SAE.** Everything else (HaynesPro / ownersmanuals2 / ManualsLib / auto-data / ultimatespecs / startmycar / Wikipedia / 3rd-party FSM hosts) = 0.
 
-- **`public_link = 1`**: rendered as `<a href="..." rel="nofollow noopener noreferrer" target="_blank">`. Use only for manufacturer-owned domains (bmw.com/owner-info, audi.com/owner-resources, owners.honda.com, mazdausa.com, etc.), NHTSA / vPIC, EPA / fueleconomy.gov, SAE.
-- **`public_link = 0`** (default): rendered as text-only `<cite>{citation}</cite>`. **All** HaynesPro / ownersmanuals2 / ManualsLib / auto-data.net / ultimatespecs.com / startmycar / Wikipedia rows get this. URL stays in DB for internal audit, never exposed in rendered HTML.
-
-Why: (1) stop SEO link-equity leakage to top-3 competitors (auto-data / ultimatespecs / startmycar), (2) avoid copyright invitations from paid datasets like HaynesPro — a live link to `workshopdata.com/.../storyId=N` is the easiest argument for "you republished our content" in a DMCA notice. Restated procedures per Feist v. Rural are defensible; an explicit source link weakens that posture.
-
-When adding a new source row in a migration, decide `public_link` deliberately. Default to 0 unless you have a specific reason it should be 1.
+Full eligibility table + rationale (stops SEO leakage to competitors + reduces paid-vendor copyright exposure) → [[reference_source_link_gating]].
 
 ## Vendor/sibling-brand leaks: scrub EVERY rendered text column
 
@@ -264,36 +223,13 @@ When adding a new source row in a migration, decide `public_link` deliberately. 
 
 ## Known scraper/page bug patterns (do not regress)
 
-These were each discovered in production and fixed. Future Claude — read these before touching the related code.
+Catalog of fixed-in-prod bugs covering trim transmission filter, citation index sync, source attribution scope (per-table compound check), `lib/labels.ts` as single source of truth, scraper codename + body_type rules, CSS table layout traps, per-engine query scoping, and the `{0 && jsx}` numeric-0 render trap → **[[reference_known_bug_patterns]]**.
 
-| Where | Bug | Fix |
-|---|---|---|
-| `app/[brand]/[generation]/[trim]/page.tsx` trim render | Trim page showed BOTH `transmission_mt` and `transmission_cvt` rows for a 6MT trim because filter was on engine_id only and the same engine pairs with both transmissions across sibling trims. | Trim query joins `transmissions` to get `tr.type`; render filters `transmission_*` rows where suffix mismatches `trim.transmission.type` (MT/AT/CVT/DCT/eCVT). Don't regress. |
-| `lib/citations.ts` `buildCitationIndex` | Sources block included sources tied to spec rows the page didn't actually render — Sources block out of sync with `[N]` footnotes. | Function takes `renderedRows: {table,id}[]` — callers MUST pass post-suppression row IDs. Empty list = empty Sources block (correct). |
-| `lib/generation.ts:108` `getGenerationSources` | Mixed-table IN list cross-pollinated sources — a Civic fluid_spec id=8 matched as a BMW source if BMW also had any spec with id=8 in any table. | Use per-table compound checks `(spec_table = ? AND spec_id IN (SELECT id FROM <table> WHERE generation_id = ?))`. |
-| `app/[brand]/[generation]/page.tsx` (was) | The gen hub had its own copy of the buggy IN-list source query. | Removed duplicate; calls the shared helper. |
-| `app/[brand]/[generation]/oil-capacity/page.tsx` (was) | Hardcoded `engineLabel: Record<string, string>` map with demo Civic data (`"1.5 T (L15B7) — Sport · EX-T · Touring"`) leaked onto every gen because fallthrough never reached `engine_display`. | Replaced with a `rowLabel(o)` builder. Falls back to `"All engines · generation-wide"` when no trim is associated. |
-| `app/[brand]/[generation]/page.tsx` (was) + 5 topic pages | Each page had its OWN `Record<string, string>` for fluid/torque/service/bulb/etc. labels. (a) Civic demo data `"Engine oil (1.5T)"` leaked again. (b) Newer DB enum values (`transmission_at`, `transfer_case`, `front_differential`, `drl`, `frunk`, `cargo_bed`, `loaded`) fell through to ugly raw strings. | **Consolidated to single `lib/labels.ts`** as source of truth. Every helper falls back to `humanize()` (`"front_differential"` → `"Front differential"`) so missing entries degrade gracefully instead of looking broken. All 6 pages import from there. **Rule: when adding a new fluid/torque/service/etc. enum value in a migration, add the label to `lib/labels.ts` in the same change.** |
-| Topic pages | Citation badge hardcoded `<sup>[1][2]</sup>`. | Generate from `sources.length`. |
-| `scrapers/insert.ts` codename extractor | Caught `(245 Hp)`, `(190 Hp)` etc. as chassis codes and forked one Golf VIII into 5 gens. | Restrict to `/^[A-Z]{1,5}\d{0,4}[A-Z]?$/` plus a `(model, body_type, display_name)` dedupe fallback when codename is NULL. |
-| `scrapers/insert.ts` body_type | "SUV / TT", "Sedan, Fastback", "Station wagon (estate)" slugified to ugly `-suv-tt-`, `-sedan-fastback-`, `-station-wagon-estate-` and forked gens. | Strip parentheticals, then split on `/` or `,`, take the leading token. |
-| `app/globals.css .tabs-inner` | `overflow-x: auto` rendered a thin cosmetic scrollbar on desktop. | Add `scrollbar-width: none` + `::-webkit-scrollbar { display: none }`. |
-| `db/migrations/*_seed_*.sql` | `tire_size varchar(48)` and `battery_group varchar(24)` overflow on long descriptors. | Trim to fit. |
-| Older migrations | `capacity_qt` left NULL when `capacity_l` was populated. | Backfill: `UPDATE fluid_specs SET capacity_qt = ROUND(capacity_l * 1.05669, 2) WHERE capacity_l IS NOT NULL AND capacity_qt IS NULL`. |
-| gen hub trim table `app/[brand]/[generation]/page.tsx` | `table-layout:auto` + wrapping cells bloated Engine/Hp columns (~210px) while numeric cols (torque/0-100/fuel/CO2) cramped to ~50px. | Add `white-space:nowrap` to the table (keep auto layout) so columns size to content + balance. Also compact the verbose `transmissions.display_name` ("6 gears, manual transmission"→"6-spd manual") in the cell. |
-| `.spec-table th { width:35% }` on multi-column tables | The 35% label width is for 2-col key/value tables; on a 6-col data table every header demanded 35%, bloating left cols + cramping right. | `.spec-table thead th { width:auto }` — multi-column (thead) tables size to content; key-value tables (th in tbody) keep 35%. |
-| engine `/[code]` + any per-engine section | Parts/torque query scoped by GENERATION (`g.id IN gens-using-this-engine`) without `p.engine_id` filter → showed every engine's plugs/filters from shared gens (e.g. ESF page listing Pentastar/Hellcat plugs). | Per-engine pages MUST filter `p.engine_id = engine.id`, not by generation. Same root cause as the torque leak. |
-| EV trim render `[trim]/page.tsx` | `{trimRow.X && <jsx>}` rendered a literal "0" when X is a numeric 0 (EV displacement_cc=0, co2_g_km=0, trailer=0). | Use `{X != null && …}` to show a legit 0 (e.g. EV CO₂ "0 g/km"), or `{X ? (…) : null}` to hide it. Never bare `{number && jsx}`. |
+**Read this file BEFORE editing:** any `app/[brand]/[generation]/**` page · `lib/citations.ts` · `lib/generation.ts` · `lib/labels.ts` · `scrapers/insert.ts` · `app/globals.css` table/tab styles · any new `_seed_` migration with tire_pressures/electrical_specs · anywhere you're rendering a numeric DB value with `{x && ...}`.
 
-## Family umbrella layer (`family_slug` / `family_label`)
+## Family umbrella + cloning a sibling gen
 
-Gens sharing a chassis platform (sedan + LCI + Touring + M-variant + BEV sibling) are grouped via `generations.family_slug` (varchar 96, indexed). The `/family/[slug]` route renders a side-by-side comparison. Per-gen pages auto-show a "Related on same chassis" pill bar + family breadcrumb. Set `family_slug` + `family_label` when inserting any new gen on an existing platform.
-
-Naming: `<brand>-<model-line>-<base-chassis-code>-<years>` (e.g. `bmw-5-series-g30-2017-2024`, `audi-a4-b9-2015-2025`).
-
-## Cloning a gen from a sibling (Touring/LCI/M-variant)
-
-When cloning gen-wide spec data from a sibling gen via content-matching JOINs into `spec_sources`, **use `INSERT IGNORE`**. Multiple sibling rows can match the same new row on `(fluid_type, engine_id, capacity_l, viscosity)` and cause duplicate-key violations on `uk_spec_sources`. Same applies to bulbs/torques/tires JOINs. Always `UPDATE procedures SET title = REPLACE(...)` immediately after the procedure clone — skipping it leaves stale codename labels (G30→G60 contamination lesson, fixed in mig 181).
+`generations.family_slug` / `family_label` groups platform-mates for `/family/[slug]` + related-on-chassis pill bar. Set both when adding a sibling gen. Cloning gen-wide specs from a sibling uses `INSERT IGNORE` (multi-match → duplicate-key on `uk_spec_sources`) and you MUST `UPDATE procedures SET title = REPLACE(...)` immediately after the procedure clone (G30→G60 contamination lesson, mig 181). Full naming convention + clone-vs-verify table → [[reference_family_and_sibling_cloning]].
 
 ## Pending
 
