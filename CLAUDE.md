@@ -233,9 +233,9 @@ To add a brand: copy whichever crawler structurally matches the target portal (M
 
 **HTML-only portals have no crawler.** Some OEM manuals live in a session-bound SPA viewer with no PDF download. **Audi** (`ownersmanual.audi.com`) is the canonical example. For these, drive the viewer per gen-fill via the Playwright MCP tools (see memory `reference_audi_owners_manual_portal`) — do NOT build a bulk walker.
 
-**Login-walled US OEM portals also have no crawler.** **Mazda US / Toyota US / Honda US** all gate OMs behind a sign-in (`mymazda.com`, `toyota.com/owners/login`, `mygarage.honda.com`). Pattern when filling a US gen from one of these:
+**Login-walled US OEM portals also have no crawler.** **Mazda US / Toyota US / Honda US / Subaru US** all gate OMs behind a sign-in (`mymazda.com`, `toyota.com/owners/login`, `mygarage.honda.com`). Pattern when filling a US gen from one of these:
 1. **Mazda US** — cite the **Mazda CA** OM from our `crawl_mazda_ca.py` output (same English content; add `sources.notes='Canadian-market OM — spec-identical to US'`).
-2. **Toyota US / Honda US** — no clean foreign-market English equivalent (recon confirmed 2026-05-29). Drive the US portal via Playwright per gen-fill, signing in if needed. Or fall back to ManualsLib internal-only (cite as `<Brand> <Model> Owner's Manual`, **never name ManualsLib**, `public_link=0` per `feedback_never_name_data_vendor`).
+2. **Toyota US / Honda US / Subaru US** — no clean foreign-market English equivalent (recon confirmed 2026-05-29). Drive the US portal via Playwright per gen-fill, signing in if needed. Or fall back to ManualsLib internal-only (cite as `<Brand> <Model> Owner's Manual`, **never name ManualsLib**, `public_link=0` per `feedback_never_name_data_vendor`). Subaru's `techinfo.subaru.com` is dealer-gated, not a public alternative.
 3. Toyota's `/service/tcom/contentFragmentData/v2/series-mapper` endpoint is open and returns ALL (year, model) tuples 2015+ as a canonical catalog — useful for bootstrapping Toyota gens into our DB without driving the UI.
 
 The recon-then-skip workflow for new US OEMs (`<brand>usa.com/owners/owners-manual` 404s → login portal) is captured in memory `feedback_convert_on_demand_not_bulk`. Don't redo the recon — check that file first.
