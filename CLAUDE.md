@@ -96,6 +96,9 @@ ssh -i ~/.ssh/autodtcs_key root@72.62.154.119 'sudo -u deploy pm2 restart os'
 - **Build failures cascade to 502s.** If `npm run build` exits non-zero, pm2 keeps serving stale `.next` but new gens 502. After every build, grep its full output for `error|Type error`, not just `tail -2`.
 - **Bash `cmd | tail -N || fallback` swallows failures.** Pipe returns tail's (0) exit, so `||` never fires. Drop the pipe or use `if ! cmd; then ...; fi` for fallbacks.
 - **Playwright tab indices aren't stable.** Always `browser_tabs list` before `select`. HaynesPro/workshopdata.com has been tab 1, 3, and 8 across sessions.
+- **Bulk file sync uses `tar c | ssh tar x`, not scp loops.** `tar c *.md | ssh -i ~/.ssh/autodtcs_key root@72.62.154.119 'cd /home/deploy/ownerspecs/manuals && tar x'` synced 281 .md files in ~5 sec; per-file scp would be ~100× slower. Same pattern for VPS→local pulls.
+- **Use the PowerShell tool for `F:\...` invocations.** The Bash tool strips backslashes (`F:\projects\X` becomes `F:projectsX`) and the command exits 127 / "command not found". For non-trivial Python with raw strings (`r"F:\..."`) or multi-line code, write a temp `scripts/_x.py` and invoke it — PowerShell mangles even single-quoted Python here-strings.
+- **Stopping a runaway local batch.** `Get-Process python | Stop-Process -Force` halts all workers cleanly. The background-task wrapper reports exit code **255** — that's the kill signal, not a real failure.
 
 ## Data conventions
 
