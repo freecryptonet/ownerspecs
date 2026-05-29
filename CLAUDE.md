@@ -227,10 +227,18 @@ A bulk convert is still defensible when we want corpus-grep over a specific area
 - `scripts/crawl_mitsubishi_nl.py` (84 PDFs, MY1998-2026)
 - `scripts/crawl_hyundai_nl.py` (70 PDFs, 22 model variants, MY2014-2025)
 - `scripts/crawl_mopar_us.py` (694 PDFs, 6.1 GB, 6 brands MY2005-2027 — uses the public APIM key from api.mopar.com/vehicleKit, skips Akamai-walled sitemap)
+- `scripts/crawl_mazda_ca.py` (180 PDFs, MY2001-2025, all Mazda + powertrain-split CX-70/CX-90/CX-50; PDFs on mazda.ca/globalassets, dealer index at planetemazda.com)
 
-To add a brand: copy whichever crawler structurally matches the target portal (Mitsubishi/Hyundai = static HTML index; Mopar = JSON API). Swap index URL + filename pattern + normalize_filename prefix.
+To add a brand: copy whichever crawler structurally matches the target portal (Mitsubishi/Hyundai/Mazda CA = static HTML index; Mopar = JSON API). Swap index URL + filename pattern + normalize_filename prefix.
 
 **HTML-only portals have no crawler.** Some OEM manuals live in a session-bound SPA viewer with no PDF download. **Audi** (`ownersmanual.audi.com`) is the canonical example. For these, drive the viewer per gen-fill via the Playwright MCP tools (see memory `reference_audi_owners_manual_portal`) — do NOT build a bulk walker.
+
+**Login-walled US OEM portals also have no crawler.** **Mazda US / Toyota US / Honda US** all gate OMs behind a sign-in (`mymazda.com`, `toyota.com/owners/login`, `mygarage.honda.com`). Pattern when filling a US gen from one of these:
+1. **Mazda US** — cite the **Mazda CA** OM from our `crawl_mazda_ca.py` output (same English content; add `sources.notes='Canadian-market OM — spec-identical to US'`).
+2. **Toyota US / Honda US** — no clean foreign-market English equivalent (recon confirmed 2026-05-29). Drive the US portal via Playwright per gen-fill, signing in if needed. Or fall back to ManualsLib internal-only (cite as `<Brand> <Model> Owner's Manual`, **never name ManualsLib**, `public_link=0` per `feedback_never_name_data_vendor`).
+3. Toyota's `/service/tcom/contentFragmentData/v2/series-mapper` endpoint is open and returns ALL (year, model) tuples 2015+ as a canonical catalog — useful for bootstrapping Toyota gens into our DB without driving the UI.
+
+The recon-then-skip workflow for new US OEMs (`<brand>usa.com/owners/owners-manual` 404s → login portal) is captured in memory `feedback_convert_on_demand_not_bulk`. Don't redo the recon — check that file first.
 
 - Legacy VPS PDF extraction recipe (pypdf, `/tmp/pdfx.py` modes, mopar OM era differences) → [[reference_manual_inventory_system]]. Still useful when section_map missed a section or for the FSM (chrysler-300c, 9528p, skipped by `--skip-large`).
 - Tyre PSI + 12V battery group/CCA are the two specs US OMs (and HaynesPro) systematically omit; legitimate fill path (aggregator with `public_link=0` + "NOT OEM" note) → [[reference_us_om_gaps]].
