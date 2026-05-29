@@ -98,6 +98,8 @@ def main() -> None:
     ap.add_argument("--workers", type=int, default=2, help="parallel workers (default 2)")
     ap.add_argument("--skip-large", type=int, default=None,
                     help="skip PDFs with more than N pages (e.g. 1000 to skip FSMs)")
+    ap.add_argument("--limit", type=int, default=None,
+                    help="convert at most N files this run (for batched runs that don't burn the CPU all night)")
     args = ap.parse_args()
 
     all_pdfs = collect_pdfs(args.only)
@@ -108,6 +110,9 @@ def main() -> None:
     print(f"found {len(all_pdfs)} PDFs, {len(todo)} need conversion, {skipped_uptodate} already up-to-date")
     if args.skip_large:
         print(f"will skip PDFs > {args.skip_large} pages")
+    if args.limit and len(todo) > args.limit:
+        todo = todo[: args.limit]
+        print(f"--limit {args.limit}: processing first {len(todo)} this run; rerun to continue")
     if not todo:
         return
 

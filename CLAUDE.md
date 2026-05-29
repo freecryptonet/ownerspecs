@@ -199,16 +199,33 @@ manual_query.py grep "5W-30|0W-20" --topic fluids
 manual_query.py grep "ft-lb" --brand chrysler --topic torques
 ```
 
-**Pipeline for new PDFs** (everything runs LOCALLY — needs the MariaDB tunnel `~/start-mariadb-tunnel.bat` for `--write-db`):
+**Convert ON DEMAND, not in bulk (decided 2026-05-29).** Bulk-converting every PDF a portal crawler downloads is wasteful — corpus-wide grep is only useful for ~10% of queries, the rest are "I know which manual I want, what does it say about X?". Pre-converting 600+ Mopar PDFs ate ~5h of CPU and produced .md for chassis we don't even have gens for. The standing rule: **the crawler downloads PDFs into `manuals/`; the conversion + index step happens only when a gen-fill task actually needs that manual.**
+
+Per-gen on-demand workflow:
 ```
-F:\projects\ownerspecs\.venv-manuals\Scripts\python.exe scripts\convert_manuals.py --workers 4 --skip-large 1000
-# tar+ssh sync .md (~5 min for a couple GB, scales tiny since .md is ~5% of PDF size)
-tar c manuals/*.md | ssh -i ~/.ssh/autodtcs_key root@72.62.154.119 'cd /home/deploy/ownerspecs && tar x'
-# detect_sections runs locally (reads PDF for sha256/page_count, writes to VPS DB via tunnel)
-F:\projects\ownerspecs\.venv-manuals\Scripts\python.exe scripts\detect_sections.py --write-db
+# 1. Tunnel up
+~/start-mariadb-tunnel.bat                              # NB: that script points port 3306 at the OLD shared Hostinger box.
+                                                         # For ownerspecs use the manual SSH:
+ssh -i ~/.ssh/autodtcs_key -L 3307:127.0.0.1:3306 -N root@72.62.154.119 &
+
+# 2. Convert just the one PDF we need
+F:\projects\ownerspecs\.venv-manuals\Scripts\python.exe scripts\convert_manuals.py --only mopar_jeep_wrangler_2024.pdf
+
+# 3. Index it
+F:\projects\ownerspecs\.venv-manuals\Scripts\python.exe scripts\detect_sections.py --only mopar_jeep_wrangler_2024.md --write-db
+
+# 4. Sync that one .md to VPS
+scp -i ~/.ssh/autodtcs_key manuals/mopar_jeep_wrangler_2024.md root@72.62.154.119:/home/deploy/ownerspecs/manuals/
 ```
 
-**Portal crawlers** auto-discover manufacturer-owned PDFs. Pattern: fetch index → regex `.pdf` links → download into `manuals/`, skip existing. Existing: `scripts/crawl_mitsubishi_nl.py` (84 PDFs, MY1998-2026). To add a brand: copy the Mitsubishi crawler, swap the index URL + filename regex + normalize_filename prefix.
+A bulk convert is still defensible when we want corpus-grep over a specific area (e.g. "every Stellantis OM that mentions PHEV torque values") — in that case run `convert_manuals.py --workers 2 --skip-large 1000 --limit 50` in batches that don't burn the CPU all day, then full-corpus sync + `detect_sections.py --write-db`. `--limit N` was added 2026-05-29 specifically for batched runs.
+
+**Portal crawlers** auto-discover manufacturer-owned PDFs and store them on F:\. Pattern: fetch index → regex `.pdf` links → download into `manuals/`, skip existing. Existing crawlers (do NOT re-run unless OEM publishes new PDFs):
+- `scripts/crawl_mitsubishi_nl.py` (84 PDFs, MY1998-2026)
+- `scripts/crawl_hyundai_nl.py` (70 PDFs, 22 model variants, MY2014-2025)
+- `scripts/crawl_mopar_us.py` (694 PDFs, 6.1 GB, 6 brands MY2005-2027 — uses the public APIM key from api.mopar.com/vehicleKit, skips Akamai-walled sitemap)
+
+To add a brand: copy whichever crawler structurally matches the target portal (Mitsubishi/Hyundai = static HTML index; Mopar = JSON API). Swap index URL + filename pattern + normalize_filename prefix.
 
 - Legacy VPS PDF extraction recipe (pypdf, `/tmp/pdfx.py` modes, mopar OM era differences) → [[reference_manual_inventory_system]]. Still useful when section_map missed a section or for the FSM (chrysler-300c, 9528p, skipped by `--skip-large`).
 - Tyre PSI + 12V battery group/CCA are the two specs US OMs (and HaynesPro) systematically omit; legitimate fill path (aggregator with `public_link=0` + "NOT OEM" note) → [[reference_us_om_gaps]].
