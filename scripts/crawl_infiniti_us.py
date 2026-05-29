@@ -123,6 +123,12 @@ def normalize_local_name(src_loc: str) -> str:
 def classify(result: dict) -> str:
     name = (result.get("name") or "").upper()
     loc = (result.get("location") or "").lower()
+    # Vehicle OMs live at /content/dam/Infiniti/US/manuals_guides/<model>/<year>/...
+    # Infotainment (InTouch) manuals live at .../shared/<year>/... — they ALSO end
+    # in '-owner-manual.pdf' so we explicitly exclude /shared/ paths from the OM
+    # bucket. Same fix applies whenever a Nissan-shape AEM portal has both.
+    if "/shared/" in loc:
+        return "sup"
     if OM_NAME_RE.search(name) and "owner-manual" in loc:
         return "om"
     return "sup"
