@@ -231,7 +231,7 @@ A bulk convert is still defensible when we want corpus-grep over a specific area
 
 To add a brand: copy whichever crawler structurally matches the target portal (Mitsubishi/Hyundai/Mazda CA = static HTML index; Mopar = JSON API). Swap index URL + filename pattern + normalize_filename prefix.
 
-**HTML-only portals have no crawler.** Some OEM manuals live in a session-bound SPA viewer with no PDF download. **Audi** (`ownersmanual.audi.com`) is the canonical example. For these, drive the viewer per gen-fill via the Playwright MCP tools (see memory `reference_audi_owners_manual_portal`) — do NOT build a bulk walker.
+**HTML-only / VIN-gated portals have no crawler.** Some OEM manuals live in a session-bound SPA viewer with no PDF download. **Audi** (`ownersmanual.audi.com`, base64 chapter IDs) and **BMW US** (`bmwusa.com/owners-manuals.html`, 17-digit VIN gate; `driversguide.bmwgroup.com` is DNS-blocked from our network) are the two confirmed cases. For these, drive the viewer per gen-fill via the Playwright MCP tools (see memory `reference_audi_owners_manual_portal` + the BMW recon note in `feedback_convert_on_demand_not_bulk`) — do NOT build a bulk walker. Our existing BMW corpus (X5 G05, X7 G07, iX3 G08) came from ManualsLib-style aggregators, not a BMW direct path.
 
 **Login-walled US OEM portals also have no crawler.** **Mazda US / Toyota US / Honda US / Subaru US** all gate OMs behind a sign-in (`mymazda.com`, `toyota.com/owners/login`, `mygarage.honda.com`). Pattern when filling a US gen from one of these:
 1. **Mazda US** — cite the **Mazda CA** OM from our `crawl_mazda_ca.py` output (same English content; add `sources.notes='Canadian-market OM — spec-identical to US'`).
