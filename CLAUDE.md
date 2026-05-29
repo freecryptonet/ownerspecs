@@ -227,6 +227,8 @@ A bulk convert is still defensible when we want corpus-grep over a specific area
 
 To add a brand: copy whichever crawler structurally matches the target portal (Mitsubishi/Hyundai = static HTML index; Mopar = JSON API). Swap index URL + filename pattern + normalize_filename prefix.
 
+**HTML-only portals have no crawler.** Some OEM manuals live in a session-bound SPA viewer with no PDF download. **Audi** (`ownersmanual.audi.com`) is the canonical example. For these, drive the viewer per gen-fill via the Playwright MCP tools (see memory `reference_audi_owners_manual_portal`) — do NOT build a bulk walker.
+
 - Legacy VPS PDF extraction recipe (pypdf, `/tmp/pdfx.py` modes, mopar OM era differences) → [[reference_manual_inventory_system]]. Still useful when section_map missed a section or for the FSM (chrysler-300c, 9528p, skipped by `--skip-large`).
 - Tyre PSI + 12V battery group/CCA are the two specs US OMs (and HaynesPro) systematically omit; legitimate fill path (aggregator with `public_link=0` + "NOT OEM" note) → [[reference_us_om_gaps]].
 
