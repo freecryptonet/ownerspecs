@@ -68,6 +68,9 @@ export const fluidLabels: Record<string, string> = {
   engine_oil_phev: "Engine oil (PHEV)",
   fuel: "Fuel tank",
   fuel_phev: "Fuel tank (PHEV)",
+  transmission_dct: "Transmission (dual-clutch)",
+  haldex: "Haldex coupling",
+  def_fluid: "Diesel exhaust fluid (AdBlue)",
 };
 
 export const fluidLabel = (t: string) => fluidLabels[t] ?? humanize(t);
@@ -97,6 +100,18 @@ export const torqueLabels: Record<string, string> = {
   cvt_drain: "CVT drain",
   service_disconnect: "HV service disconnect",
   "half-shaft_nut": "Half-shaft / hub nut",
+  crankshaft_pulley: "Crankshaft pulley bolt",
+  oil_filter: "Oil filter housing",
+  oxygen_sensor: "Oxygen sensor",
+  alternator: "Alternator",
+  starter_motor: "Starter motor",
+  front_driveshaft_to_hub: "Front driveshaft to hub",
+  rear_driveshaft_to_hub: "Rear driveshaft to hub",
+  steering_wheel: "Steering wheel",
+  ac_compressor: "A/C compressor",
+  dct_drain_plug: "Dual-clutch transmission drain plug",
+  rear_diff_drain: "Rear differential drain plug",
+  haldex_drain: "Haldex coupling drain plug",
 };
 
 export const torqueLabel = (f: string) => torqueLabels[f] ?? humanize(f);
@@ -136,6 +151,8 @@ export const serviceLabels: Record<string, string> = {
   ac_desiccant: "A/C desiccant",
   hv_battery_inspection: "HV battery inspection",
   pdk_clutch_inspection: "PDK clutch inspection",
+  transmission_dct_fluid: "Dual-clutch fluid",
+  haldex_fluid: "Haldex coupling fluid",
 };
 
 export const serviceLabel = (s: string) => serviceLabels[s] ?? humanize(s);
