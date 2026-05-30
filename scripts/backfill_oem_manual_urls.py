@@ -281,7 +281,7 @@ def main() -> int:
     # Pull gens
     cur.execute("""
         SELECT g.id AS gen_id, g.slug AS gen_slug, g.start_year, g.end_year,
-               g.body_type,
+               g.body_type, g.codename,
                mk.slug AS make_slug, mk.name AS make_name,
                m.slug AS model_slug, m.name AS model_name,
                g.oem_manual_url AS current_url
@@ -307,7 +307,14 @@ def main() -> int:
                     model_norm_set.add(m[: -len(word)])
         model_norm_set.discard("")
         gen_end = g["end_year"] or 2100
+        # Chassis tiebreaker: when two same-body gens differ only by chassis
+        # (g-class W465 ICE vs E465 EQG, AMG GT C190 coupe vs R190 roadster), the
+        # candidate filename usually carries the chassis code as its own token —
+        # prefer the candidate whose chassis matches gen.codename. Score becomes
+        # (chassis_match_bool, year) so chassis match overrides "latest year".
+        gen_codename_norm = normalize(g["codename"]) if g.get("codename") else None
         best: dict | None = None
+        best_score: tuple[bool, int] | None = None
         for (b, m), cands in candidates.items():
             b_norm = normalize(b)
             if not (b_norm == make_norm or b_norm.startswith(make_norm) or make_norm.startswith(b_norm)):
@@ -341,8 +348,15 @@ def main() -> int:
             for c in cands:
                 if c["year"] < g["start_year"] or c["year"] > gen_end:
                     continue
-                if best is None or c["year"] > best["year"]:
+                chassis_match = bool(
+                    gen_codename_norm
+                    and c.get("chassis")
+                    and normalize(c["chassis"]) == gen_codename_norm
+                )
+                score = (chassis_match, c["year"])
+                if best is None or score > best_score:
                     best = c
+                    best_score = score
         if best:
             matched_brands[best["brand"]] += 1
             updates.append((best["url"], best["size_mb"], best["year"], g["gen_id"]))
