@@ -64,6 +64,24 @@ MOPAR_BRANDS = (
 )
 
 
+# Tesla virtual filenames — Tesla publishes OMs directly on tesla.com at
+# deterministic paths so we don't need to download anything or maintain a
+# URL map. We synthesise one virtual filename per (model, gen-range) and
+# hand it back to the standard candidate-matching layer.
+TESLA_VIRTUAL_FILES: dict[str, dict] = {
+    # filename → (model_slug, candidate_year for range-fit, url)
+    "tesla_2017_2023_model3.pdf":  {"model": "model-3",    "year": 2023, "url": "https://www.tesla.com/ownersmanual/2017_2023_model3/en_us/Owners_Manual.pdf"},
+    "tesla_model3_current.pdf":    {"model": "model-3",    "year": 2025, "url": "https://www.tesla.com/ownersmanual/model3/en_us/Owners_Manual.pdf"},
+    "tesla_2012_2020_models.pdf":  {"model": "model-s",    "year": 2020, "url": "https://www.tesla.com/ownersmanual/2012_2020_models/en_us/Owners_Manual.pdf"},
+    "tesla_models_current.pdf":    {"model": "model-s",    "year": 2025, "url": "https://www.tesla.com/ownersmanual/models/en_us/Owners_Manual.pdf"},
+    "tesla_2015_2020_modelx.pdf":  {"model": "model-x",    "year": 2020, "url": "https://www.tesla.com/ownersmanual/2015_2020_modelx/en_us/Owners_Manual.pdf"},
+    "tesla_modelx_current.pdf":    {"model": "model-x",    "year": 2025, "url": "https://www.tesla.com/ownersmanual/modelx/en_us/Owners_Manual.pdf"},
+    "tesla_2020_2024_modely.pdf":  {"model": "model-y",    "year": 2024, "url": "https://www.tesla.com/ownersmanual/2020_2024_modely/en_us/Owners_Manual.pdf"},
+    "tesla_modely_current.pdf":    {"model": "model-y",    "year": 2025, "url": "https://www.tesla.com/ownersmanual/modely/en_us/Owners_Manual.pdf"},
+    "tesla_cybertruck_current.pdf": {"model": "cybertruck", "year": 2025, "url": "https://www.tesla.com/ownersmanual/cybertruck/en_us/Owners_Manual.pdf"},
+}
+
+
 # Hyundai chassis codes (lowercase). The chassis is the strongest disambiguator
 # between same-platform sibling cars (i20 BC3 vs Bayon BC3), so we surface it
 # to the gen-matching layer via the existing chassis tiebreaker (codename match).
@@ -263,6 +281,13 @@ def derive_from_filename(
             return None
         parsed["url"] = toyota_map[nlow]
         return parsed
+
+    # Tesla — deterministic OEM-domain URLs from `tesla.com/ownersmanual/...`.
+    # No map needed; we synthesise virtual filenames keyed off (model, gen-range).
+    if nlow in TESLA_VIRTUAL_FILES:
+        meta = TESLA_VIRTUAL_FILES[nlow]
+        return {"brand": "tesla", "model": meta["model"], "year": meta["year"],
+                "url": meta["url"], "chassis": ""}
 
     # Mazda CA — only consider "-inline6/-phev/-hev/-hybrid" as variant; everything
     # else (cx-30, cx-5, cx-90, mx-5, b-series) is the full model slug. The
@@ -487,6 +512,8 @@ def main() -> int:
     virtual_filenames: set[str] = set()
     if toyota_map:
         virtual_filenames.update(toyota_map.keys())
+    # Tesla has no on-disk PDFs — synthesize virtual filenames from the static map.
+    virtual_filenames.update(TESLA_VIRTUAL_FILES.keys())
     all_filenames = on_disk | virtual_filenames
     for fname in all_filenames:
         meta = derive_from_filename(fname, mopar_map, hyundai_map, kia_map, toyota_map)
