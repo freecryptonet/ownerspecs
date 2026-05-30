@@ -2,6 +2,11 @@ import { query } from "@/lib/db";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 
+// SSR at runtime instead of SSG. Catalog grew past the build-time 60s per-page
+// timeout once we crossed ~15k static pages — the per-build / render starves on
+// pool contention. Render-time is sub-second per request.
+export const dynamic = "force-dynamic";
+
 type RecentRow = {
   brand: string;
   generation: string;
@@ -15,20 +20,16 @@ type RecentRow = {
 };
 
 async function getRecent() {
-  return query<RecentRow>(
+  // Two-pass: first pick the 8 newest gens (LIMIT applies to the indexed
+  // updated_at scan, fast), THEN compute per-gen counts in one query keyed
+  // on that small ID set. The previous inline-correlated `spec_id IN (SELECT
+  // … FROM fluid_specs WHERE generation_id=g.id)` re-scanned spec_sources for
+  // each gen and went non-linear once we crossed ~450 active gens — homepage
+  // SSR was 75s.
+  const recent = await query<Omit<RecentRow, "source_count" | "spec_count">>(
     `SELECT mk.slug AS brand, g.slug AS generation, g.display_name,
             mk.name AS make_name, g.start_year, g.end_year, g.updated_at AS updated,
-            (SELECT COUNT(DISTINCT ss.source_id) FROM spec_sources ss
-             WHERE ss.spec_id IN (SELECT id FROM fluid_specs WHERE generation_id=g.id)
-                OR ss.spec_id IN (SELECT id FROM torque_specs WHERE generation_id=g.id)
-            ) AS source_count,
-            ((SELECT COUNT(*) FROM fluid_specs WHERE generation_id=g.id)
-            + (SELECT COUNT(*) FROM torque_specs WHERE generation_id=g.id)
-            + (SELECT COUNT(*) FROM bulbs WHERE generation_id=g.id)
-            + (SELECT COUNT(*) FROM fuses WHERE generation_id=g.id)
-            + (SELECT COUNT(*) FROM service_intervals WHERE generation_id=g.id)
-            + (SELECT COUNT(*) FROM tire_pressures WHERE generation_id=g.id)
-            ) AS spec_count
+            g.id AS gen_id
      FROM generations g
      JOIN models m ON m.id = g.model_id
      JOIN makes mk ON mk.id = m.make_id
@@ -36,6 +37,28 @@ async function getRecent() {
      ORDER BY g.updated_at DESC
      LIMIT 8`,
   );
+  if (recent.length === 0) return [];
+  const ids = recent.map((r) => (r as unknown as { gen_id: number }).gen_id);
+  const placeholders = ids.map(() => "?").join(",");
+  const counts = await query<{ gen_id: number; spec_count: number }>(
+    `SELECT g.id AS gen_id,
+            (COALESCE(fs.n, 0) + COALESCE(ts.n, 0) + COALESCE(b.n, 0)
+             + COALESCE(fz.n, 0) + COALESCE(si.n, 0) + COALESCE(tp.n, 0)) AS spec_count
+       FROM generations g
+       LEFT JOIN (SELECT generation_id, COUNT(*) AS n FROM fluid_specs WHERE generation_id IN (${placeholders}) GROUP BY generation_id) fs ON fs.generation_id=g.id
+       LEFT JOIN (SELECT generation_id, COUNT(*) AS n FROM torque_specs WHERE generation_id IN (${placeholders}) GROUP BY generation_id) ts ON ts.generation_id=g.id
+       LEFT JOIN (SELECT generation_id, COUNT(*) AS n FROM bulbs WHERE generation_id IN (${placeholders}) GROUP BY generation_id) b ON b.generation_id=g.id
+       LEFT JOIN (SELECT generation_id, COUNT(*) AS n FROM fuses WHERE generation_id IN (${placeholders}) GROUP BY generation_id) fz ON fz.generation_id=g.id
+       LEFT JOIN (SELECT generation_id, COUNT(*) AS n FROM service_intervals WHERE generation_id IN (${placeholders}) GROUP BY generation_id) si ON si.generation_id=g.id
+       LEFT JOIN (SELECT generation_id, COUNT(*) AS n FROM tire_pressures WHERE generation_id IN (${placeholders}) GROUP BY generation_id) tp ON tp.generation_id=g.id
+      WHERE g.id IN (${placeholders})`,
+    [...ids, ...ids, ...ids, ...ids, ...ids, ...ids, ...ids],
+  );
+  const countMap = new Map(counts.map((c) => [c.gen_id, c]));
+  return recent.map((r) => {
+    const id = (r as unknown as { gen_id: number }).gen_id;
+    return { ...r, source_count: 0, spec_count: countMap.get(id)?.spec_count ?? 0 };
+  });
 }
 
 type BrandRow = {

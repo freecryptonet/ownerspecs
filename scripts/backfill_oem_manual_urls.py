@@ -46,6 +46,8 @@ ROOT = Path(__file__).resolve().parent.parent
 MANUALS_DIR = ROOT / "manuals"
 MOPAR_URL_MAP = ROOT / "mopar_url_map.json"
 HYUNDAI_URL_MAP = ROOT / "hyundai_url_map.json"
+KIA_URL_MAP = ROOT / "kia_url_map.json"
+TOYOTA_URL_MAP = ROOT / "toyota_url_map.json"
 
 MONTHS = ["", "january", "february", "march", "april", "may", "june",
           "july", "august", "september", "october", "november", "december"]
@@ -81,6 +83,87 @@ HYUNDAI_CHASSIS = {
     "tle", "nx4", "nx4e",              # Tucson
     "lx2",                             # Palisade
 }
+
+
+# Toyota EU multi-word model heads — first N tokens of the filename body
+# resolve to a single DB model_slug.
+TOYOTA_MULTIWORD_MODELS = {
+    ("gr", "86"):       "gr-86",
+    ("gr", "supra"):    "gr-supra",
+    ("gr", "yaris"):    "gr-yaris",
+    ("gt", "86"):       "gt-86",
+    ("land", "cruiser"): "land-cruiser",
+    ("toyota", "c", "hr"): "c-hr",
+    ("aygo", "x"):      "aygo-x",
+    ("corolla", "cross"): "corolla-cross",
+    ("yaris", "cross"): "yaris-cross",
+    ("yaris", "grmn"):  "yaris-grmn",
+    ("proace", "city"): "proace-city",
+    ("proace", "max"):  "proace-max",
+    ("proace", "verso"): "proace-verso",
+    ("urban", "cruiser"): "urban-cruiser",
+}
+# Numeric series → chassis codename. Land Cruiser 150 = J150 etc.
+TOYOTA_CHASSIS_HINTS: dict[str, dict[str, str]] = {
+    "land-cruiser": {"70": "J70", "100": "J100", "150": "J150", "200": "J200", "250": "J250", "300": "J300"},
+    "gr-supra":     {"a90": "A90"},
+    "prius":        {},
+    "rav4":         {},
+}
+TOYOTA_BODY_TOKENS = {
+    "sedan": "sedan", "saloon": "sedan",
+    "hatchback": "hatchback", "hatch": "hatchback",
+    "wagon": "wagon", "estate": "wagon",
+    "coupe": "coupe", "convertible": "convertible",
+    "cabrio": "cabriolet", "cabriolet": "cabriolet",
+    "suv": "suv", "pickup": "pickup",
+}
+
+
+def parse_toyota_filename(name: str) -> dict | None:
+    """`toyota_eu_corolla_corolla_hybrid_hatchback_2024.pdf` →
+    `{model: corolla, year: 2024, chassis: None, body_hint: hatchback}` —
+    with the body suffix appended to model so the existing body discriminator
+    catches it (model becomes 'corolla-hatchback' if Touring Sports is detected).
+    """
+    body = name[len("toyota_eu_"):].removesuffix(".pdf")
+    m = re.match(r"^(.+)_(20\d{2})$", body)
+    if not m:
+        return None
+    rest, year = m.group(1), int(m.group(2))
+    # Skip wheelchair-accessible (WAV) sub-variants — niche, would cross-attach
+    # to the base nameplate gen and out-rank the real OM by year.
+    if "_wav_" in f"_{rest}_":
+        return None
+    tokens = rest.split("_")
+    # Multi-word head detection (3-token first, then 2-token)
+    model: str | None = None
+    for length in (3, 2):
+        if len(tokens) >= length:
+            head = tuple(tokens[:length])
+            if head in TOYOTA_MULTIWORD_MODELS:
+                model = TOYOTA_MULTIWORD_MODELS[head]
+                tokens = tokens[length:]
+                break
+    if not model:
+        model = tokens[0]
+        tokens = tokens[1:]
+    # Chassis hint from numeric series
+    chassis = ""
+    chassis_map = TOYOTA_CHASSIS_HINTS.get(model, {})
+    for t in tokens:
+        if t in chassis_map:
+            chassis = chassis_map[t].lower()
+            break
+    # Body hint — append as model suffix so the body discriminator runs
+    body_hint = ""
+    for t in tokens:
+        if t in TOYOTA_BODY_TOKENS:
+            body_hint = TOYOTA_BODY_TOKENS[t]
+            break
+    if body_hint:
+        model = f"{model}-{body_hint}"
+    return {"brand": "toyota", "model": model, "year": year, "chassis": chassis}
 
 
 def parse_hyundai_filename(name: str) -> dict | None:
@@ -136,6 +219,8 @@ def derive_from_filename(
     name: str,
     mopar_map: dict[str, str] | None = None,
     hyundai_map: dict[str, str] | None = None,
+    kia_map: dict[str, str] | None = None,
+    toyota_map: dict[str, str] | None = None,
 ) -> dict | None:
     """Parse a crawler-prefixed filename → {brand, model, year, url, size_mb_est}.
 
@@ -166,13 +251,27 @@ def derive_from_filename(
         parsed["url"] = hyundai_map[nlow]
         return parsed
 
-    # Mazda CA
+    # Toyota EU — URLs are on the OEM's publishing-partner viewer (Tweddle
+    # diva-api). Not a manufacturer-owned domain so `public_link=0` in the
+    # source row, and per [[feedback_never_name_data_vendor]] the vendor name
+    # is never rendered. The URL map is built by `build_toyota_url_map.py`.
+    if nlow.startswith("toyota_eu_"):
+        if not toyota_map or nlow not in toyota_map:
+            return None
+        parsed = parse_toyota_filename(nlow)
+        if not parsed:
+            return None
+        parsed["url"] = toyota_map[nlow]
+        return parsed
+
+    # Mazda CA — only consider "-inline6/-phev/-hev/-hybrid" as variant; everything
+    # else (cx-30, cx-5, cx-90, mx-5, b-series) is the full model slug. The
+    # previous non-greedy `(.+?)` regex split "cx-5" into model="cx"/variant="5".
     if nlow.startswith("mazda_"):
-        m = re.match(r"^mazda_([a-z0-9-]+?)(?:-([a-z0-9]+))?_(20\d{2})\.pdf$", nlow)
+        m = re.match(r"^mazda_(.+?)(?:-(inline6|phev|hev|hybrid))?_(20\d{2})\.pdf$", nlow)
         if not m:
             return None
         model_main, variant, year = m.group(1), m.group(2), int(m.group(3))
-        # Most use 'optimized' suffix; some powertrain-split use docids — skip those for the safe path.
         url = f"https://www.mazda.ca/globalassets/mazda-canada/en/pdf/manuals/vehicles/{model_main}{'-' + variant if variant else ''}/{year}_{model_main}{'-' + variant if variant else ''}_manual_en_optimized.pdf"
         return {"brand": "mazda", "model": model_main, "year": year, "url": url}
 
@@ -196,21 +295,37 @@ def derive_from_filename(
         url = f"https://www.infinitiusa.com/content/dam/Infiniti/US/manuals_guides/{model}/{year}/{oem_file}"
         return {"brand": "infiniti", "model": model, "year": year, "url": url}
 
-    # Kia CA — new format only (post-2018)
+    # Kia CA — three filename eras + URL map fallback.
+    # Era A (2011-2016): `kia_ca_<YY><model>_en.pdf` (no separator, _en suffix)
+    # Era B (2017-2021): `kia_ca_<YY><model>.pdf` (no separator, no _en)
+    # Era C (2022+):     `kia_ca_<YY>-<model>.pdf` (dash, no _en)
+    # Era U (undated):   `kia_ca_<model>.pdf` (no year — assumed first published)
+    # URL — CDN paths vary by year so we use kia_url_map.json instead of
+    # reconstructing.
     if nlow.startswith("kia_ca_"):
-        rest = name[len("kia_ca_"):]
-        m = re.match(r"^(\d{2})-([a-z0-9-]+)\.pdf$", rest, re.I)
+        if not kia_map or nlow not in kia_map:
+            return None
+        rest = nlow[len("kia_ca_"):].removesuffix(".pdf")
+        # Era A: leading 2-digit year, optional `_en` trail, no separator
+        m = re.match(r"^(\d{2})([a-z][a-z0-9]*)(?:_en)?$", rest)
         if m:
             yy = int(m.group(1))
             year = 2000 + yy if yy < 90 else 1900 + yy
             model = m.group(2)
-            url = f"https://www.kia.ca/content/dam/marketing/documents/en/owners/{year}/{rest.lower()}"
-            return {"brand": "kia", "model": model, "year": year, "url": url}
-        m = re.match(r"^(20\d{2})_([a-z0-9-]+)_owners_manual_en\.pdf$", rest, re.I)
+            return {"brand": "kia", "model": model, "year": year, "url": kia_map[nlow]}
+        # Era C: <YY>-<model> with optional variant
+        m = re.match(r"^(\d{2})-([a-z0-9-]+)$", rest)
+        if m:
+            yy = int(m.group(1))
+            year = 2000 + yy if yy < 90 else 1900 + yy
+            model = m.group(2)
+            return {"brand": "kia", "model": model, "year": year, "url": kia_map[nlow]}
+        # Era D (4-digit year_):
+        m = re.match(r"^(20\d{2})_([a-z0-9-]+)_owners_manual_en$", rest)
         if m:
             year, model = int(m.group(1)), m.group(2)
-            url = f"https://www.kia.ca/content/dam/marketing/documents/en/owners/{year}/{rest.lower()}"
-            return {"brand": "kia", "model": model, "year": year, "url": url}
+            return {"brand": "kia", "model": model, "year": year, "url": kia_map[nlow]}
+        # Era U: bare model name (no year). Year unknown → skip (no range filter).
         return None
 
     # Mercedes US
@@ -306,6 +421,23 @@ def extract_powertrain_variant(model: str) -> str | None:
     return None
 
 
+def strip_known_suffixes(model: str) -> str:
+    """Drop a body or powertrain suffix to canonicalise model_slug for matching.
+
+    "g-coupe" → "g"  (body)
+    "q70-hybrid" → "q70"  (powertrain)
+    "proace-max" → "proace-max"  (max is a nameplate differentiator, NOT a
+    suffix — don't strip. PROACE Max stays its own model.)
+    """
+    for suf in BODY_SUFFIX_TO_BODY:
+        if model.endswith("-" + suf):
+            return model[: -len(suf) - 1]
+    for tok in POWERTRAIN_VARIANT_TOKENS:
+        if model.endswith("-" + tok):
+            return model[: -len(tok) - 1]
+    return model
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--dry-run", action="store_true")
@@ -338,18 +470,35 @@ def main() -> int:
     if HYUNDAI_URL_MAP.exists():
         hyundai_map = json.loads(HYUNDAI_URL_MAP.read_text(encoding="utf-8"))
         print(f"loaded hyundai URL map: {len(hyundai_map)} entries")
+    kia_map: dict[str, str] | None = None
+    if KIA_URL_MAP.exists():
+        kia_map = json.loads(KIA_URL_MAP.read_text(encoding="utf-8"))
+        print(f"loaded kia URL map: {len(kia_map)} entries")
+    toyota_map: dict[str, str] | None = None
+    if TOYOTA_URL_MAP.exists():
+        toyota_map = json.loads(TOYOTA_URL_MAP.read_text(encoding="utf-8"))
+        print(f"loaded toyota URL map: {len(toyota_map)} entries")
 
-    # Walk filesystem
+    # Walk filesystem — plus pull in URL-map keys for brands whose PDFs are
+    # hosted on a vendor CDN and not mirrored locally (Toyota EU via Tweddle).
     candidates: dict[tuple[str, str], list[dict]] = defaultdict(list)
     parsed = skipped = 0
-    for p in MANUALS_DIR.glob("*.pdf"):
-        meta = derive_from_filename(p.name, mopar_map, hyundai_map)
+    on_disk = {p.name for p in MANUALS_DIR.glob("*.pdf")}
+    virtual_filenames: set[str] = set()
+    if toyota_map:
+        virtual_filenames.update(toyota_map.keys())
+    all_filenames = on_disk | virtual_filenames
+    for fname in all_filenames:
+        meta = derive_from_filename(fname, mopar_map, hyundai_map, kia_map, toyota_map)
         if not meta:
             skipped += 1
             continue
         if args.brand and meta["brand"] != args.brand.lower():
             continue
-        meta["size_mb"] = round(p.stat().st_size / 1024 / 1024, 1)
+        if fname in on_disk:
+            meta["size_mb"] = round((MANUALS_DIR / fname).stat().st_size / 1024 / 1024, 1)
+        else:
+            meta["size_mb"] = None  # remote-only
         candidates[(meta["brand"], meta["model"])].append(meta)
         parsed += 1
     print(f"local PDFs: parsed={parsed} skipped={skipped}")
@@ -388,19 +537,28 @@ def main() -> int:
         # candidate filename usually carries the chassis code as its own token —
         # prefer the candidate whose chassis matches gen.codename. Score becomes
         # (chassis_match_bool, year) so chassis match overrides "latest year".
+        # Hardening: if gen has a codename AND any model+body+year-eligible
+        # candidate carries a chassis token, we require a chassis match — stops
+        # Land Cruiser J250/J300 gens picking up the J70 PDF just because year
+        # overlaps and no chassis-tagged J250 candidate exists.
         gen_codename_norm = normalize(g["codename"]) if g.get("codename") else None
         best: dict | None = None
         best_score: tuple[bool, int] | None = None
+        saw_chassis_field = False
+        saw_chassis_match = False
         for (b, m), cands in candidates.items():
             b_norm = normalize(b)
             if not (b_norm == make_norm or b_norm.startswith(make_norm) or make_norm.startswith(b_norm)):
                 continue
-            m_norm = normalize(m)
+            # Strip body/powertrain suffix from the candidate model so we can
+            # require an exact match against gen.model_slug. The previous
+            # bidirectional-startswith allowed "proace-max" to match DB "proace"
+            # because the longer string started with the shorter — wrong for
+            # sibling nameplates that share a prefix (Toyota PROACE / PROACE Max).
+            m_norm = normalize(strip_known_suffixes(m))
             hit = False
             for mn in model_norm_set:
-                if not mn:
-                    continue
-                if m_norm == mn or m_norm.startswith(mn) or mn.startswith(m_norm):
+                if mn and m_norm == mn:
                     hit = True
                     break
             if not hit:
@@ -424,15 +582,24 @@ def main() -> int:
             for c in cands:
                 if c["year"] < g["start_year"] or c["year"] > gen_end:
                     continue
+                if c.get("chassis"):
+                    saw_chassis_field = True
                 chassis_match = bool(
                     gen_codename_norm
                     and c.get("chassis")
                     and normalize(c["chassis"]) == gen_codename_norm
                 )
+                if chassis_match:
+                    saw_chassis_match = True
                 score = (chassis_match, c["year"])
                 if best is None or score > best_score:
                     best = c
                     best_score = score
+        # Hardening: drop the match when gen has codename + chassis info was
+        # available but none of the candidates carried this gen's codename.
+        if (best is not None and gen_codename_norm
+                and saw_chassis_field and not saw_chassis_match):
+            best = None
         if best:
             matched_brands[best["brand"]] += 1
             updates.append((best["url"], best["size_mb"], best["year"], g["gen_id"]))
