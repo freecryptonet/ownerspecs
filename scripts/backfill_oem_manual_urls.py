@@ -45,6 +45,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 MANUALS_DIR = ROOT / "manuals"
 MOPAR_URL_MAP = ROOT / "mopar_url_map.json"
+HYUNDAI_URL_MAP = ROOT / "hyundai_url_map.json"
 
 MONTHS = ["", "january", "february", "march", "april", "may", "june",
           "july", "august", "september", "october", "november", "december"]
@@ -59,6 +60,61 @@ MOPAR_BRANDS = (
     ("jeep",       "jeep"),
     ("ram",        "ram"),
 )
+
+
+# Hyundai chassis codes (lowercase). The chassis is the strongest disambiguator
+# between same-platform sibling cars (i20 BC3 vs Bayon BC3), so we surface it
+# to the gen-matching layer via the existing chassis tiebreaker (codename match).
+HYUNDAI_CHASSIS = {
+    "ac3", "ia",                       # i10
+    "bc3", "gb", "pb",                 # i20 / Bayon (BC3 shared)
+    "gde", "pde",                      # i30
+    "vf",                              # i40
+    "ax1",                             # Inster
+    "ae",                              # IONIQ (first gen, AE)
+    "ne",                              # IONIQ 5
+    "ce",                              # IONIQ 6
+    "jc",                              # ix20
+    "os", "osn", "sx2",                # Kona
+    "fe",                              # Nexo
+    "dm", "tm", "mx5",                 # Santa Fe
+    "tle", "nx4", "nx4e",              # Tucson
+    "lx2",                             # Palisade
+}
+
+
+def parse_hyundai_filename(name: str) -> dict | None:
+    """`hyundai_santa_fe_p_hev_mx5_2024.pdf` → {model:'santa-fe', chassis:'mx5', year:2024}."""
+    body = name[len("hyundai_"):].removesuffix(".pdf")
+    tokens = body.split("_")
+    if not tokens:
+        return None
+    # Multi-token model heads
+    if tokens[0] == "santa" and len(tokens) >= 2 and tokens[1] == "fe":
+        model, rest = "santa-fe", tokens[2:]
+    elif tokens[0] == "ioniq" and len(tokens) >= 2 and tokens[1] in {"5", "6"}:
+        model, rest = f"ioniq-{tokens[1]}", tokens[2:]
+    elif tokens[0] == "ioniq5n":
+        model, rest = "ioniq-5", tokens[1:]
+    else:
+        model, rest = tokens[0], tokens[1:]
+    # Bayon override — i20 N-Line filename mistakenly starts with i20
+    if "bayon" in rest and model == "i20":
+        model = "bayon"
+    chassis: str | None = None
+    for tok in rest:
+        if tok in HYUNDAI_CHASSIS:
+            chassis = tok
+            break
+    year: int | None = None
+    for tok in rest:
+        m = re.match(r"^(?:my)?(20\d{2})$", tok)
+        if m:
+            year = int(m.group(1))
+            break
+    if year is None:
+        return None  # un-dated PDFs (e.g. kona_sx2.pdf) can't be range-filtered safely
+    return {"brand": "hyundai", "model": model, "year": year, "chassis": chassis or ""}
 
 
 def parse_mopar_filename(name: str) -> tuple[str, str, int] | None:
@@ -76,7 +132,11 @@ def parse_mopar_filename(name: str) -> tuple[str, str, int] | None:
     return None
 
 
-def derive_from_filename(name: str, mopar_map: dict[str, str] | None = None) -> dict | None:
+def derive_from_filename(
+    name: str,
+    mopar_map: dict[str, str] | None = None,
+    hyundai_map: dict[str, str] | None = None,
+) -> dict | None:
     """Parse a crawler-prefixed filename → {brand, model, year, url, size_mb_est}.
 
     Returns None if the prefix isn't one we can derive.
@@ -93,6 +153,18 @@ def derive_from_filename(name: str, mopar_map: dict[str, str] | None = None) -> 
             return None
         brand, model, year = parsed
         return {"brand": brand, "model": model, "year": year, "url": mopar_map[nlow]}
+
+    # Hyundai — URLs have lossy filename normalisation ((P)HEV, mixed separators)
+    # so we ship a precomputed map from `build_hyundai_url_map.py` and parse only
+    # the (model, chassis, year) signal from the filename.
+    if nlow.startswith("hyundai_"):
+        if not hyundai_map or nlow not in hyundai_map:
+            return None
+        parsed = parse_hyundai_filename(nlow)
+        if not parsed:
+            return None
+        parsed["url"] = hyundai_map[nlow]
+        return parsed
 
     # Mazda CA
     if nlow.startswith("mazda_"):
@@ -256,18 +328,22 @@ def main() -> int:
     )
     cur = conn.cursor(dictionary=True)
 
-    # Mopar URL map is optional — load if present.
+    # Mopar + Hyundai URL maps are optional — load if present.
+    import json
     mopar_map: dict[str, str] | None = None
     if MOPAR_URL_MAP.exists():
-        import json
         mopar_map = json.loads(MOPAR_URL_MAP.read_text(encoding="utf-8"))
         print(f"loaded mopar URL map: {len(mopar_map)} entries")
+    hyundai_map: dict[str, str] | None = None
+    if HYUNDAI_URL_MAP.exists():
+        hyundai_map = json.loads(HYUNDAI_URL_MAP.read_text(encoding="utf-8"))
+        print(f"loaded hyundai URL map: {len(hyundai_map)} entries")
 
     # Walk filesystem
     candidates: dict[tuple[str, str], list[dict]] = defaultdict(list)
     parsed = skipped = 0
     for p in MANUALS_DIR.glob("*.pdf"):
-        meta = derive_from_filename(p.name, mopar_map)
+        meta = derive_from_filename(p.name, mopar_map, hyundai_map)
         if not meta:
             skipped += 1
             continue
