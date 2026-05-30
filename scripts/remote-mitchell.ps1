@@ -108,9 +108,11 @@ switch ($Action) {
     $r = Get-Rect $h
     $sx = $r.Left + $X; $sy = $r.Top + $Y
     if (-not $Path) { $Path = Join-Path $env:TEMP 'remote_region.png' }
-    $bmp = New-Object System.Drawing.Bitmap $W, $H
+    [int]$ww = $W; [int]$hh = $H
+    if ($ww -le 0) { $ww = 400 }; if ($hh -le 0) { $hh = 120 }
+    $bmp = New-Object System.Drawing.Bitmap -ArgumentList $ww, $hh
     $g = [System.Drawing.Graphics]::FromImage($bmp)
-    $g.CopyFromScreen($sx, $sy, 0, 0, (New-Object System.Drawing.Size($W, $H)))
+    $g.CopyFromScreen($sx, $sy, 0, 0, (New-Object System.Drawing.Size($ww, $hh)))
     $bmp.Save($Path, [System.Drawing.Imaging.ImageFormat]::Png)
     $g.Dispose(); $bmp.Dispose()
     "$Path ($W x $H @ window-rel $X,$Y -> screen $sx,$sy)"
