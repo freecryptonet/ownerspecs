@@ -255,6 +255,8 @@ The recon-then-skip workflow for new US OEMs (`<brand>usa.com/owners/owners-manu
 
 Real sources beat lore. See `feedback_data_sources_hierarchy.md`.
 
+**TOP source (2026-05-30): the dealer DATA SUITE** on Tim's "Remote Connector" kiosk — ELSAWIN/ALLDATA/AUTODATA/HaynesPro/Mitchell, ~50 brands; unblocks EU brands + older chassis + factory torques/fluids/intervals (densest moat source). Drive via `scripts/remote-mitchell.ps1`: tile→dropdown→instance launches the app (nested in the connector); `-Action clicktext` = Windows-OCR click-by-text (do NOT eyeball coords off screenshots — that caused mis-clicks); `-Action keepalive` in background (beats the aggressive idle-timeout during agent latency); `-Action copy` for data tables; click the brand/model breadcrumb (top-left) to go back. Recipe + gotchas → [[reference_mitchell_techadvisor]]. Vendor-neutral citations only, facts not verbatim, `public_link=0`.
+
 1. **HaynesPro WorkshopData** — Tim has it pre-logged-in. Switch via `mcp__playwright__browser_tabs select 1`. Six-step nav walk-through in `docs/sources-haynespro.md`.
 2. **OEM owner manuals via ownersmanuals2.com / ManualsLib** — immutable PDFs published by the manufacturer. Download via Playwright fetch + base64 + Python decode pattern. Cite at least one per gen; for long-running gens cite 2-3 years apart to catch mid-cycle spec migrations (BMW LC-18 coolant MY2023, VW 508.00 LL IV FE 2019).
 3. **OEM Factory Service Manuals** — BMW TIS, VW erWin, GM Service Information, Toyota TIS. Gold standard for torques/alignments/calibrations where accessible.
@@ -272,7 +274,7 @@ Full eligibility table + rationale (stops SEO leakage to competitors + reduces p
 ## Vendor/sibling-brand leaks: scrub EVERY rendered text column
 
 - The never-name-vendor rule covers all rendered text, not just `sources.citation`: also `sources.notes`, `*_specs.notes`, `parts.notes`, `generations.family_label`, `procedures.body_md`. The leak usually hides in the *justification* for a flagged value ("…HaynesPro has no Challenger…").
-- Post-push smoke grep must include rebadge-donor / sibling brands too, not only the paid-vendor list (e.g. `tonale` for the Hornet): `curl -s <url> | grep -ioE 'haynespro|workshopdata|auto-data|ultimatespecs|<sibling>'`. Source notes/citation are SSG → a scrub needs a rebuild to take effect.
+- Post-push smoke grep must include rebadge-donor / sibling brands too, not only the paid-vendor list (e.g. `tonale` for the Hornet): `curl -s <url> | grep -ioE 'haynespro|workshopdata|mitchell|techadvisor|elsawin|alldata|autodata|auto-data|ultimatespecs|<sibling>'`. Source notes/citation are SSG → a scrub needs a rebuild to take effect.
 
 ## Aggregators are research aids, NOT citation sources
 
