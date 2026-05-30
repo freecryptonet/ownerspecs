@@ -18,6 +18,7 @@
   -----
     powershell -ExecutionPolicy Bypass -File remote-mitchell.ps1 -Action find
     powershell ... -Action shot  -Path C:\Temp\m.png        # capture window -> PNG
+    powershell ... -Action region -X 350 -Y 180 -W 560 -H 320 # native sub-rect crop (read tiny targets)
     powershell ... -Action click -X 180 -Y 226              # click (window-relative)
     powershell ... -Action type  -Text "2014"               # type literal text
     powershell ... -Action key   -Keys "ctrl+a"             # send a key combo
@@ -25,9 +26,13 @@
     powershell ... -Action clear                             # Ctrl+A + Delete (clear a field)
 
   The window is located by title/process each run (its HWND changes between sessions).
+
+  GOTCHA (fixed 2026-05-30): the window-handle var must NOT be named $h — PowerShell
+  variables are case-INSENSITIVE, so $h collides with the -H (region height) param and
+  silently clobbers it with the HWND. Handle var is therefore $hwnd. Don't reintroduce $h.
 #>
 param(
-  [ValidateSet('find','shot','region','click','type','key','keybd','copy','clear','scroll')]
+  [ValidateSet('find','shot','region','click','type','key','keybd','copy','clear','scroll','windows','keepalive','ocr','clicktext')]
   [string]$Action = 'find',
   [string]$Path,
   [int]$X,
@@ -35,6 +40,8 @@ param(
   [int]$W = 400,       # region width  (Action=region)
   [int]$H = 120,       # region height (Action=region)
   [int]$Amount = -3,   # scroll notches: negative = down, positive = up
+  [int]$Minutes = 10,  # keepalive duration (Action=keepalive)
+  [int]$Every = 15,    # keepalive interval in seconds (Action=keepalive)
   [string]$Text,
   [string]$Keys,
   [string]$WindowTitle = 'Remote Connector'
@@ -56,6 +63,15 @@ public class RM {
 "@
 
 function Get-RmWindow {
+  # Default targets the launcher ('Remote Connector' / process 'connect'). Pass a different
+  # -WindowTitle to target a LAUNCHED RemoteApp window (e.g. 'HaynesPro') via -like match —
+  # required to DRIVE launched apps (so Focus-Rm foregrounds the APP, not the launcher; otherwise
+  # the launched RemoteApp gets no input and idle-times-out / signs out).
+  if ($WindowTitle -and $WindowTitle -ne 'Remote Connector') {
+    $p = Get-Process | Where-Object { $_.MainWindowHandle -ne 0 -and $_.MainWindowTitle -like "*$WindowTitle*" } | Select-Object -First 1
+    if (-not $p) { throw "No window matching title '*$WindowTitle*'. Run -Action windows to list candidates." }
+    return $p.MainWindowHandle
+  }
   $p = Get-Process | Where-Object { $_.MainWindowHandle -ne 0 -and ($_.MainWindowTitle -eq $WindowTitle -or $_.Name -eq 'connect') } | Select-Object -First 1
   if (-not $p) { throw "Remote Connector window not found (title '$WindowTitle' / process 'connect'). Is the remote desktop open?" }
   return $p.MainWindowHandle
@@ -83,9 +99,9 @@ function Send-Key([string]$combo) {
   Start-Sleep -Milliseconds 150
 }
 
-function Capture-Rm($h,$path) {
+function Capture-Rm($hwnd,$path) {
   Add-Type -AssemblyName System.Windows.Forms,System.Drawing
-  $r = Get-Rect $h
+  $r = Get-Rect $hwnd
   $w = $r.Right-$r.Left; $ht = $r.Bottom-$r.Top
   $bmp = New-Object System.Drawing.Bitmap $w,$ht
   $g = [System.Drawing.Graphics]::FromImage($bmp)
@@ -95,17 +111,48 @@ function Capture-Rm($h,$path) {
   return "$path ($w x $ht @ $($r.Left),$($r.Top))"
 }
 
-$h = Get-RmWindow
+if ($Action -eq 'windows') {
+  # List all top-level windows with titles (find the launched RemoteApp's exact title).
+  (Get-Process | Where-Object { $_.MainWindowHandle -ne 0 -and $_.MainWindowTitle } |
+    Sort-Object Name | Format-Table Id,Name,MainWindowTitle -Auto | Out-String).Trim()
+  exit 0
+}
+
+# Windows built-in OCR (no external install). Returns words + bounding-box CENTRES (image px).
+# Used for DETERMINISTIC click targeting — find a label's exact pixel centre instead of eyeballing.
+function Ocr-Png($path) {
+  Add-Type -AssemblyName System.Runtime.WindowsRuntime | Out-Null
+  $asTask = ([System.WindowsRuntimeSystemExtensions].GetMethods() | Where-Object {
+    $_.Name -eq 'AsTask' -and $_.GetParameters().Count -eq 1 -and
+    $_.GetParameters()[0].ParameterType.Name -eq 'IAsyncOperation`1' })[0]
+  $aw = { param($op,$t) $asTask.MakeGenericMethod($t).Invoke($null,@($op)).GetAwaiter().GetResult() }
+  [Windows.Storage.StorageFile,Windows.Storage,ContentType=WindowsRuntime] | Out-Null
+  [Windows.Graphics.Imaging.BitmapDecoder,Windows.Graphics.Imaging,ContentType=WindowsRuntime] | Out-Null
+  [Windows.Media.Ocr.OcrEngine,Windows.Media.Ocr,ContentType=WindowsRuntime] | Out-Null
+  $file = & $aw ([Windows.Storage.StorageFile]::GetFileFromPathAsync($path)) ([Windows.Storage.StorageFile])
+  $st   = & $aw ($file.OpenAsync([Windows.Storage.FileAccessMode]::Read)) ([Windows.Storage.Streams.IRandomAccessStream])
+  $dec  = & $aw ([Windows.Graphics.Imaging.BitmapDecoder]::CreateAsync($st)) ([Windows.Graphics.Imaging.BitmapDecoder])
+  $bmp  = & $aw ($dec.GetSoftwareBitmapAsync()) ([Windows.Graphics.Imaging.SoftwareBitmap])
+  $eng  = [Windows.Media.Ocr.OcrEngine]::TryCreateFromUserProfileLanguages()
+  if (-not $eng) { throw "no OCR engine for user profile languages" }
+  $res  = & $aw ($eng.RecognizeAsync($bmp)) ([Windows.Media.Ocr.OcrResult])
+  $out = @()
+  foreach ($l in $res.Lines) { foreach ($w in $l.Words) { $r = $w.BoundingRect
+    $out += [pscustomobject]@{ Text=$w.Text; CX=[int]($r.X+$r.Width/2); CY=[int]($r.Y+$r.Height/2) } } }
+  return $out
+}
+
+$hwnd = Get-RmWindow
 
 switch ($Action) {
-  'find'  { $r = Get-Rect $h; "HWND=$h  rect=$($r.Left),$($r.Top)  size=$(($r.Right-$r.Left))x$(($r.Bottom-$r.Top))" }
-  'shot'  { Focus-Rm $h; if (-not $Path) { $Path = Join-Path $env:TEMP 'remote_mitchell.png' }; Capture-Rm $h $Path }
+  'find'  { $r = Get-Rect $hwnd; "HWND=$hwnd  rect=$($r.Left),$($r.Top)  size=$(($r.Right-$r.Left))x$(($r.Bottom-$r.Top))" }
+  'shot'  { Focus-Rm $hwnd; if (-not $Path) { $Path = Join-Path $env:TEMP 'remote_mitchell.png' }; Capture-Rm $hwnd $Path }
   'region' {
     # Capture a SUB-RECTANGLE (window-relative X,Y,W,H) at native resolution.
     # Key technique for reading tiny targets when the remote view renders small —
     # a 400x120 crop is far more legible than a downscaled 1920x1080 full shot.
     Add-Type -AssemblyName System.Windows.Forms,System.Drawing
-    $r = Get-Rect $h
+    $r = Get-Rect $hwnd
     $sx = $r.Left + $X; $sy = $r.Top + $Y
     if (-not $Path) { $Path = Join-Path $env:TEMP 'remote_region.png' }
     [int]$ww = $W; [int]$hh = $H
@@ -118,16 +165,16 @@ switch ($Action) {
     "$Path ($W x $H @ window-rel $X,$Y -> screen $sx,$sy)"
   }
   'click' {
-    Focus-Rm $h; $r = Get-Rect $h
+    Focus-Rm $hwnd; $r = Get-Rect $hwnd
     $sx = $r.Left + $X; $sy = $r.Top + $Y
     [RM]::SetCursorPos($sx,$sy); Start-Sleep -Milliseconds 200
     [RM]::mouse_event(0x2,0,0,0,[IntPtr]::Zero); [RM]::mouse_event(0x4,0,0,0,[IntPtr]::Zero)
     "clicked $sx,$sy"
   }
-  'type'  { Focus-Rm $h; Add-Type -AssemblyName System.Windows.Forms; [System.Windows.Forms.SendKeys]::SendWait($Text); "typed: $Text" }
-  'key'   { Focus-Rm $h; Send-Key $Keys; "sent: $Keys" }
+  'type'  { Focus-Rm $hwnd; Add-Type -AssemblyName System.Windows.Forms; [System.Windows.Forms.SendKeys]::SendWait($Text); "typed: $Text" }
+  'key'   { Focus-Rm $hwnd; Send-Key $Keys; "sent: $Keys" }
   'copy'  {
-    Focus-Rm $h
+    Focus-Rm $hwnd
     Set-Clipboard -Value ([guid]::Empty.ToString())  # sentinel so we can tell if copy landed
     Send-Key 'ctrl+a'; Send-Key 'ctrl+c'; Start-Sleep -Milliseconds 600
     # Clipboard redirection over RDP can briefly lock the clipboard — retry the read.
@@ -137,9 +184,45 @@ switch ($Action) {
     }
     $r
   }
-  'clear' { Focus-Rm $h; Send-Key 'ctrl+a'; Send-Key 'del'; "cleared field" }
+  'clear' { Focus-Rm $hwnd; Send-Key 'ctrl+a'; Send-Key 'del'; "cleared field" }
+  'ocr' {
+    # OCR the window; print each word + its SCREEN-coord centre. Filter with -Text (-like).
+    $p = Join-Path $env:TEMP 'remote_ocr.png'; Capture-Rm $hwnd $p | Out-Null
+    $r = Get-Rect $hwnd
+    Ocr-Png $p | Where-Object { -not $Text -or $_.Text -like "*$Text*" } |
+      ForEach-Object { "{0,-26} x={1,5} y={2,5}" -f $_.Text, ($r.Left+$_.CX), ($r.Top+$_.CY) }
+  }
+  'clicktext' {
+    # DETERMINISTIC click: OCR the window, find first word -like -Text, click its exact centre.
+    $p = Join-Path $env:TEMP 'remote_ocr.png'; Capture-Rm $hwnd $p | Out-Null
+    $r = Get-Rect $hwnd
+    $hit = Ocr-Png $p | Where-Object { $_.Text -like "*$Text*" } | Select-Object -First 1
+    if (-not $hit) { "clicktext: '$Text' NOT found on screen"; exit 1 }
+    $sx = $r.Left + $hit.CX; $sy = $r.Top + $hit.CY
+    Focus-Rm $hwnd
+    [RM]::SetCursorPos($sx,$sy); Start-Sleep -Milliseconds 200
+    [RM]::mouse_event(0x2,0,0,0,[IntPtr]::Zero); [RM]::mouse_event(0x4,0,0,0,[IntPtr]::Zero)
+    "clicktext: clicked '$($hit.Text)' at $sx,$sy"
+  }
+  'keepalive' {
+    # Defeat the kiosk idle-timeout WITHOUT keyboard side-effects. Earlier a Shift-tap
+    # keep-alive triggered Windows "Sticky Keys" (Shift x5) — DON'T use keys. Instead jiggle
+    # the mouse a couple px over the connector window every -Every seconds for -Minutes min.
+    # Movement is forwarded to the RDP session (resets idle) with NO focus-steal, NO keypress,
+    # NO click — so it won't disturb HaynesPro state or trigger the re-scale toggle.
+    # Run with run_in_background so the session stays alive during agent read/reason latency.
+    $r = Get-Rect $hwnd
+    $cx = $r.Left + 8; $cy = $r.Top + 8   # neutral corner; no clickable target there
+    $end = (Get-Date).AddMinutes($Minutes); $n = 0
+    while ((Get-Date) -lt $end) {
+      try { [RM]::SetCursorPos($cx,$cy); [RM]::mouse_event(0x1,0,0,0,[IntPtr]::Zero)
+            Start-Sleep -Milliseconds 40; [RM]::SetCursorPos($cx+3,$cy+3); $n++ } catch {}
+      Start-Sleep -Seconds $Every
+    }
+    "keepalive: $n mouse-jiggles over $Minutes min (every $Every s)"
+  }
   'scroll' {
-    Focus-Rm $h; $r = Get-Rect $h
+    Focus-Rm $hwnd; $r = Get-Rect $hwnd
     $sx = $r.Left + $X; $sy = $r.Top + $Y
     [RM]::SetCursorPos($sx,$sy); Start-Sleep -Milliseconds 200
     $delta = if ($Amount -lt 0) { -120 } else { 120 }
