@@ -27,11 +27,13 @@
   The window is located by title/process each run (its HWND changes between sessions).
 #>
 param(
-  [ValidateSet('find','shot','click','type','key','copy','clear','scroll')]
+  [ValidateSet('find','shot','region','click','type','key','keybd','copy','clear','scroll')]
   [string]$Action = 'find',
   [string]$Path,
   [int]$X,
   [int]$Y,
+  [int]$W = 400,       # region width  (Action=region)
+  [int]$H = 120,       # region height (Action=region)
   [int]$Amount = -3,   # scroll notches: negative = down, positive = up
   [string]$Text,
   [string]$Keys,
@@ -98,6 +100,21 @@ $h = Get-RmWindow
 switch ($Action) {
   'find'  { $r = Get-Rect $h; "HWND=$h  rect=$($r.Left),$($r.Top)  size=$(($r.Right-$r.Left))x$(($r.Bottom-$r.Top))" }
   'shot'  { Focus-Rm $h; if (-not $Path) { $Path = Join-Path $env:TEMP 'remote_mitchell.png' }; Capture-Rm $h $Path }
+  'region' {
+    # Capture a SUB-RECTANGLE (window-relative X,Y,W,H) at native resolution.
+    # Key technique for reading tiny targets when the remote view renders small —
+    # a 400x120 crop is far more legible than a downscaled 1920x1080 full shot.
+    Add-Type -AssemblyName System.Windows.Forms,System.Drawing
+    $r = Get-Rect $h
+    $sx = $r.Left + $X; $sy = $r.Top + $Y
+    if (-not $Path) { $Path = Join-Path $env:TEMP 'remote_region.png' }
+    $bmp = New-Object System.Drawing.Bitmap $W, $H
+    $g = [System.Drawing.Graphics]::FromImage($bmp)
+    $g.CopyFromScreen($sx, $sy, 0, 0, (New-Object System.Drawing.Size($W, $H)))
+    $bmp.Save($Path, [System.Drawing.Imaging.ImageFormat]::Png)
+    $g.Dispose(); $bmp.Dispose()
+    "$Path ($W x $H @ window-rel $X,$Y -> screen $sx,$sy)"
+  }
   'click' {
     Focus-Rm $h; $r = Get-Rect $h
     $sx = $r.Left + $X; $sy = $r.Top + $Y
