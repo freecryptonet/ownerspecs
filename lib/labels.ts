@@ -59,6 +59,15 @@ export const fluidLabels: Record<string, string> = {
   transmission_ecvt: "Transmission (eCVT)",
   inverter_coolant: "Inverter / motor coolant",
   reduction_gear: "Reduction gear oil",
+  reduction_gear_front: "Reduction gear oil (front)",
+  reduction_gear_rear: "Reduction gear oil (rear)",
+  coolant_phev: "Coolant (PHEV)",
+  coolant_amg: "Coolant (AMG)",
+  coolant_drive: "Coolant (drive system)",
+  coolant_hv_battery: "Coolant (HV battery)",
+  engine_oil_phev: "Engine oil (PHEV)",
+  fuel: "Fuel tank",
+  fuel_phev: "Fuel tank (PHEV)",
 };
 
 export const fluidLabel = (t: string) => fluidLabels[t] ?? humanize(t);
