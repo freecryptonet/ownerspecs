@@ -99,6 +99,8 @@ ssh -i ~/.ssh/autodtcs_key root@72.62.154.119 'sudo -u deploy pm2 restart os'
 - **Bulk file sync uses `tar c | ssh tar x`, not scp loops.** `tar c *.md | ssh -i ~/.ssh/autodtcs_key root@72.62.154.119 'cd /home/deploy/ownerspecs/manuals && tar x'` synced 281 .md files in ~5 sec; per-file scp would be ~100× slower. Same pattern for VPS→local pulls.
 - **Use the PowerShell tool for `F:\...` invocations.** The Bash tool strips backslashes (`F:\projects\X` becomes `F:projectsX`) and the command exits 127 / "command not found". For non-trivial Python with raw strings (`r"F:\..."`) or multi-line code, write a temp `scripts/_x.py` and invoke it — PowerShell mangles even single-quoted Python here-strings.
 - **Stopping a runaway local batch.** `Get-Process python | Stop-Process -Force` halts all workers cleanly. The background-task wrapper reports exit code **255** — that's the kill signal, not a real failure.
+- **Homepage (`app/page.tsx`) is `export const dynamic = "force-dynamic"`** and stays that way. SSG worker's 60s per-page timeout starves on DB pool contention after ~15k static pages. Don't try to flip it back unless you've also rewritten the correlated-subquery counts to a 2-pass (newest gens first, then keyed counts) — see commit `c27242c` for the pattern.
+- **`sources` INSERT must set `retrieved_at` + `type` explicitly.** Both are NOT NULL with no default; omit them and MariaDB stores `0000-00-00`, then `FluidTopicPage.reviewDate(sources)` calls `new Date(...).toISOString()` and crashes the static export with `RangeError: Invalid time value`. Template: `INSERT IGNORE INTO sources (citation, public_link, type, retrieved_at, notes) VALUES (..., 1, 'owner_manual', NOW(), ...)`.
 
 ## Data conventions
 
@@ -142,6 +144,8 @@ ssh -i ~/.ssh/autodtcs_key root@72.62.154.119 'sudo -u deploy pm2 restart os'
 
 ## Recurring data-quality patterns
 
+- **Mercedes-Benz wheel-bolt torque varies by platform**, not by brand. W-platform passenger cars (W206/W214/W223/EQE/EQS/GLC) = 150 N·m / 111 lb-ft. G-Class ladder-frame (W465) = 180 N·m / 133 lb-ft. AMG sedans match their non-AMG sibling. Don't reuse a value across platforms.
+- **Mercedes US OMs publish "Missing values were not yet available by the editorial deadline" verbatim** in capacity tables (seen on EQE coolant, GLC AMG oil, G-Class non-AMG coolant, EQS all coolant circuits). Record the row with `capacity_l = NULL` + an explicit `notes` line saying "filling quantity not published in OM" — the page surfaces the verified values that ARE published (refrigerant, brake spec, lug torque) and the user understands why a value is missing.
 - **Engine duplicate records on US pickups.** F-150 P702, Silverado T1, Tahoe T1XX, Escalade T1XX each have shadow engine rows (e.g. `engines.id=26` "EcoBoost" 2264cc vs `id=172` "3.5 EcoBoost" 3496cc — same engine, two rows). Trims reference short-code IDs; legacy fluid_specs reference full-name IDs. Dedupe `engines` table before per-engine backfill on these gens.
 - **Per-row `source_count` must filter `s.is_public = 1`.** Internal cross-verification sources (auto_data, ultimatespecs, haynespro) are stored for audit but never rendered. Counting them inflates `[1][2]...[N]` citation badges. Subqueries on `fluid_specs` / `torque_specs` must `JOIN sources s ON s.id = ss.source_id WHERE s.is_public = 1` and `COUNT(DISTINCT ss.source_id)`.
 - **Thin scraper-leftover fluid rows.** The scraper auto-creates `engine_oil` + `coolant` rows from auto-data's `fluid_hints` (capacity_l only, NULL viscosity / spec_standard / filter_part_no). Hand-seeded moat migrations add rich rows for the same fluid_type without deduping → 2 rows per `engine_oil` / `coolant`. After each new moat migration, sweep:
@@ -228,6 +232,10 @@ A bulk convert is still defensible when we want corpus-grep over a specific area
 - `scripts/crawl_hyundai_nl.py` (70 PDFs, 22 model variants, MY2014-2025)
 - `scripts/crawl_mopar_us.py` (694 PDFs, 6.1 GB, 6 brands MY2005-2027 — uses the public APIM key from api.mopar.com/vehicleKit, skips Akamai-walled sitemap)
 - `scripts/crawl_mazda_ca.py` (180 PDFs, MY2001-2025, all Mazda + powertrain-split CX-70/CX-90/CX-50; PDFs on mazda.ca/globalassets, dealer index at planetemazda.com)
+
+**URL-map pattern for vendor-hosted OEMs.** When filename→URL is lossy (Hyundai (P)HEV→`p_hev`), opaque (Mopar DocCodes), or vendor-domain (Toyota Tweddle, Subaru Joomag), ship a `<oem>_url_map.json` produced by `build_<oem>_url_map.py` at repo root. Backfill loads the map and treats keys as **virtual filenames** (no PDFs on disk needed — see `virtual_filenames` set in `backfill_oem_manual_urls.py`). Existing maps: `mopar_url_map.json` (671), `hyundai_url_map.json` (81), `kia_url_map.json` (260), `toyota_url_map.json` (182).
+
+**Foreign-OEM dry wells (skip recon).** Honda CA (`api.services.honda.ca` has CORS bug — even Honda's own page can't load the manuals list), Volvo (restructured into topic-article CMS, no PDFs published at all), Subaru CA (uses `viewer.joomag.com` — vendor viewer with opaque 19-digit IDs, current model-year only). Productive ones from same session: **Tesla** (`tesla.com/ownersmanual/{slug}/en_us/Owners_Manual.pdf` — deterministic, `public_link=1`) and **Toyota EU Tweddle** (`diva-api.tweddle.app/pubhub/info/products` returns full catalog, PDFs on `customerportal.tweddle-aws.eu` — vendor, `public_link=0`). See migs 521/522.
 
 To add a brand: copy whichever crawler structurally matches the target portal (Mitsubishi/Hyundai/Mazda CA = static HTML index; Mopar = JSON API). Swap index URL + filename pattern + normalize_filename prefix.
 
