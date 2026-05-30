@@ -46,20 +46,29 @@ export function breadcrumbsJsonLd(opts: {
 }) {
   const { brand, model, gen, topic } = opts;
   const yrs = gen.end_year ? `${gen.start_year} – ${gen.end_year}` : `${gen.start_year} – present`;
+  // Mirror the visible breadcrumb trail exactly (Catalogue / Brand / Model / Gen [/ Topic]).
+  // The Model level is a real, statically-generated page (/{brand}/{model}); omitting it here
+  // made the structured data disagree with the rendered crumb.
   const items = [
     { "@type": "ListItem", position: 1, name: "Catalogue", item: `${SITE}/` },
     { "@type": "ListItem", position: 2, name: brand.name, item: `${SITE}/${brand.slug}` },
     {
       "@type": "ListItem",
       position: 3,
-      name: `${model.name} ${gen.display_name} ${yrs}`,
+      name: model.name,
+      item: `${SITE}/${brand.slug}/${model.slug}`,
+    },
+    {
+      "@type": "ListItem",
+      position: 4,
+      name: `${gen.display_name} ${yrs}`,
       item: `${SITE}/${brand.slug}/${gen.slug}`,
     },
   ];
   if (topic) {
     items.push({
       "@type": "ListItem",
-      position: 4,
+      position: 5,
       name: topic.label,
       item: `${SITE}${topic.path}`,
     });

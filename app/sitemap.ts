@@ -109,6 +109,24 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       });
     }
 
+    // Model index pages (/{brand}/{model}) — statically generated and breadcrumb-linked,
+    // but previously absent from the sitemap. Mirrors the modelRows set in the
+    // [generation] route's generateStaticParams (DISTINCT brand+model with ≥1 active gen).
+    const modelPages = await query<{ brand: string; model: string }>(
+      `SELECT DISTINCT mk.slug AS brand, m.slug AS model
+       FROM models m
+       JOIN makes mk ON mk.id = m.make_id
+       JOIN generations g ON g.model_id = m.id AND g.is_active = 1`,
+    );
+    for (const m of modelPages) {
+      pages.push({
+        url: `${BASE}/${m.brand}/${m.model}`,
+        lastModified: new Date(),
+        changeFrequency: "weekly",
+        priority: 0.7,
+      });
+    }
+
     // Family (shared-chassis) comparison pages — also previously absent
     const families = await query<{ family_slug: string }>(
       `SELECT DISTINCT g.family_slug
