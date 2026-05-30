@@ -195,8 +195,8 @@ def main() -> int:
 
     todo: list[tuple[str, Path, dict]] = []
     for url, meta in seen.items():
-        if meta["kind"] not in keep_kinds and meta["kind"] != "other":
-            continue
+        if meta["kind"] not in keep_kinds:
+            continue  # 'other' is roadside guides / battery supplements / etc — skip unless explicitly classified
         local = MANUALS_DIR / local_name(url)
         if local.exists() and local.stat().st_size > 0:
             continue
