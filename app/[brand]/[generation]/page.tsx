@@ -52,6 +52,11 @@ type Generation = {
   rear_suspension: string | null;
   front_brakes: string | null;
   rear_brakes: string | null;
+  oem_manual_url: string | null;
+  oem_manual_pdf_size_mb: string | null;
+  oem_manual_year_referenced: number | null;
+  oem_manual_source_id: number | null;
+  oem_manual_verified_at: Date | string | null;
 };
 type FamilySibling = {
   id: number;
@@ -183,7 +188,9 @@ async function getGenerationData(brand: string, generation: string) {
             g.editorial_intro,
             g.length_mm, g.width_mm, g.height_mm, g.wheelbase_mm,
             g.front_track_mm, g.rear_track_mm, g.fuel_tank_l, g.cargo_l,
-            g.front_suspension, g.rear_suspension, g.front_brakes, g.rear_brakes
+            g.front_suspension, g.rear_suspension, g.front_brakes, g.rear_brakes,
+            g.oem_manual_url, g.oem_manual_pdf_size_mb, g.oem_manual_year_referenced,
+            g.oem_manual_source_id, g.oem_manual_verified_at
      FROM generations g
      JOIN models m ON m.id = g.model_id
      WHERE g.slug = ? AND m.make_id = ?
@@ -445,9 +452,14 @@ export async function generateMetadata({
   if (data) {
     const { make, gen, heroImage } = data;
     const yrs = yearRange(gen.start_year, gen.end_year);
+    const hasManual = !!gen.oem_manual_url;
     return pageMetadata({
-      title: `${make.name} ${gen.display_name} ${yrs} — Specifications`,
-      description: `Full specifications for the ${gen.display_name} (${make.name}, ${yrs}). Engine, performance, dimensions, fluid capacities, maintenance schedule, torque values — cross-verified.`,
+      title: hasManual
+        ? `${make.name} ${gen.display_name} ${yrs} — Owner's Manual & Specifications`
+        : `${make.name} ${gen.display_name} ${yrs} — Specifications`,
+      description: hasManual
+        ? `Owner's manual PDF and full specifications for the ${gen.display_name} (${make.name}, ${yrs}). Direct link to the official ${make.name} manual plus engine, fluid capacities, maintenance schedule, torque values — cross-verified.`
+        : `Full specifications for the ${gen.display_name} (${make.name}, ${yrs}). Engine, performance, dimensions, fluid capacities, maintenance schedule, torque values — cross-verified.`,
       path: `/${make.slug}/${gen.slug}`,
       heroPath: heroImage?.url,
     });
@@ -776,6 +788,47 @@ export default async function Page({ params }: { params: Promise<Params> }) {
             </div>
           </div>
         </section>
+
+        {gen.oem_manual_url && (
+          <section aria-labelledby="oem-manual-h" style={{ marginTop: "var(--s-5)" }}>
+            <h2 className="section-h" id="oem-manual-h">Download Owner&apos;s Manual</h2>
+            <div className="answer-card" style={{ display: "flex", gap: "var(--s-4)", alignItems: "flex-start", flexWrap: "wrap" }}>
+              <div style={{ flex: "1 1 280px", minWidth: 0 }}>
+                <p style={{ marginTop: 0, marginBottom: "var(--s-2)" }}>
+                  Official PDF, hosted by {make.name}. {gen.oem_manual_year_referenced
+                    ? `${gen.oem_manual_year_referenced} model-year edition`
+                    : "Manufacturer edition"}{gen.oem_manual_pdf_size_mb ? ` · ${gen.oem_manual_pdf_size_mb} MB` : ""}.
+                </p>
+                <p style={{ marginTop: 0, marginBottom: 0, color: "var(--ink-2)", fontSize: "var(--fs-1)" }}>
+                  This document is the manufacturer&apos;s reference for every fluid capacity, torque value,
+                  service interval and warning indicator in the {gen.codename ?? "this"} {model.name}. We link
+                  directly to the OEM hosting — nothing is republished here.
+                </p>
+              </div>
+              <a
+                href={gen.oem_manual_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={`Download ${make.name} ${model.name} owner's manual (PDF)`}
+                style={{
+                  flex: "0 0 auto",
+                  whiteSpace: "nowrap",
+                  display: "inline-block",
+                  padding: "10px 18px",
+                  background: "var(--accent)",
+                  color: "#fff",
+                  border: "1px solid var(--accent)",
+                  textDecoration: "none",
+                  fontWeight: 600,
+                  fontSize: "14px",
+                  letterSpacing: "0.01em",
+                }}
+              >
+                Download PDF ↗
+              </a>
+            </div>
+          </section>
+        )}
 
         {/* EDITORIAL INTRO — herstructureringsplan §3 Niveau 4 #2: per-gen
             E-E-A-T overview (history, market differences, facelift notes).

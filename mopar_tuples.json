@@ -1,0 +1,3437 @@
+[
+  {
+    "brand": "Jeep",
+    "model": "Wrangler",
+    "year": "2026"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Wrangler",
+    "year": "2025"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Wrangler",
+    "year": "2024"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Wrangler",
+    "year": "2023"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Wrangler",
+    "year": "2022"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Wrangler",
+    "year": "2021"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Wrangler",
+    "year": "2020"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Wrangler",
+    "year": "2019"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Wrangler",
+    "year": "2017"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Wrangler",
+    "year": "2016"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Wrangler",
+    "year": "2015"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Wrangler",
+    "year": "2014"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Wrangler",
+    "year": "2013"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Wrangler",
+    "year": "2012"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Wrangler",
+    "year": "2011"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Wrangler",
+    "year": "2010"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Wrangler",
+    "year": "2009"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Wrangler",
+    "year": "2008"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Wrangler",
+    "year": "2007"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Wrangler",
+    "year": "2006"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Wrangler",
+    "year": "2005"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Renegade",
+    "year": "2023"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Renegade",
+    "year": "2022"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Renegade",
+    "year": "2021"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Renegade",
+    "year": "2020"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Renegade",
+    "year": "2019"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Renegade",
+    "year": "2018"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Renegade",
+    "year": "2017"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Renegade",
+    "year": "2016"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Renegade",
+    "year": "2015"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Patriot",
+    "year": "2017"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Patriot",
+    "year": "2016"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Patriot",
+    "year": "2015"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Patriot",
+    "year": "2014"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Patriot",
+    "year": "2013"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Patriot",
+    "year": "2012"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Patriot",
+    "year": "2011"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Patriot",
+    "year": "2010"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Patriot",
+    "year": "2009"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Patriot",
+    "year": "2008"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Patriot",
+    "year": "2007"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Compass",
+    "year": "2026"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Compass",
+    "year": "2025"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Compass",
+    "year": "2024"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Compass",
+    "year": "2023"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Compass",
+    "year": "2022"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Compass",
+    "year": "2021"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Compass",
+    "year": "2020"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Compass",
+    "year": "2019"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Compass",
+    "year": "2018"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Compass",
+    "year": "2017"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Compass",
+    "year": "2016"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Compass",
+    "year": "2015"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Compass",
+    "year": "2014"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Compass",
+    "year": "2013"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Compass",
+    "year": "2012"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Compass",
+    "year": "2011"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Compass",
+    "year": "2010"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Compass",
+    "year": "2009"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Compass",
+    "year": "2008"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Compass",
+    "year": "2007"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Grand_Cherokee",
+    "year": "2026"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Grand_Cherokee",
+    "year": "2025"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Grand_Cherokee",
+    "year": "2024"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Grand_Cherokee",
+    "year": "2023"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Grand_Cherokee",
+    "year": "2022"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Grand_Cherokee",
+    "year": "2021"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Grand_Cherokee",
+    "year": "2020"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Grand_Cherokee",
+    "year": "2019"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Grand_Cherokee",
+    "year": "2018"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Grand_Cherokee",
+    "year": "2017"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Grand_Cherokee",
+    "year": "2016"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Grand_Cherokee",
+    "year": "2015"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Grand_Cherokee",
+    "year": "2014"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Grand_Cherokee",
+    "year": "2013"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Grand_Cherokee",
+    "year": "2012"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Grand_Cherokee",
+    "year": "2011"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Grand_Cherokee",
+    "year": "2010"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Grand_Cherokee",
+    "year": "2009"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Grand_Cherokee",
+    "year": "2008"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Grand_Cherokee",
+    "year": "2007"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Grand_Cherokee",
+    "year": "2006"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Grand_Cherokee",
+    "year": "2005"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Gladiator",
+    "year": "2026"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Gladiator",
+    "year": "2025"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Gladiator",
+    "year": "2024"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Gladiator",
+    "year": "2023"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Gladiator",
+    "year": "2022"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Gladiator",
+    "year": "2021"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Gladiator",
+    "year": "2020"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Wrangler_JL",
+    "year": "2018"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Wrangler_JK",
+    "year": "2018"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Grand_Cherokee_SRT",
+    "year": "2019"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Grand_Cherokee_SRT",
+    "year": "2018"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Grand_Cherokee_SRT",
+    "year": "2017"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Grand_Cherokee_SRT",
+    "year": "2016"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Grand_Cherokee_SRT",
+    "year": "2015"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Grand_Cherokee_SRT",
+    "year": "2014"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Grand_Cherokee_SRT",
+    "year": "2013"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Grand_Cherokee_SRT",
+    "year": "2012"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Grand_Cherokee_SRT",
+    "year": "2010"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Grand_Cherokee_SRT",
+    "year": "2009"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Grand_Cherokee_SRT",
+    "year": "2008"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Grand_Cherokee_SRT",
+    "year": "2007"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Grand_Cherokee_SRT",
+    "year": "2006"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Wrangler_4xe",
+    "year": "2024"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Wrangler_4xe",
+    "year": "2023"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Wrangler_4xe",
+    "year": "2022"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Wrangler_4xe",
+    "year": "2021"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Grand_Cherokee_L",
+    "year": "2025"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Grand_Cherokee_L",
+    "year": "2024"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Grand_Cherokee_L",
+    "year": "2023"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Grand_Cherokee_L",
+    "year": "2022"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Grand_Cherokee_L",
+    "year": "2021"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Liberty",
+    "year": "2012"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Liberty",
+    "year": "2011"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Liberty",
+    "year": "2010"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Liberty",
+    "year": "2009"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Liberty",
+    "year": "2008"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Liberty",
+    "year": "2007"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Liberty",
+    "year": "2006"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Liberty",
+    "year": "2005"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Commander",
+    "year": "2010"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Commander",
+    "year": "2009"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Commander",
+    "year": "2008"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Commander",
+    "year": "2007"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Commander",
+    "year": "2006"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Wagoneer",
+    "year": "2025"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Wagoneer",
+    "year": "2024"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Wagoneer",
+    "year": "2023"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Wagoneer",
+    "year": "2022"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Grand_Cherokee_4xe",
+    "year": "2026"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Grand_Cherokee_4xe",
+    "year": "2025"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Grand_Cherokee_4xe",
+    "year": "2024"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Grand_Cherokee_4xe",
+    "year": "2023"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Grand_Cherokee_4xe",
+    "year": "2022"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Grand_Cherokee_WK",
+    "year": "2022"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Grand_Wagoneer",
+    "year": "2026"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Grand_Wagoneer",
+    "year": "2025"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Grand_Wagoneer",
+    "year": "2024"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Grand_Wagoneer",
+    "year": "2023"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Grand_Wagoneer",
+    "year": "2022"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Wagoneer_S",
+    "year": "2026"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Wagoneer_S",
+    "year": "2025"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Wagoneer_S",
+    "year": "2024"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Cherokee",
+    "year": "2026"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Cherokee",
+    "year": "2023"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Cherokee",
+    "year": "2022"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Cherokee",
+    "year": "2021"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Cherokee",
+    "year": "2020"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Cherokee",
+    "year": "2019"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Cherokee",
+    "year": "2018"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Cherokee",
+    "year": "2017"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Cherokee",
+    "year": "2016"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Cherokee",
+    "year": "2015"
+  },
+  {
+    "brand": "Jeep",
+    "model": "Cherokee",
+    "year": "2014"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "300",
+    "year": "2023"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "300",
+    "year": "2022"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "300",
+    "year": "2021"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "300",
+    "year": "2020"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "300",
+    "year": "2019"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "300",
+    "year": "2018"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "300",
+    "year": "2017"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "300",
+    "year": "2016"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "300",
+    "year": "2015"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "300",
+    "year": "2014"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "300",
+    "year": "2013"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "300",
+    "year": "2012"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "300",
+    "year": "2011"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "300",
+    "year": "2010"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "300",
+    "year": "2009"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "300",
+    "year": "2008"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "300",
+    "year": "2007"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "300",
+    "year": "2006"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "300",
+    "year": "2005"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "Voyager",
+    "year": "2026"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "Voyager",
+    "year": "2025"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "Voyager",
+    "year": "2024"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "Voyager",
+    "year": "2023"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "Voyager",
+    "year": "2022"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "Voyager",
+    "year": "2021"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "Voyager",
+    "year": "2020"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "Pacifica_Hybrid",
+    "year": "2026"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "Pacifica_Hybrid",
+    "year": "2025"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "Pacifica_Hybrid",
+    "year": "2024"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "Pacifica_Hybrid",
+    "year": "2023"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "Pacifica_Hybrid",
+    "year": "2022"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "Pacifica_Hybrid",
+    "year": "2021"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "Pacifica_Hybrid",
+    "year": "2020"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "Pacifica_Hybrid",
+    "year": "2019"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "Pacifica_Hybrid",
+    "year": "2018"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "Pacifica_Hybrid",
+    "year": "2017"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "Pacifica",
+    "year": "2027"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "Pacifica",
+    "year": "2026"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "Pacifica",
+    "year": "2025"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "Pacifica",
+    "year": "2024"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "Pacifica",
+    "year": "2023"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "Pacifica",
+    "year": "2022"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "Pacifica",
+    "year": "2021"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "Pacifica",
+    "year": "2020"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "Pacifica",
+    "year": "2019"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "Pacifica",
+    "year": "2018"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "Pacifica",
+    "year": "2017"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "Pacifica",
+    "year": "2008"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "Pacifica",
+    "year": "2007"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "Pacifica",
+    "year": "2006"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "Pacifica",
+    "year": "2005"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "300_SRT",
+    "year": "2017"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "300_SRT",
+    "year": "2010"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "300_SRT",
+    "year": "2009"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "300_SRT",
+    "year": "2008"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "300_SRT",
+    "year": "2007"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "300_SRT",
+    "year": "2006"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "300_SRT",
+    "year": "2005"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "200",
+    "year": "2017"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "200",
+    "year": "2016"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "200",
+    "year": "2015"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "200",
+    "year": "2014"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "200",
+    "year": "2013"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "200",
+    "year": "2012"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "200",
+    "year": "2011"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "Town_Country",
+    "year": "2016"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "Town_Country",
+    "year": "2015"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "Town_Country",
+    "year": "2014"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "Town_Country",
+    "year": "2013"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "Town_Country",
+    "year": "2012"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "Town_Country",
+    "year": "2011"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "Town_Country",
+    "year": "2010"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "Town_Country",
+    "year": "2009"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "Town_Country",
+    "year": "2008"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "Town_Country",
+    "year": "2007"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "Town_Country",
+    "year": "2006"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "Town_Country",
+    "year": "2005"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "PT_Cruiser",
+    "year": "2010"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "PT_Cruiser",
+    "year": "2009"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "PT_Cruiser",
+    "year": "2008"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "PT_Cruiser",
+    "year": "2007"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "PT_Cruiser",
+    "year": "2006"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "PT_Cruiser",
+    "year": "2005"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "Sebring",
+    "year": "2010"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "Sebring_Convertible",
+    "year": "2010"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "Sebring_Convertible",
+    "year": "2009"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "Sebring_Convertible",
+    "year": "2008"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "Sebring_Convertible",
+    "year": "2006"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "Sebring_Convertible",
+    "year": "2005"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "Aspen",
+    "year": "2009"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "Aspen",
+    "year": "2008"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "Aspen",
+    "year": "2007"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "Sebring_Sedan",
+    "year": "2009"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "Sebring_Sedan",
+    "year": "2008"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "Sebring_Sedan",
+    "year": "2007"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "Sebring_Sedan",
+    "year": "2006"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "Sebring_Sedan",
+    "year": "2005"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "Crossfire",
+    "year": "2008"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "Crossfire",
+    "year": "2007"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "Crossfire",
+    "year": "2006"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "Crossfire",
+    "year": "2005"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "PT_Cruiser_Convertible",
+    "year": "2008"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "PT_Cruiser_Convertible",
+    "year": "2007"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "PT_Cruiser_Convertible",
+    "year": "2006"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "PT_Cruiser_Convertible",
+    "year": "2005"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "Crossfire_SRT",
+    "year": "2005"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "Pacifica_Touring",
+    "year": "2005"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "Sebring_Coupe",
+    "year": "2005"
+  },
+  {
+    "brand": "Chrysler",
+    "model": "Pacifica_LX",
+    "year": "2027"
+  },
+  {
+    "brand": "Ram",
+    "model": "2500",
+    "year": "2026"
+  },
+  {
+    "brand": "Ram",
+    "model": "2500",
+    "year": "2025"
+  },
+  {
+    "brand": "Ram",
+    "model": "2500",
+    "year": "2024"
+  },
+  {
+    "brand": "Ram",
+    "model": "2500",
+    "year": "2023"
+  },
+  {
+    "brand": "Ram",
+    "model": "2500",
+    "year": "2022"
+  },
+  {
+    "brand": "Ram",
+    "model": "2500",
+    "year": "2021"
+  },
+  {
+    "brand": "Ram",
+    "model": "2500",
+    "year": "2020"
+  },
+  {
+    "brand": "Ram",
+    "model": "2500",
+    "year": "2019"
+  },
+  {
+    "brand": "Ram",
+    "model": "2500",
+    "year": "2018"
+  },
+  {
+    "brand": "Ram",
+    "model": "2500",
+    "year": "2017"
+  },
+  {
+    "brand": "Ram",
+    "model": "2500",
+    "year": "2016"
+  },
+  {
+    "brand": "Ram",
+    "model": "2500",
+    "year": "2015"
+  },
+  {
+    "brand": "Ram",
+    "model": "2500",
+    "year": "2014"
+  },
+  {
+    "brand": "Ram",
+    "model": "2500",
+    "year": "2013"
+  },
+  {
+    "brand": "Ram",
+    "model": "2500",
+    "year": "2012"
+  },
+  {
+    "brand": "Ram",
+    "model": "2500",
+    "year": "2011"
+  },
+  {
+    "brand": "Ram",
+    "model": "2500",
+    "year": "2010"
+  },
+  {
+    "brand": "Ram",
+    "model": "2500",
+    "year": "2009"
+  },
+  {
+    "brand": "Ram",
+    "model": "2500",
+    "year": "2008"
+  },
+  {
+    "brand": "Ram",
+    "model": "2500",
+    "year": "2007"
+  },
+  {
+    "brand": "Ram",
+    "model": "2500",
+    "year": "2006"
+  },
+  {
+    "brand": "Ram",
+    "model": "2500",
+    "year": "2005"
+  },
+  {
+    "brand": "Ram",
+    "model": "ProMaster_City",
+    "year": "2022"
+  },
+  {
+    "brand": "Ram",
+    "model": "ProMaster_City",
+    "year": "2021"
+  },
+  {
+    "brand": "Ram",
+    "model": "ProMaster_City",
+    "year": "2020"
+  },
+  {
+    "brand": "Ram",
+    "model": "ProMaster_City",
+    "year": "2019"
+  },
+  {
+    "brand": "Ram",
+    "model": "ProMaster_City",
+    "year": "2018"
+  },
+  {
+    "brand": "Ram",
+    "model": "ProMaster_City",
+    "year": "2017"
+  },
+  {
+    "brand": "Ram",
+    "model": "ProMaster_City",
+    "year": "2016"
+  },
+  {
+    "brand": "Ram",
+    "model": "ProMaster_City",
+    "year": "2015"
+  },
+  {
+    "brand": "Ram",
+    "model": "ProMaster",
+    "year": "2026"
+  },
+  {
+    "brand": "Ram",
+    "model": "ProMaster",
+    "year": "2025"
+  },
+  {
+    "brand": "Ram",
+    "model": "ProMaster",
+    "year": "2024"
+  },
+  {
+    "brand": "Ram",
+    "model": "ProMaster",
+    "year": "2023"
+  },
+  {
+    "brand": "Ram",
+    "model": "ProMaster",
+    "year": "2022"
+  },
+  {
+    "brand": "Ram",
+    "model": "ProMaster",
+    "year": "2021"
+  },
+  {
+    "brand": "Ram",
+    "model": "ProMaster",
+    "year": "2020"
+  },
+  {
+    "brand": "Ram",
+    "model": "ProMaster",
+    "year": "2019"
+  },
+  {
+    "brand": "Ram",
+    "model": "ProMaster",
+    "year": "2018"
+  },
+  {
+    "brand": "Ram",
+    "model": "ProMaster",
+    "year": "2017"
+  },
+  {
+    "brand": "Ram",
+    "model": "ProMaster",
+    "year": "2016"
+  },
+  {
+    "brand": "Ram",
+    "model": "ProMaster",
+    "year": "2015"
+  },
+  {
+    "brand": "Ram",
+    "model": "ProMaster",
+    "year": "2014"
+  },
+  {
+    "brand": "Ram",
+    "model": "Chassis_Cab",
+    "year": "2026"
+  },
+  {
+    "brand": "Ram",
+    "model": "Chassis_Cab",
+    "year": "2025"
+  },
+  {
+    "brand": "Ram",
+    "model": "Chassis_Cab",
+    "year": "2024"
+  },
+  {
+    "brand": "Ram",
+    "model": "Chassis_Cab",
+    "year": "2023"
+  },
+  {
+    "brand": "Ram",
+    "model": "Chassis_Cab",
+    "year": "2022"
+  },
+  {
+    "brand": "Ram",
+    "model": "Chassis_Cab",
+    "year": "2021"
+  },
+  {
+    "brand": "Ram",
+    "model": "Chassis_Cab",
+    "year": "2020"
+  },
+  {
+    "brand": "Ram",
+    "model": "Chassis_Cab",
+    "year": "2019"
+  },
+  {
+    "brand": "Ram",
+    "model": "Chassis_Cab",
+    "year": "2018"
+  },
+  {
+    "brand": "Ram",
+    "model": "Chassis_Cab",
+    "year": "2017"
+  },
+  {
+    "brand": "Ram",
+    "model": "Chassis_Cab",
+    "year": "2016"
+  },
+  {
+    "brand": "Ram",
+    "model": "Chassis_Cab",
+    "year": "2015"
+  },
+  {
+    "brand": "Ram",
+    "model": "Chassis_Cab",
+    "year": "2014"
+  },
+  {
+    "brand": "Ram",
+    "model": "Chassis_Cab",
+    "year": "2013"
+  },
+  {
+    "brand": "Ram",
+    "model": "Chassis_Cab",
+    "year": "2012"
+  },
+  {
+    "brand": "Ram",
+    "model": "Chassis_Cab",
+    "year": "2011"
+  },
+  {
+    "brand": "Ram",
+    "model": "Chassis_Cab",
+    "year": "2010"
+  },
+  {
+    "brand": "Ram",
+    "model": "Chassis_Cab",
+    "year": "2009"
+  },
+  {
+    "brand": "Ram",
+    "model": "Chassis_Cab",
+    "year": "2008"
+  },
+  {
+    "brand": "Ram",
+    "model": "Chassis_Cab",
+    "year": "2007"
+  },
+  {
+    "brand": "Ram",
+    "model": "3500",
+    "year": "2026"
+  },
+  {
+    "brand": "Ram",
+    "model": "3500",
+    "year": "2025"
+  },
+  {
+    "brand": "Ram",
+    "model": "3500",
+    "year": "2024"
+  },
+  {
+    "brand": "Ram",
+    "model": "3500",
+    "year": "2023"
+  },
+  {
+    "brand": "Ram",
+    "model": "3500",
+    "year": "2022"
+  },
+  {
+    "brand": "Ram",
+    "model": "3500",
+    "year": "2021"
+  },
+  {
+    "brand": "Ram",
+    "model": "3500",
+    "year": "2020"
+  },
+  {
+    "brand": "Ram",
+    "model": "3500",
+    "year": "2019"
+  },
+  {
+    "brand": "Ram",
+    "model": "3500",
+    "year": "2018"
+  },
+  {
+    "brand": "Ram",
+    "model": "3500",
+    "year": "2017"
+  },
+  {
+    "brand": "Ram",
+    "model": "3500",
+    "year": "2016"
+  },
+  {
+    "brand": "Ram",
+    "model": "3500",
+    "year": "2015"
+  },
+  {
+    "brand": "Ram",
+    "model": "3500",
+    "year": "2014"
+  },
+  {
+    "brand": "Ram",
+    "model": "3500",
+    "year": "2013"
+  },
+  {
+    "brand": "Ram",
+    "model": "3500",
+    "year": "2012"
+  },
+  {
+    "brand": "Ram",
+    "model": "3500",
+    "year": "2011"
+  },
+  {
+    "brand": "Ram",
+    "model": "3500",
+    "year": "2010"
+  },
+  {
+    "brand": "Ram",
+    "model": "3500",
+    "year": "2009"
+  },
+  {
+    "brand": "Ram",
+    "model": "3500",
+    "year": "2008"
+  },
+  {
+    "brand": "Ram",
+    "model": "3500",
+    "year": "2007"
+  },
+  {
+    "brand": "Ram",
+    "model": "3500",
+    "year": "2006"
+  },
+  {
+    "brand": "Ram",
+    "model": "3500",
+    "year": "2005"
+  },
+  {
+    "brand": "Ram",
+    "model": "1500_DT",
+    "year": "2025"
+  },
+  {
+    "brand": "Ram",
+    "model": "1500_DT",
+    "year": "2024"
+  },
+  {
+    "brand": "Ram",
+    "model": "1500_DT",
+    "year": "2023"
+  },
+  {
+    "brand": "Ram",
+    "model": "1500_DT",
+    "year": "2022"
+  },
+  {
+    "brand": "Ram",
+    "model": "1500_DT",
+    "year": "2021"
+  },
+  {
+    "brand": "Ram",
+    "model": "1500_DT",
+    "year": "2020"
+  },
+  {
+    "brand": "Ram",
+    "model": "1500_DT",
+    "year": "2019"
+  },
+  {
+    "brand": "Ram",
+    "model": "1500_Classic",
+    "year": "2024"
+  },
+  {
+    "brand": "Ram",
+    "model": "1500_Classic",
+    "year": "2023"
+  },
+  {
+    "brand": "Ram",
+    "model": "1500_Classic",
+    "year": "2022"
+  },
+  {
+    "brand": "Ram",
+    "model": "1500_Classic",
+    "year": "2021"
+  },
+  {
+    "brand": "Ram",
+    "model": "1500_Classic",
+    "year": "2020"
+  },
+  {
+    "brand": "Ram",
+    "model": "1500_Classic",
+    "year": "2019"
+  },
+  {
+    "brand": "Ram",
+    "model": "1500",
+    "year": "2026"
+  },
+  {
+    "brand": "Ram",
+    "model": "1500",
+    "year": "2018"
+  },
+  {
+    "brand": "Ram",
+    "model": "1500",
+    "year": "2017"
+  },
+  {
+    "brand": "Ram",
+    "model": "1500",
+    "year": "2016"
+  },
+  {
+    "brand": "Ram",
+    "model": "1500",
+    "year": "2015"
+  },
+  {
+    "brand": "Ram",
+    "model": "1500",
+    "year": "2014"
+  },
+  {
+    "brand": "Ram",
+    "model": "1500",
+    "year": "2013"
+  },
+  {
+    "brand": "Ram",
+    "model": "1500",
+    "year": "2012"
+  },
+  {
+    "brand": "Ram",
+    "model": "1500",
+    "year": "2011"
+  },
+  {
+    "brand": "Ram",
+    "model": "1500",
+    "year": "2010"
+  },
+  {
+    "brand": "Ram",
+    "model": "1500",
+    "year": "2009"
+  },
+  {
+    "brand": "Ram",
+    "model": "1500",
+    "year": "2008"
+  },
+  {
+    "brand": "Ram",
+    "model": "1500",
+    "year": "2007"
+  },
+  {
+    "brand": "Ram",
+    "model": "1500",
+    "year": "2006"
+  },
+  {
+    "brand": "Ram",
+    "model": "1500",
+    "year": "2005"
+  },
+  {
+    "brand": "Ram",
+    "model": "Cargo_Van",
+    "year": "2015"
+  },
+  {
+    "brand": "Ram",
+    "model": "Cargo_Van",
+    "year": "2014"
+  },
+  {
+    "brand": "Ram",
+    "model": "Cargo_Van",
+    "year": "2013"
+  },
+  {
+    "brand": "Ram",
+    "model": "Cargo_Van",
+    "year": "2012"
+  },
+  {
+    "brand": "Ram",
+    "model": "Dakota",
+    "year": "2011"
+  },
+  {
+    "brand": "Ram",
+    "model": "Dakota",
+    "year": "2010"
+  },
+  {
+    "brand": "Ram",
+    "model": "Dakota",
+    "year": "2009"
+  },
+  {
+    "brand": "Ram",
+    "model": "Dakota",
+    "year": "2008"
+  },
+  {
+    "brand": "Ram",
+    "model": "Dakota",
+    "year": "2007"
+  },
+  {
+    "brand": "Ram",
+    "model": "Dakota",
+    "year": "2006"
+  },
+  {
+    "brand": "Ram",
+    "model": "Dakota",
+    "year": "2005"
+  },
+  {
+    "brand": "Ram",
+    "model": "Ram_Diesel",
+    "year": "2009"
+  },
+  {
+    "brand": "Ram",
+    "model": "ProMaster_EV",
+    "year": "2026"
+  },
+  {
+    "brand": "Fiat",
+    "model": "500X",
+    "year": "2023"
+  },
+  {
+    "brand": "Fiat",
+    "model": "500X",
+    "year": "2022"
+  },
+  {
+    "brand": "Fiat",
+    "model": "500X",
+    "year": "2021"
+  },
+  {
+    "brand": "Fiat",
+    "model": "500X",
+    "year": "2020"
+  },
+  {
+    "brand": "Fiat",
+    "model": "500X",
+    "year": "2019"
+  },
+  {
+    "brand": "Fiat",
+    "model": "500X",
+    "year": "2018"
+  },
+  {
+    "brand": "Fiat",
+    "model": "500X",
+    "year": "2017"
+  },
+  {
+    "brand": "Fiat",
+    "model": "500X",
+    "year": "2016"
+  },
+  {
+    "brand": "Fiat",
+    "model": "500L",
+    "year": "2020"
+  },
+  {
+    "brand": "Fiat",
+    "model": "500L",
+    "year": "2019"
+  },
+  {
+    "brand": "Fiat",
+    "model": "500L",
+    "year": "2018"
+  },
+  {
+    "brand": "Fiat",
+    "model": "500L",
+    "year": "2017"
+  },
+  {
+    "brand": "Fiat",
+    "model": "500L",
+    "year": "2016"
+  },
+  {
+    "brand": "Fiat",
+    "model": "500L",
+    "year": "2015"
+  },
+  {
+    "brand": "Fiat",
+    "model": "500L",
+    "year": "2014"
+  },
+  {
+    "brand": "Fiat",
+    "model": "124_Spider",
+    "year": "2020"
+  },
+  {
+    "brand": "Fiat",
+    "model": "124_Spider",
+    "year": "2019"
+  },
+  {
+    "brand": "Fiat",
+    "model": "124_Spider",
+    "year": "2018"
+  },
+  {
+    "brand": "Fiat",
+    "model": "124_Spider",
+    "year": "2017"
+  },
+  {
+    "brand": "Fiat",
+    "model": "500e",
+    "year": "2026"
+  },
+  {
+    "brand": "Fiat",
+    "model": "500e",
+    "year": "2025"
+  },
+  {
+    "brand": "Fiat",
+    "model": "500e",
+    "year": "2024"
+  },
+  {
+    "brand": "Fiat",
+    "model": "500e",
+    "year": "2019"
+  },
+  {
+    "brand": "Fiat",
+    "model": "500e",
+    "year": "2018"
+  },
+  {
+    "brand": "Fiat",
+    "model": "500e",
+    "year": "2017"
+  },
+  {
+    "brand": "Fiat",
+    "model": "500e",
+    "year": "2016"
+  },
+  {
+    "brand": "Fiat",
+    "model": "500e",
+    "year": "2015"
+  },
+  {
+    "brand": "Fiat",
+    "model": "500e",
+    "year": "2014"
+  },
+  {
+    "brand": "Fiat",
+    "model": "500e",
+    "year": "2013"
+  },
+  {
+    "brand": "Fiat",
+    "model": "500_Abarth",
+    "year": "2019"
+  },
+  {
+    "brand": "Fiat",
+    "model": "500_Abarth",
+    "year": "2017"
+  },
+  {
+    "brand": "Fiat",
+    "model": "500_Abarth",
+    "year": "2016"
+  },
+  {
+    "brand": "Fiat",
+    "model": "500_Abarth",
+    "year": "2015"
+  },
+  {
+    "brand": "Fiat",
+    "model": "500_Abarth",
+    "year": "2014"
+  },
+  {
+    "brand": "Fiat",
+    "model": "500_Abarth",
+    "year": "2012"
+  },
+  {
+    "brand": "Fiat",
+    "model": "500",
+    "year": "2019"
+  },
+  {
+    "brand": "Fiat",
+    "model": "500",
+    "year": "2018"
+  },
+  {
+    "brand": "Fiat",
+    "model": "500",
+    "year": "2017"
+  },
+  {
+    "brand": "Fiat",
+    "model": "500",
+    "year": "2016"
+  },
+  {
+    "brand": "Fiat",
+    "model": "500",
+    "year": "2015"
+  },
+  {
+    "brand": "Fiat",
+    "model": "500",
+    "year": "2014"
+  },
+  {
+    "brand": "Fiat",
+    "model": "500",
+    "year": "2013"
+  },
+  {
+    "brand": "Fiat",
+    "model": "500",
+    "year": "2012"
+  },
+  {
+    "brand": "Fiat",
+    "model": "124_Spider_Abarth",
+    "year": "2019"
+  },
+  {
+    "brand": "Fiat",
+    "model": "124_Spider_Abarth",
+    "year": "2018"
+  },
+  {
+    "brand": "Fiat",
+    "model": "124_Spider_Abarth",
+    "year": "2017"
+  },
+  {
+    "brand": "Fiat",
+    "model": "500c",
+    "year": "2017"
+  },
+  {
+    "brand": "Fiat",
+    "model": "500c",
+    "year": "2016"
+  },
+  {
+    "brand": "Fiat",
+    "model": "500c",
+    "year": "2015"
+  },
+  {
+    "brand": "Fiat",
+    "model": "500c",
+    "year": "2014"
+  },
+  {
+    "brand": "Fiat",
+    "model": "500c",
+    "year": "2013"
+  },
+  {
+    "brand": "Fiat",
+    "model": "500c",
+    "year": "2012"
+  },
+  {
+    "brand": "Fiat",
+    "model": "Abarth",
+    "year": "2018"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Journey",
+    "year": "2020"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Journey",
+    "year": "2019"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Journey",
+    "year": "2018"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Journey",
+    "year": "2017"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Journey",
+    "year": "2016"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Journey",
+    "year": "2015"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Journey",
+    "year": "2014"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Journey",
+    "year": "2013"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Journey",
+    "year": "2012"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Journey",
+    "year": "2011"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Journey",
+    "year": "2010"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Journey",
+    "year": "2009"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Grand_Caravan",
+    "year": "2020"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Grand_Caravan",
+    "year": "2019"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Grand_Caravan",
+    "year": "2018"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Grand_Caravan",
+    "year": "2017"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Grand_Caravan",
+    "year": "2016"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Grand_Caravan",
+    "year": "2015"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Grand_Caravan",
+    "year": "2014"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Grand_Caravan",
+    "year": "2013"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Grand_Caravan",
+    "year": "2012"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Grand_Caravan",
+    "year": "2011"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Grand_Caravan",
+    "year": "2010"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Grand_Caravan",
+    "year": "2009"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Grand_Caravan",
+    "year": "2008"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Grand_Caravan",
+    "year": "2007"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Grand_Caravan",
+    "year": "2006"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Grand_Caravan",
+    "year": "2005"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Durango",
+    "year": "2026"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Durango",
+    "year": "2025"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Durango",
+    "year": "2024"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Durango",
+    "year": "2023"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Durango",
+    "year": "2022"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Durango",
+    "year": "2021"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Durango",
+    "year": "2020"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Durango",
+    "year": "2019"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Durango",
+    "year": "2018"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Durango",
+    "year": "2017"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Durango",
+    "year": "2016"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Durango",
+    "year": "2015"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Durango",
+    "year": "2014"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Durango",
+    "year": "2013"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Durango",
+    "year": "2012"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Durango",
+    "year": "2011"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Durango",
+    "year": "2009"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Durango",
+    "year": "2008"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Durango",
+    "year": "2007"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Durango",
+    "year": "2006"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Durango",
+    "year": "2005"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Charger",
+    "year": "2025"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Charger",
+    "year": "2024"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Charger",
+    "year": "2023"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Charger",
+    "year": "2022"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Charger",
+    "year": "2021"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Charger",
+    "year": "2020"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Charger",
+    "year": "2019"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Charger",
+    "year": "2018"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Charger",
+    "year": "2017"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Charger",
+    "year": "2016"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Charger",
+    "year": "2015"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Charger",
+    "year": "2014"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Charger",
+    "year": "2013"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Charger",
+    "year": "2012"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Charger",
+    "year": "2011"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Charger",
+    "year": "2010"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Charger",
+    "year": "2009"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Charger",
+    "year": "2008"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Charger",
+    "year": "2007"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Charger",
+    "year": "2006"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Challenger",
+    "year": "2023"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Challenger",
+    "year": "2022"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Challenger",
+    "year": "2021"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Challenger",
+    "year": "2020"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Challenger",
+    "year": "2019"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Challenger",
+    "year": "2018"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Challenger",
+    "year": "2017"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Challenger",
+    "year": "2016"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Challenger",
+    "year": "2015"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Challenger",
+    "year": "2014"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Challenger",
+    "year": "2013"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Challenger",
+    "year": "2012"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Challenger",
+    "year": "2011"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Challenger",
+    "year": "2010"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Challenger",
+    "year": "2009"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Charger_SRT",
+    "year": "2019"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Charger_SRT",
+    "year": "2018"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Charger_SRT",
+    "year": "2017"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Charger_SRT",
+    "year": "2016"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Charger_SRT",
+    "year": "2015"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Charger_SRT",
+    "year": "2014"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Charger_SRT",
+    "year": "2013"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Charger_SRT",
+    "year": "2012"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Charger_SRT",
+    "year": "2010"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Charger_SRT",
+    "year": "2009"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Charger_SRT",
+    "year": "2008"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Charger_SRT",
+    "year": "2007"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Charger_SRT",
+    "year": "2006"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Challenger_SRT",
+    "year": "2019"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Challenger_SRT",
+    "year": "2018"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Challenger_SRT",
+    "year": "2017"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Challenger_SRT",
+    "year": "2016"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Challenger_SRT",
+    "year": "2015"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Challenger_SRT",
+    "year": "2014"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Challenger_SRT",
+    "year": "2013"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Challenger_SRT",
+    "year": "2012"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Challenger_SRT",
+    "year": "2011"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Challenger_SRT",
+    "year": "2010"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Challenger_SRT",
+    "year": "2009"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Challenger_SRT",
+    "year": "2008"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Viper",
+    "year": "2017"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Viper",
+    "year": "2016"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Viper",
+    "year": "2015"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Viper",
+    "year": "2014"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Viper",
+    "year": "2013"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Viper",
+    "year": "2010"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Viper",
+    "year": "2009"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Viper",
+    "year": "2008"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Viper",
+    "year": "2006"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Viper",
+    "year": "2005"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Durango_SRT",
+    "year": "2019"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Durango_SRT",
+    "year": "2018"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Dart",
+    "year": "2016"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Dart",
+    "year": "2015"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Dart",
+    "year": "2014"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Dart",
+    "year": "2013"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Avenger",
+    "year": "2014"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Avenger",
+    "year": "2013"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Avenger",
+    "year": "2012"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Avenger",
+    "year": "2011"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Avenger",
+    "year": "2010"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Avenger",
+    "year": "2009"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Avenger",
+    "year": "2008"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Caliber",
+    "year": "2012"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Caliber",
+    "year": "2011"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Caliber",
+    "year": "2010"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Caliber",
+    "year": "2009"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Caliber",
+    "year": "2008"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Caliber",
+    "year": "2007"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Nitro",
+    "year": "2011"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Nitro",
+    "year": "2010"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Nitro",
+    "year": "2009"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Nitro",
+    "year": "2008"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Nitro",
+    "year": "2007"
+  },
+  {
+    "brand": "Dodge",
+    "model": "1500",
+    "year": "2010"
+  },
+  {
+    "brand": "Dodge",
+    "model": "1500",
+    "year": "2009"
+  },
+  {
+    "brand": "Dodge",
+    "model": "1500",
+    "year": "2008"
+  },
+  {
+    "brand": "Dodge",
+    "model": "1500",
+    "year": "2007"
+  },
+  {
+    "brand": "Dodge",
+    "model": "1500",
+    "year": "2006"
+  },
+  {
+    "brand": "Dodge",
+    "model": "1500",
+    "year": "2005"
+  },
+  {
+    "brand": "Dodge",
+    "model": "2500",
+    "year": "2010"
+  },
+  {
+    "brand": "Dodge",
+    "model": "2500",
+    "year": "2009"
+  },
+  {
+    "brand": "Dodge",
+    "model": "2500",
+    "year": "2008"
+  },
+  {
+    "brand": "Dodge",
+    "model": "2500",
+    "year": "2007"
+  },
+  {
+    "brand": "Dodge",
+    "model": "2500",
+    "year": "2006"
+  },
+  {
+    "brand": "Dodge",
+    "model": "2500",
+    "year": "2005"
+  },
+  {
+    "brand": "Dodge",
+    "model": "3500",
+    "year": "2010"
+  },
+  {
+    "brand": "Dodge",
+    "model": "3500",
+    "year": "2009"
+  },
+  {
+    "brand": "Dodge",
+    "model": "3500",
+    "year": "2008"
+  },
+  {
+    "brand": "Dodge",
+    "model": "3500",
+    "year": "2007"
+  },
+  {
+    "brand": "Dodge",
+    "model": "3500",
+    "year": "2006"
+  },
+  {
+    "brand": "Dodge",
+    "model": "3500",
+    "year": "2005"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Chassis_Cab",
+    "year": "2010"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Chassis_Cab",
+    "year": "2009"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Chassis_Cab",
+    "year": "2008"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Chassis_Cab",
+    "year": "2007"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Dakota",
+    "year": "2010"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Dakota",
+    "year": "2009"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Dakota",
+    "year": "2008"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Dakota",
+    "year": "2007"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Dakota",
+    "year": "2006"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Dakota",
+    "year": "2005"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Caliber_SRT",
+    "year": "2009"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Durango_Hybrid",
+    "year": "2009"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Ram_Diesel",
+    "year": "2009"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Magnum",
+    "year": "2008"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Magnum",
+    "year": "2007"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Magnum",
+    "year": "2006"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Magnum",
+    "year": "2005"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Magnum_SRT",
+    "year": "2008"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Magnum_SRT",
+    "year": "2007"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Magnum_SRT",
+    "year": "2006"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Sprinter",
+    "year": "2008"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Sprinter",
+    "year": "2007"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Sprinter",
+    "year": "2006"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Sprinter",
+    "year": "2005"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Caravan",
+    "year": "2007"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Caravan",
+    "year": "2006"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Caravan",
+    "year": "2005"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Ram_SRT",
+    "year": "2006"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Ram_SRT",
+    "year": "2005"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Sprinter_Cab_Chassis",
+    "year": "2006"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Sprinter_Cab_Chassis",
+    "year": "2005"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Sprinter_Passenger_Van",
+    "year": "2006"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Sprinter_Passenger_Van",
+    "year": "2005"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Stratus_Sedan",
+    "year": "2006"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Stratus_Sedan",
+    "year": "2005"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Neon",
+    "year": "2005"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Neon_SRT",
+    "year": "2005"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Stratus_Coupe",
+    "year": "2005"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Hornet",
+    "year": "2025"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Hornet",
+    "year": "2024"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Hornet",
+    "year": "2023"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Hornet_Hybrid",
+    "year": "2025"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Hornet_Hybrid",
+    "year": "2024"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Charger_2_Door",
+    "year": "2026"
+  },
+  {
+    "brand": "Dodge",
+    "model": "Charger_4_Door",
+    "year": "2026"
+  },
+  {
+    "brand": "Alfa_Romeo",
+    "model": "4C_Coupe",
+    "year": "2018"
+  },
+  {
+    "brand": "Alfa_Romeo",
+    "model": "4C_Coupe",
+    "year": "2017"
+  },
+  {
+    "brand": "Alfa_Romeo",
+    "model": "4C_Coupe",
+    "year": "2016"
+  },
+  {
+    "brand": "Alfa_Romeo",
+    "model": "4C_Coupe",
+    "year": "2015"
+  },
+  {
+    "brand": "Alfa_Romeo",
+    "model": "4C_Spider",
+    "year": "2020"
+  },
+  {
+    "brand": "Alfa_Romeo",
+    "model": "4C_Spider",
+    "year": "2019"
+  },
+  {
+    "brand": "Alfa_Romeo",
+    "model": "4C_Spider",
+    "year": "2018"
+  },
+  {
+    "brand": "Alfa_Romeo",
+    "model": "4C_Spider",
+    "year": "2017"
+  },
+  {
+    "brand": "Alfa_Romeo",
+    "model": "4C_Spider",
+    "year": "2016"
+  },
+  {
+    "brand": "Alfa_Romeo",
+    "model": "4C_Spider",
+    "year": "2015"
+  },
+  {
+    "brand": "Alfa_Romeo",
+    "model": "Giulia",
+    "year": "2026"
+  },
+  {
+    "brand": "Alfa_Romeo",
+    "model": "Giulia",
+    "year": "2025"
+  },
+  {
+    "brand": "Alfa_Romeo",
+    "model": "Giulia",
+    "year": "2024"
+  },
+  {
+    "brand": "Alfa_Romeo",
+    "model": "Giulia",
+    "year": "2023"
+  },
+  {
+    "brand": "Alfa_Romeo",
+    "model": "Giulia",
+    "year": "2022"
+  },
+  {
+    "brand": "Alfa_Romeo",
+    "model": "Giulia",
+    "year": "2021"
+  },
+  {
+    "brand": "Alfa_Romeo",
+    "model": "Giulia",
+    "year": "2020"
+  },
+  {
+    "brand": "Alfa_Romeo",
+    "model": "Giulia",
+    "year": "2019"
+  },
+  {
+    "brand": "Alfa_Romeo",
+    "model": "Giulia",
+    "year": "2018"
+  },
+  {
+    "brand": "Alfa_Romeo",
+    "model": "Giulia",
+    "year": "2017"
+  },
+  {
+    "brand": "Alfa_Romeo",
+    "model": "Giulia_Quadrifoglio",
+    "year": "2019"
+  },
+  {
+    "brand": "Alfa_Romeo",
+    "model": "Giulia_Quadrifoglio",
+    "year": "2018"
+  },
+  {
+    "brand": "Alfa_Romeo",
+    "model": "Giulia_Quadrifoglio",
+    "year": "2017"
+  },
+  {
+    "brand": "Alfa_Romeo",
+    "model": "Stelvio_Quadrifoglio",
+    "year": "2019"
+  },
+  {
+    "brand": "Alfa_Romeo",
+    "model": "Stelvio_Quadrifoglio",
+    "year": "2018"
+  },
+  {
+    "brand": "Alfa_Romeo",
+    "model": "Stelvio",
+    "year": "2026"
+  },
+  {
+    "brand": "Alfa_Romeo",
+    "model": "Stelvio",
+    "year": "2025"
+  },
+  {
+    "brand": "Alfa_Romeo",
+    "model": "Stelvio",
+    "year": "2024"
+  },
+  {
+    "brand": "Alfa_Romeo",
+    "model": "Stelvio",
+    "year": "2023"
+  },
+  {
+    "brand": "Alfa_Romeo",
+    "model": "Stelvio",
+    "year": "2022"
+  },
+  {
+    "brand": "Alfa_Romeo",
+    "model": "Stelvio",
+    "year": "2021"
+  },
+  {
+    "brand": "Alfa_Romeo",
+    "model": "Stelvio",
+    "year": "2020"
+  },
+  {
+    "brand": "Alfa_Romeo",
+    "model": "Stelvio",
+    "year": "2019"
+  },
+  {
+    "brand": "Alfa_Romeo",
+    "model": "Stelvio",
+    "year": "2018"
+  },
+  {
+    "brand": "Alfa_Romeo",
+    "model": "Tonale",
+    "year": "2026"
+  },
+  {
+    "brand": "Alfa_Romeo",
+    "model": "Tonale",
+    "year": "2025"
+  },
+  {
+    "brand": "Alfa_Romeo",
+    "model": "Tonale",
+    "year": "2024"
+  }
+]
