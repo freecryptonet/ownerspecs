@@ -126,22 +126,28 @@ export default async function Page({ params }: { params: Promise<Params> }) {
     : [];
   const codeBySlug = new Map(siblingCodes.map((r) => [r.slug, r.code]));
 
-  // Aggregated oil fluid data (each gen with this engine)
+  // Aggregated oil fluid data (each gen with this engine). Prefer the row scoped
+  // to THIS engine; fall back to a gen-wide (NULL engine) row. The inner ORDER BY
+  // puts engine-specific rows first so GROUP BY g.id keeps the right one on
+  // multi-engine gens (which carry one engine_oil row per engine).
   const oilEntries = await query<FluidEntry>(
     `SELECT f.capacity_l, f.capacity_qt, f.viscosity, f.spec_standard,
             f.filter_part_no, f.drain_interval_mi,
             mk.name AS brand_name, mk.slug AS brand_slug,
             g.display_name AS gen_display, g.slug AS gen_slug
-     FROM fluid_specs f
+     FROM (
+       SELECT * FROM fluid_specs
+       WHERE fluid_type = 'engine_oil' AND (engine_id = ? OR engine_id IS NULL)
+       ORDER BY (engine_id IS NULL) ASC, (spec_standard IS NULL) ASC
+     ) f
      JOIN generations g ON g.id = f.generation_id
      JOIN models m      ON m.id = g.model_id
      JOIN makes mk      ON mk.id = m.make_id
      WHERE g.is_active = 1
-       AND f.fluid_type = 'engine_oil'
-       AND g.id IN (SELECT DISTINCT generation_id FROM trims WHERE engine_id = ?)
+       AND f.generation_id IN (SELECT DISTINCT generation_id FROM trims WHERE engine_id = ?)
      GROUP BY g.id
      ORDER BY g.start_year DESC`,
-    [engine.id],
+    [engine.id, engine.id],
   );
 
   // Spark plug + oil filter parts across all gens using this engine
@@ -163,10 +169,10 @@ export default async function Page({ params }: { params: Promise<Params> }) {
   const primaryOil = oilEntries[0];
 
   const faqs: Array<{ q: string; a: string }> = [];
-  if (primaryOil?.capacity_qt && primaryOil?.capacity_l) {
+  if (primaryOil?.capacity_l) {
     faqs.push({
       q: `What is the oil capacity of the ${engine.code} engine?`,
-      a: `The ${engine.code} (${engine.display_name}) engine holds ${Number(primaryOil.capacity_qt).toFixed(1)} US qt (${Number(primaryOil.capacity_l).toFixed(1)} L) with a new filter.${primaryOil.viscosity ? ` Manufacturer-specified viscosity is ${primaryOil.viscosity}.` : ""}`,
+      a: `The ${engine.code} (${engine.display_name}) engine holds ${Number(primaryOil.capacity_l).toFixed(1)} L${primaryOil.capacity_qt ? ` (${Number(primaryOil.capacity_qt).toFixed(1)} US qt)` : ""} with a new filter.${primaryOil.viscosity ? ` Manufacturer-specified viscosity is ${primaryOil.viscosity}.` : ""}`,
     });
   }
   if (primaryOil?.spec_standard) {
@@ -352,9 +358,11 @@ export default async function Page({ params }: { params: Promise<Params> }) {
                     </th>
                     <td>
                       <strong>
-                        {o.capacity_qt && o.capacity_l
-                          ? `${Number(o.capacity_qt).toFixed(1)} qt · ${Number(o.capacity_l).toFixed(1)} L`
-                          : "—"}
+                        {o.capacity_l
+                          ? `${Number(o.capacity_l).toFixed(1)} L${o.capacity_qt ? ` · ${Number(o.capacity_qt).toFixed(1)} qt` : ""}`
+                          : o.capacity_qt
+                            ? `${Number(o.capacity_qt).toFixed(1)} qt`
+                            : "—"}
                       </strong>
                     </td>
                     <td>{o.viscosity ?? "—"}</td>
