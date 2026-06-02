@@ -135,19 +135,22 @@ export default async function Page({ params }: { params: Promise<Params> }) {
             f.filter_part_no, f.drain_interval_mi,
             mk.name AS brand_name, mk.slug AS brand_slug,
             g.display_name AS gen_display, g.slug AS gen_slug
-     FROM (
-       SELECT * FROM fluid_specs
-       WHERE fluid_type = 'engine_oil' AND (engine_id = ? OR engine_id IS NULL)
-       ORDER BY (engine_id IS NULL) ASC, (spec_standard IS NULL) ASC
-     ) f
+     FROM fluid_specs f
      JOIN generations g ON g.id = f.generation_id
      JOIN models m      ON m.id = g.model_id
      JOIN makes mk      ON mk.id = m.make_id
-     WHERE g.is_active = 1
+     WHERE f.fluid_type = 'engine_oil'
+       AND g.is_active = 1
        AND f.generation_id IN (SELECT DISTINCT generation_id FROM trims WHERE engine_id = ?)
-     GROUP BY g.id
+       AND f.id = (
+         SELECT f2.id FROM fluid_specs f2
+         WHERE f2.generation_id = f.generation_id AND f2.fluid_type = 'engine_oil'
+           AND (f2.engine_id = ? OR f2.engine_id IS NULL)
+         ORDER BY (f2.engine_id = ?) DESC, (f2.spec_standard IS NULL) ASC, f2.id ASC
+         LIMIT 1
+       )
      ORDER BY g.start_year DESC`,
-    [engine.id, engine.id],
+    [engine.id, engine.id, engine.id],
   );
 
   // Spark plug + oil filter parts across all gens using this engine
