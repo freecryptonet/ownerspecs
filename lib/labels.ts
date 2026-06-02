@@ -153,6 +153,8 @@ export const serviceLabels: Record<string, string> = {
   pdk_clutch_inspection: "PDK clutch inspection",
   transmission_dct_fluid: "Dual-clutch fluid",
   haldex_fluid: "Haldex coupling fluid",
+  accessory_drive_belt: "Accessory drive belt",
+  dpf_check: "Diesel particulate filter check",
 };
 
 export const serviceLabel = (s: string) => serviceLabels[s] ?? humanize(s);
