@@ -346,52 +346,37 @@ export default async function Page({ params }: { params: Promise<Params> }) {
           </section>
         )}
 
-        {/* FUSES — one table per location */}
-        {Object.entries(fuseGroups).map(([location, rows]) => (
-          <section key={location}>
+        {/* FUSES — summary + link to the dedicated layout page (the full
+            per-position tables live on /fuses; don't duplicate them here) */}
+        {fuses.length > 0 && (
+          <section>
             <h2 className="section-h">
-              Fuse box · {location.replace(/_/g, " ")}
-              <span className="count">{rows.length} positions</span>
-              <Cites nums={mergeCites("fuses", rows.map((f) => f.id))} />
+              Fuses
+              <span className="count">{fuses.length} positions</span>
+              <Cites nums={mergeCites("fuses", fuses.map((f) => f.id))} />
             </h2>
-            <div className="table-scroll">
-            <table className="spec-table">
-              <thead style={{ background: "var(--bg-alt)" }}>
-                <tr>
-                  {["Position", "Amperage", "Circuit", "Type"].map((h) => (
-                    <th
-                      key={h}
-                      style={{
-                        fontSize: 11,
-                        fontWeight: 600,
-                        letterSpacing: "0.08em",
-                        textTransform: "uppercase",
-                        color: "var(--ink-soft)",
-                        textAlign: "left",
-                        padding: "8px 12px",
-                      }}
-                    >
-                      {h}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {rows.map((f) => (
-                  <tr key={f.id}>
-                    <th>
-                      <strong>{f.position}</strong>
-                    </th>
-                    <td>{f.amperage ? `${f.amperage} A` : "—"}</td>
-                    <td className="alt">{f.circuit_name ?? "—"}</td>
-                    <td>{f.is_relay ? "Relay" : "Fuse"}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            </div>
+            <p style={{ fontSize: 14, color: "var(--ink-soft)", lineHeight: 1.6, maxWidth: "70ch", margin: "0 0 14px" }}>
+              {fuses.length} fuse positions across {Object.keys(fuseGroups).length} box
+              {Object.keys(fuseGroups).length !== 1 ? "es" : ""} ({Object.keys(fuseGroups).map((l) => fuseLocationLabel(l).toLowerCase()).join(", ")})
+              — full position, circuit name and amperage for each on the dedicated fuse-box page.
+            </p>
+            <a
+              href={`/${make.slug}/${gen.slug}/fuses`}
+              style={{
+                display: "inline-block",
+                padding: "9px 16px",
+                border: "1px solid var(--rule)",
+                borderLeft: "3px solid var(--accent)",
+                background: "var(--bg-alt)",
+                color: "var(--ink)",
+                fontWeight: 600,
+                fontSize: 14,
+              }}
+            >
+              View full fuse box layout →
+            </a>
           </section>
-        ))}
+        )}
 
         <section>
           <h2 className="section-h">Related</h2>

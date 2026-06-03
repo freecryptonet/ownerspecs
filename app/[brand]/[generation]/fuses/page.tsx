@@ -14,7 +14,6 @@ import { GenerationTabs } from "@/components/GenerationTabs";
 import { VerifyBadge } from "@/components/VerifyBadge";
 import { SourcesBlock } from "@/components/SourcesBlock";
 import { fuseLocationLabel, fuseLocationWhere } from "@/lib/labels";
-import { FuseBoxDiagram } from "@/components/FuseBoxDiagram";
 import { pageMetadata, faqJsonLd } from "@/lib/seo";
 
 type Params = { brand: string; generation: string };
@@ -91,25 +90,25 @@ export default async function Page({ params }: { params: Promise<Params> }) {
   if (fuelPump) {
     faqs.push({
       q: `Which fuse is the fuel pump on the ${make.name} ${gen.display_name}?`,
-      a: `The fuel pump fuse is position ${fuelPump.position} in the ${fuseLocationLabel(fuelPump.location).toLowerCase()} fuse box, rated at ${fuelPump.amperage} A on the ${make.name} ${gen.display_name} (${yrs}).`,
+      a: `The fuel pump fuse is position ${fuelPump.position} in the ${fuseLocationLabel(fuelPump.location).toLowerCase()} fuse box, rated at ${Number(fuelPump.amperage)} A on the ${make.name} ${gen.display_name} (${yrs}).`,
     });
   }
   if (cigarLighter) {
     faqs.push({
       q: `Which fuse controls the 12V power outlet / cigar lighter on the ${make.name} ${gen.display_name}?`,
-      a: `Position ${cigarLighter.position}${cigarLighter.location ? ` in the ${fuseLocationLabel(cigarLighter.location).toLowerCase()} fuse box` : ""}, ${cigarLighter.amperage} A on the ${make.name} ${gen.display_name} (${yrs}).`,
+      a: `Position ${cigarLighter.position}${cigarLighter.location ? ` in the ${fuseLocationLabel(cigarLighter.location).toLowerCase()} fuse box` : ""}, ${Number(cigarLighter.amperage)} A on the ${make.name} ${gen.display_name} (${yrs}).`,
     });
   }
   if (obd) {
     faqs.push({
       q: `Which fuse protects the OBD-II port on the ${make.name} ${gen.display_name}?`,
-      a: `OBD-II port fuse is position ${obd.position} at ${obd.amperage} A. If the port is dead but the car runs, this is the first fuse to check.`,
+      a: `OBD-II port fuse is position ${obd.position} at ${Number(obd.amperage)} A. If the port is dead but the car runs, this is the first fuse to check.`,
     });
   }
   if (audio) {
     faqs.push({
       q: `Which fuse controls the radio / multimedia on the ${make.name} ${gen.display_name}?`,
-      a: `${audio.circuit_name} fuse is position ${audio.position}, ${audio.amperage} A. ${make.name} ${gen.display_name} (${yrs}).`,
+      a: `${audio.circuit_name} fuse is position ${audio.position}, ${Number(audio.amperage)} A. ${make.name} ${gen.display_name} (${yrs}).`,
     });
   }
   faqs.push({
@@ -170,7 +169,6 @@ export default async function Page({ params }: { params: Promise<Params> }) {
                 {fuseLocationWhere(location)}
               </p>
             )}
-            <FuseBoxDiagram fuses={rows} />
             <table className="spec-table">
               <thead style={{ background: "var(--bg-alt)" }}>
                 <tr>
@@ -200,7 +198,7 @@ export default async function Page({ params }: { params: Promise<Params> }) {
                     </th>
                     <td>
                       {f.amperage != null && String(f.amperage).trim() !== "" ? (
-                        <strong>{f.amperage} A</strong>
+                        <strong>{Number(f.amperage)} A</strong>
                       ) : (
                         <span style={{ color: "var(--ink-mute)" }}>— <span style={{ fontSize: 11 }}>(relay)</span></span>
                       )}
