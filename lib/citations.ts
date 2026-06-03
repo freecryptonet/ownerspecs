@@ -44,10 +44,12 @@ export async function buildCitationIndex(
         (ss.spec_table = 'service_intervals' AND ss.spec_id IN (SELECT id FROM service_intervals  WHERE generation_id = ?)) OR
         (ss.spec_table = 'tire_pressures'    AND ss.spec_id IN (SELECT id FROM tire_pressures     WHERE generation_id = ?)) OR
         (ss.spec_table = 'procedures'        AND ss.spec_id IN (SELECT id FROM procedures         WHERE generation_id = ?)) OR
+        (ss.spec_table = 'brake_specs'       AND ss.spec_id IN (SELECT id FROM brake_specs        WHERE generation_id = ?)) OR
+        (ss.spec_table = 'alignment_specs'   AND ss.spec_id IN (SELECT id FROM alignment_specs    WHERE generation_id = ?)) OR
         (ss.spec_table = 'generations'       AND ss.spec_id = ?)
      )
      ORDER BY s.id`,
-    Array(11).fill(generationId),
+    Array(13).fill(generationId),
   );
 
   const positionById = new Map<number, number>();
@@ -69,8 +71,10 @@ export async function buildCitationIndex(
         (ss.spec_table = 'service_intervals' AND ss.spec_id IN (SELECT id FROM service_intervals  WHERE generation_id = ?)) OR
         (ss.spec_table = 'tire_pressures'    AND ss.spec_id IN (SELECT id FROM tire_pressures     WHERE generation_id = ?)) OR
         (ss.spec_table = 'procedures'        AND ss.spec_id IN (SELECT id FROM procedures         WHERE generation_id = ?)) OR
+        (ss.spec_table = 'brake_specs'       AND ss.spec_id IN (SELECT id FROM brake_specs        WHERE generation_id = ?)) OR
+        (ss.spec_table = 'alignment_specs'   AND ss.spec_id IN (SELECT id FROM alignment_specs    WHERE generation_id = ?)) OR
         (ss.spec_table = 'generations'       AND ss.spec_id = ?)`,
-    Array(11).fill(generationId),
+    Array(13).fill(generationId),
   );
 
   // Restrict to (table, id) tuples the page renders citations for.

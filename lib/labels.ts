@@ -262,3 +262,19 @@ export const partLabels: Record<string, string> = {
   brake_pad_rear: "Brake pads (rear)",
 };
 export const partLabel = (t: string) => partLabels[t] ?? humanize(t);
+
+// ───────────────────── brake_specs / alignment_specs ──────────────────────
+
+export const axleLabels: Record<string, string> = {
+  front: "Front",
+  rear: "Rear",
+};
+export const axleLabel = (a: string) => axleLabels[a] ?? humanize(a);
+
+export const brakeTypeLabels: Record<string, string> = {
+  disc_vented: "Ventilated disc",
+  disc_solid: "Solid disc",
+  disc: "Disc",
+  drum: "Drum",
+};
+export const brakeTypeLabel = (t: string) => brakeTypeLabels[t] ?? humanize(t);

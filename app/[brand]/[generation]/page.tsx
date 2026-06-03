@@ -313,6 +313,12 @@ async function getGenerationData(brand: string, generation: string) {
     [gen.id],
   );
 
+  const brakeCount = await queryOne<{ n: number }>(
+    `SELECT (SELECT COUNT(*) FROM brake_specs WHERE generation_id = ?)
+          + (SELECT COUNT(*) FROM alignment_specs WHERE generation_id = ?) AS n`,
+    [gen.id, gen.id],
+  );
+
   const heroImage = await queryOne<HeroImage>(
     `SELECT url, attribution, license, original_url, caption, width, height
      FROM images
@@ -377,6 +383,7 @@ async function getGenerationData(brand: string, generation: string) {
     partCount: partCount?.n ?? 0,
     tireCount: tireCount?.n ?? 0,
     procCount: procCount?.n ?? 0,
+    brakeCount: brakeCount?.n ?? 0,
     serviceIntervals,
     heroImage,
     bodystyleSiblings,
@@ -509,6 +516,7 @@ export default async function Page({ params }: { params: Promise<Params> }) {
     partCount,
     tireCount,
     procCount,
+    brakeCount,
     serviceIntervals,
     heroImage,
     bodystyleSiblings,
@@ -680,6 +688,9 @@ export default async function Page({ params }: { params: Promise<Params> }) {
           )}
           {torques.length > 0 && (
             <a className="tab" href={`/${make.slug}/${gen.slug}/torque`}>Torque <span className="count">{torques.length}</span></a>
+          )}
+          {brakeCount > 0 && (
+            <a className="tab" href={`/${make.slug}/${gen.slug}/brakes`}>Brakes <span className="count">{brakeCount}</span></a>
           )}
           {serviceIntervals.length > 0 && (
             <a className="tab" href={`/${make.slug}/${gen.slug}/maintenance-schedule`}>Maintenance <span className="count">{serviceIntervals.length}</span></a>
@@ -1298,6 +1309,16 @@ export default async function Page({ params }: { params: Promise<Params> }) {
                 <span>
                   <span className="name">Torque specifications</span>
                   <span className="peek">{torques.length} fasteners · per-engine where applicable</span>
+                </span>
+                <span className="arrow">→</span>
+              </a>
+            )}
+            {brakeCount > 0 && (
+              <a className="moat-row" href={`/${make.slug}/${gen.slug}/brakes`}>
+                <svg className="icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="10" cy="10" r="7" /><circle cx="10" cy="10" r="3" /><path d="M10 1v2M10 17v2M1 10h2M17 10h2" /></svg>
+                <span>
+                  <span className="name">Brake discs &amp; wheel alignment</span>
+                  <span className="peek">Disc diameter · wear limits · camber/caster/toe</span>
                 </span>
                 <span className="arrow">→</span>
               </a>

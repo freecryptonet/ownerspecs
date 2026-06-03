@@ -146,6 +146,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const conditionalTopics: Array<{ slug: string; existsSql: string; params: string[] }> = [
       { slug: "oil-capacity", existsSql: "EXISTS (SELECT 1 FROM fluid_specs WHERE generation_id = g.id AND fluid_type = 'engine_oil')", params: [] },
       { slug: "torque", existsSql: "EXISTS (SELECT 1 FROM torque_specs WHERE generation_id = g.id)", params: [] },
+      { slug: "brakes", existsSql: "EXISTS (SELECT 1 FROM brake_specs WHERE generation_id = g.id) OR EXISTS (SELECT 1 FROM alignment_specs WHERE generation_id = g.id)", params: [] },
       { slug: "electrical", existsSql: "EXISTS (SELECT 1 FROM electrical_specs WHERE generation_id = g.id) OR EXISTS (SELECT 1 FROM bulbs WHERE generation_id = g.id) OR EXISTS (SELECT 1 FROM fuses WHERE generation_id = g.id)", params: [] },
       { slug: "tires", existsSql: "EXISTS (SELECT 1 FROM tire_pressures WHERE generation_id = g.id)", params: [] },
       { slug: "procedures", existsSql: "EXISTS (SELECT 1 FROM procedures WHERE generation_id = g.id)", params: [] },
