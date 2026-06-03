@@ -197,7 +197,11 @@ export default async function Page({ params }: { params: Promise<Params> }) {
                       <strong style={{ color: "var(--ink)" }}>{f.position}</strong>
                     </th>
                     <td>
-                      <strong>{f.amperage} A</strong>
+                      {f.amperage != null && String(f.amperage).trim() !== "" ? (
+                        <strong>{f.amperage} A</strong>
+                      ) : (
+                        <span style={{ color: "var(--ink-mute)" }}>— <span style={{ fontSize: 11 }}>(relay)</span></span>
+                      )}
                     </td>
                     <td className="alt">{f.circuit_name ?? "—"}</td>
                   </tr>

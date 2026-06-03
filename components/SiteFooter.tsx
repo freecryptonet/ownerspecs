@@ -67,19 +67,25 @@ export function SiteFooter({ reviewDate }: { reviewDate?: string }) {
             <h4>About</h4>
             <ul>
               <li>
+                <a href="/about">About us</a>
+              </li>
+              <li>
                 <a href="/methodology">Methodology</a>
               </li>
               <li>
-                <a href="/methodology#provenance-is-exposed">Sources</a>
+                <a href="/contact">Contact</a>
               </li>
               <li>
-                <a href="mailto:contact@ownerspecs.com">Contact</a>
+                <a href="/privacy">Privacy policy</a>
+              </li>
+              <li>
+                <a href="/terms">Terms</a>
               </li>
             </ul>
           </div>
         </div>
         <div className="foot-bottom">
-          <span>© 2026 ownerspecs · v0.1</span>
+          <span>© 2026 ownerspecs</span>
           {reviewDate && <span>Page last reviewed {reviewDate}</span>}
         </div>
       </div>

@@ -1232,6 +1232,56 @@ export default async function Page({ params }: { params: Promise<Params> }) {
                 <span className="arrow">→</span>
               </a>
             )}
+            {fluids.some(f => /^transmission_/.test(f.fluid_type)) && (
+              <a className="moat-row" href={`/${make.slug}/${gen.slug}/transmission-fluid`}>
+                <svg className="icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="10" cy="10" r="6"/><circle cx="10" cy="10" r="2"/><path d="M10 2v2M10 16v2M2 10h2M16 10h2"/></svg>
+                <span>
+                  <span className="name">Transmission fluid — type, capacity, interval</span>
+                  <span className="peek">ATF / DCT / manual gear oil spec &amp; fill quantity</span>
+                </span>
+                <span className="arrow">→</span>
+              </a>
+            )}
+            {fluids.some(f => f.fluid_type === "brake" || f.fluid_type === "brake_fluid") && (
+              <a className="moat-row" href={`/${make.slug}/${gen.slug}/brake-fluid`}>
+                <svg className="icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="10" cy="10" r="7"/><path d="M10 6v4M10 13h.01"/></svg>
+                <span>
+                  <span className="name">Brake fluid — DOT grade &amp; change interval</span>
+                  <span className="peek">OEM-approved grade and hygroscopic service interval</span>
+                </span>
+                <span className="arrow">→</span>
+              </a>
+            )}
+            {fluids.some(f => /differential|transfer_case|haldex|reduction_gear/.test(f.fluid_type)) && (
+              <a className="moat-row" href={`/${make.slug}/${gen.slug}/differential-fluid`}>
+                <svg className="icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="6" cy="10" r="3"/><circle cx="14" cy="10" r="3"/><path d="M9 10h2"/></svg>
+                <span>
+                  <span className="name">Differential, transfer-case &amp; AWD fluid</span>
+                  <span className="peek">Diff / Haldex / reducer spec, viscosity &amp; fill quantity</span>
+                </span>
+                <span className="arrow">→</span>
+              </a>
+            )}
+            {fluids.some(f => f.fluid_type === "ac_refrigerant") && (
+              <a className="moat-row" href={`/${make.slug}/${gen.slug}/ac-refrigerant`}>
+                <svg className="icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M10 2v16M3 6l14 8M17 6 3 14"/></svg>
+                <span>
+                  <span className="name">A/C refrigerant — type &amp; charge</span>
+                  <span className="peek">R134a / R1234yf charge weight and compressor oil</span>
+                </span>
+                <span className="arrow">→</span>
+              </a>
+            )}
+            {trims.some(t => t.trailer_braked_kg != null || t.trailer_unbraked_kg != null) && (
+              <a className="moat-row" href={`/${make.slug}/${gen.slug}/towing`}>
+                <svg className="icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="6" cy="15" r="2"/><circle cx="15" cy="15" r="2"/><path d="M8 15h5M4 15l2-7h6l3 5"/></svg>
+                <span>
+                  <span className="name">Towing &amp; weights — braked/unbraked limits</span>
+                  <span className="peek">Trailer ratings, GVWR and payload by trim</span>
+                </span>
+                <span className="arrow">→</span>
+              </a>
+            )}
             {serviceIntervals.length > 0 && (
               <a className="moat-row" href={`/${make.slug}/${gen.slug}/maintenance-schedule`}>
                 <svg className="icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="10" cy="10" r="7" /><path d="M10 6v4l3 2" /></svg>

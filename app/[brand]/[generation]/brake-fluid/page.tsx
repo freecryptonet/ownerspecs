@@ -10,7 +10,7 @@ const config: FluidTopicConfig = {
   slug: "brake-fluid",
   label: "Brake fluid",
   h1: "Brake fluid type & service interval",
-  fluidTypes: ["brake_fluid"],
+  fluidTypes: ["brake_fluid", "brake"],
   lede: ({ make, gen, yrs }) =>
     `OEM-spec brake fluid grade (DOT 3 / DOT 4 / DOT 4 LV / DOT 5.1) and service interval for the ${make} ${gen} (${yrs}). Brake fluid is hygroscopic — water content above ~3% drops the boiling point enough to cause pedal fade under heavy braking.`,
   buildFaq: ({ make, gen, yrs, primary }) => {

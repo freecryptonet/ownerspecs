@@ -13,10 +13,16 @@ const config: FluidTopicConfig = {
   fluidTypes: [
     "front_differential",
     "rear_differential",
+    "differential_front",
+    "differential_rear",
     "transfer_case",
     "haldex_oil",
+    "haldex",
     "gear_reducer_front",
     "gear_reducer_rear",
+    "reduction_gear",
+    "reduction_gear_front",
+    "reduction_gear_rear",
   ],
   lede: ({ make, gen, yrs }) =>
     `OEM-spec differential, transfer-case, Haldex (AWD coupling) and reduction-gearbox fluids for the ${make} ${gen} (${yrs}). On AWD/4WD vehicles these are the most-skipped services and the most expensive failures — short interval, wrong viscosity, or wrong friction modifier all damage limited-slip clutch packs.`,

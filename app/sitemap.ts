@@ -177,9 +177,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const fluidTopics: Array<{ slug: string; fluidTypes: string[] }> = [
       { slug: "transmission-fluid", fluidTypes: ["transmission_at","transmission_cvt","transmission_ecvt","transmission_dct","transmission_mt"] },
       { slug: "coolant", fluidTypes: ["coolant"] },
-      { slug: "brake-fluid", fluidTypes: ["brake"] },
+      { slug: "brake-fluid", fluidTypes: ["brake_fluid","brake"] },
       { slug: "ac-refrigerant", fluidTypes: ["ac_refrigerant"] },
-      { slug: "differential-fluid", fluidTypes: ["front_differential","rear_differential","transfer_case","haldex_oil","gear_reducer_front","gear_reducer_rear"] },
+      { slug: "differential-fluid", fluidTypes: ["front_differential","rear_differential","differential_front","differential_rear","transfer_case","haldex_oil","haldex","gear_reducer_front","gear_reducer_rear","reduction_gear","reduction_gear_front","reduction_gear_rear"] },
     ];
     for (const ft of fluidTopics) {
       const placeholders = ft.fluidTypes.map(() => "?").join(",");

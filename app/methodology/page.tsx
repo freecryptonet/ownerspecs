@@ -52,14 +52,17 @@ export default async function MethodologyPage() {
             <li><strong>Manufacturer press materials</strong> — for engine codes, headline horsepower, transmission designations.</li>
           </ol>
 
-          <h2>Two-source rule</h2>
+          <h2>Source verification</h2>
           <p>
-            Every public spec row links to ≥2 independent sources via the
-            <code> spec_sources</code> table. If only one source is available,
-            the field is left blank rather than published as authoritative. We
-            currently track {s.sources} sources ({s.public_sources} of which
-            are surfaceable on public pages), backing {s.fluid_rows} fluid-spec
-            rows and {s.procs} procedure entries across {s.gens} generations.
+            Every public spec row links to at least one cited source via the
+            <code> spec_sources</code> table — a workshop service manual or OEM
+            owner manual — and is cross-referenced against a second source
+            during extraction wherever one is available. Where a value can&apos;t
+            be corroborated against a primary source, it is left blank rather
+            than guessed. We currently track {s.sources} sources
+            ({s.public_sources} of which are surfaceable on public pages),
+            backing {s.fluid_rows} fluid-spec rows and {s.procs} procedure
+            entries across {s.gens} generations.
           </p>
 
           <h2>Restated, not verbatim (Feist v. Rural)</h2>
