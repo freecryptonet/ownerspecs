@@ -130,6 +130,47 @@ function strCell(values: (string | null)[], index: number): React.ReactElement {
   return v ? <td className="cell">{v}</td> : <td className="cell" style={{ color: "var(--ink-mute)" }}>—</td>;
 }
 
+// Build a /compare URL that ADDS `id` to the next free slot (a,b,c), preserving
+// the current selection — so the picker can actually build a 2-3 trim comparison.
+function nextSlotUrl(ids: number[], id: number): string {
+  const slots: (number | undefined)[] = [ids[0], ids[1], ids[2]];
+  const free = slots.findIndex((s) => s === undefined);
+  if (free === -1) slots[2] = id;
+  else slots[free] = id;
+  const qs = (["a", "b", "c"] as const).map((k, i) => (slots[i] ? `${k}=${slots[i]}` : null)).filter(Boolean).join("&");
+  return `/compare?${qs}`;
+}
+
+function TrimPickerList({ rows, ids }: { rows: TrimPickerRow[]; ids: number[] }) {
+  const byBrand = rows.reduce<Record<string, TrimPickerRow[]>>((acc, t) => {
+    (acc[t.brand_name] = acc[t.brand_name] || []).push(t);
+    return acc;
+  }, {});
+  return (
+    <>
+      {Object.entries(byBrand).map(([brand, list]) => (
+        <div key={brand} style={{ marginBottom: "var(--s-6)" }}>
+          <h3 style={{ fontSize: 13, fontWeight: 600, color: "var(--ink-soft)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 8 }}>
+            {brand} <span className="muted">({list.length})</span>
+          </h3>
+          <ul style={{ listStyle: "none", border: "1px solid var(--rule)", fontSize: 13 }}>
+            {list.map((r) => {
+              const selected = ids.includes(r.trim_id);
+              return (
+                <li key={r.trim_id} style={{ padding: "8px 14px", borderBottom: "1px solid var(--rule)", display: "grid", gridTemplateColumns: "1fr 100px 80px", gap: 12, alignItems: "baseline", background: selected ? "var(--bg-alt)" : undefined }}>
+                  <a href={nextSlotUrl(ids, r.trim_id)} style={{ color: selected ? "var(--accent)" : "var(--ink)", fontWeight: 500 }}>{r.display}</a>
+                  <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--ink-mute)" }}>{r.start_year}–{r.end_year ?? "now"}</span>
+                  <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: selected ? "var(--accent)" : "var(--accent)", textAlign: "right" }}>{selected ? "✓ selected" : "Add →"}</span>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      ))}
+    </>
+  );
+}
+
 export default async function ComparePage({
   searchParams,
 }: {
@@ -144,11 +185,6 @@ export default async function ComparePage({
   // Picker mode — no trim IDs selected
   if (ids.length === 0) {
     const picker = await loadAllTrimsForPicker();
-    // Group by brand for nicer rendering
-    const byBrand = picker.reduce<Record<string, TrimPickerRow[]>>((acc, t) => {
-      (acc[t.brand_name] = acc[t.brand_name] || []).push(t);
-      return acc;
-    }, {});
 
     return (
       <>
@@ -173,67 +209,11 @@ export default async function ComparePage({
               Available trims <span className="count">{picker.length}</span>
             </h2>
             <p style={{ fontSize: 13, color: "var(--ink-soft)", marginBottom: 16, maxWidth: "60ch" }}>
-              Open the comparison by clicking 2 or 3 trim names. We&apos;ll build the URL with up to three trim IDs
-              and render a side-by-side spec table with the differences highlighted.
+              Click a trim to start, then add a second and third — the comparison updates as you go and
+              renders a side-by-side spec table with the differences highlighted. Comparing engines instead?{" "}
+              <a className="link" href="/compare/engines">Compare engines →</a>
             </p>
-            {Object.entries(byBrand).map(([brand, rows]) => (
-              <div key={brand} style={{ marginBottom: "var(--s-6)" }}>
-                <h3
-                  style={{
-                    fontSize: 13,
-                    fontWeight: 600,
-                    color: "var(--ink-soft)",
-                    textTransform: "uppercase",
-                    letterSpacing: "0.06em",
-                    marginBottom: 8,
-                  }}
-                >
-                  {brand} <span className="muted">({rows.length})</span>
-                </h3>
-                <ul
-                  style={{
-                    listStyle: "none",
-                    border: "1px solid var(--rule)",
-                    fontSize: 13,
-                  }}
-                >
-                  {rows.map((r) => (
-                    <li
-                      key={r.trim_id}
-                      style={{
-                        padding: "8px 14px",
-                        borderBottom: "1px solid var(--rule)",
-                        display: "grid",
-                        gridTemplateColumns: "1fr 100px 100px 80px",
-                        gap: 12,
-                        alignItems: "baseline",
-                      }}
-                    >
-                      <a href={`/compare?a=${r.trim_id}`} style={{ color: "var(--ink)", fontWeight: 500 }}>
-                        {r.display}
-                      </a>
-                      <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--ink-mute)" }}>
-                        {r.start_year}–{r.end_year ?? "now"}
-                      </span>
-                      <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--ink-mute)" }}>
-                        {r.hp ? `${r.hp} hp` : ""}
-                      </span>
-                      <a
-                        href={`/compare?a=${r.trim_id}`}
-                        style={{
-                          fontFamily: "var(--font-mono)",
-                          fontSize: 11,
-                          color: "var(--accent)",
-                          textAlign: "right",
-                        }}
-                      >
-                        Add →
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
+            <TrimPickerList rows={picker} ids={[]} />
           </section>
         </main>
         <SiteFooter />
@@ -243,6 +223,7 @@ export default async function ComparePage({
 
   // Comparison mode — load each trim
   const trims = (await Promise.all(ids.map(loadTrim))).filter((t): t is TrimRow => t !== null);
+  const picker = trims.length < 3 ? await loadAllTrimsForPicker() : [];
   if (trims.length === 0) {
     return (
       <>
@@ -283,8 +264,8 @@ export default async function ComparePage({
             {trims.length < 3 && (
               <>
                 <span className="pip"></span>
-                <a className="link" href="/compare">
-                  Add another →
+                <a className="link" href="#add-trim">
+                  Add another ↓
                 </a>
               </>
             )}
@@ -486,6 +467,18 @@ export default async function ComparePage({
             </tr>
           </tbody>
         </table>
+
+        {trims.length < 3 && picker.length > 0 && (
+          <section id="add-trim" style={{ paddingTop: "var(--s-6)" }}>
+            <h2 className="section-h">
+              Add another trim <span className="count">{picker.length}</span>
+            </h2>
+            <p style={{ fontSize: 13, color: "var(--ink-soft)", marginBottom: 16, maxWidth: "62ch" }}>
+              Pick up to {3 - trims.length} more to widen the comparison (3 columns max).
+            </p>
+            <TrimPickerList rows={picker} ids={ids} />
+          </section>
+        )}
       </main>
       <SiteFooter />
     </>

@@ -14,6 +14,7 @@ import { GenerationTabs } from "@/components/GenerationTabs";
 import { VerifyBadge } from "@/components/VerifyBadge";
 import { SourcesBlock } from "@/components/SourcesBlock";
 import { fuseLocationLabel, fuseLocationWhere } from "@/lib/labels";
+import { FuseBoxDiagram } from "@/components/FuseBoxDiagram";
 import { pageMetadata, faqJsonLd } from "@/lib/seo";
 
 type Params = { brand: string; generation: string };
@@ -169,6 +170,7 @@ export default async function Page({ params }: { params: Promise<Params> }) {
                 {fuseLocationWhere(location)}
               </p>
             )}
+            <FuseBoxDiagram fuses={rows} />
             <table className="spec-table">
               <thead style={{ background: "var(--bg-alt)" }}>
                 <tr>

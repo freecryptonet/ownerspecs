@@ -56,6 +56,8 @@ export default async function EnginesIndex() {
             <span>{engines.length} engines documented</span>
             <span className="pip"></span>
             <span>{multi.length} multi-application</span>
+            <span className="pip"></span>
+            <a className="link" href="/compare/engines">Compare engines side-by-side →</a>
           </div>
         </div>
       </div>

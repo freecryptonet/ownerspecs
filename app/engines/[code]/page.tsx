@@ -11,6 +11,7 @@ type Params = { code: string };
 
 type Engine = {
   id: number;
+  slug: string;
   code: string;
   display_name: string;
   displacement_cc: number | null;
@@ -72,7 +73,7 @@ export async function generateStaticParams(): Promise<Params[]> {
 async function findEngine(slug: string): Promise<Engine | null> {
   // `slug` is the frozen URL key (engines.slug), decoupled from the mutable code.
   return queryOne<Engine>(
-    `SELECT id, code, display_name, displacement_cc, fuel, aspiration,
+    `SELECT id, slug, code, display_name, displacement_cc, fuel, aspiration,
             valvetrain, cylinders, bore_mm, stroke_mm, compression
      FROM engines WHERE slug = ?`,
     [slug],
@@ -253,20 +254,23 @@ export default async function Page({ params }: { params: Promise<Params> }) {
           </table>
         </section>
 
-        {siblingPairs.length > 0 && (
-          <section>
-            <h2 className="section-h">Compare {engine.code} with</h2>
-            <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexWrap: "wrap", gap: 8 }}>
-              {siblingPairs.map((s) => (
-                <li key={s.pair}>
-                  <a href={`/compare/engines/${s.pair}`} style={{ display: "inline-block", padding: "8px 14px", border: "1px solid var(--rule)", color: "var(--ink)", fontFamily: "var(--font-mono)", fontSize: 13 }}>
-                    {engine.code} vs {codeBySlug.get(s.sibling) ?? s.sibling.toUpperCase()} →
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </section>
-        )}
+        <section>
+          <h2 className="section-h">Compare {engine.code} with</h2>
+          <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexWrap: "wrap", gap: 8 }}>
+            {siblingPairs.map((s) => (
+              <li key={s.pair}>
+                <a href={`/compare/engines/${s.pair}`} style={{ display: "inline-block", padding: "8px 14px", border: "1px solid var(--rule)", color: "var(--ink)", fontFamily: "var(--font-mono)", fontSize: 13 }}>
+                  {engine.code} vs {codeBySlug.get(s.sibling) ?? s.sibling.toUpperCase()} →
+                </a>
+              </li>
+            ))}
+            <li>
+              <a href={`/compare/engines?a=${engine.slug}`} style={{ display: "inline-block", padding: "8px 14px", border: "1px solid var(--rule)", color: "var(--accent)", fontFamily: "var(--font-mono)", fontSize: 13 }}>
+                {engine.code} vs any engine →
+              </a>
+            </li>
+          </ul>
+        </section>
 
         {/* Applications */}
         <section>
