@@ -178,6 +178,15 @@ export async function FluidTopicPage({
   }
   const provisionalSuppressed = suppressedTypes.size;
 
+  // Hide columns that are empty for every rendered row (drain intervals live in
+  // service_intervals for many EU gens, and not all fluids have an OE filter PN)
+  // rather than showing a whole column of dashes.
+  const showFilter = rendered.some((r) => r.filter_part_no);
+  const showInterval = rendered.some(
+    (r) => r.drain_interval_mi || r.drain_interval_km || r.drain_interval_months,
+  );
+  const showNotes = rendered.some((r) => r.notes);
+
   // Citation index restricted to rows this page actually renders (post-
   // suppression). Keeps the Sources block in lockstep with [N] footnotes.
   const citations = await buildCitationIndex(
@@ -344,7 +353,14 @@ export async function FluidTopicPage({
               <table className="spec-table">
                 <thead style={{ background: "var(--bg-alt)" }}>
                   <tr>
-                    {["Engine / location", "Capacity", "Viscosity / spec", "Filter PN", "Service interval", "Notes"].map((h) => (
+                    {[
+                      "Engine / location",
+                      "Capacity",
+                      "Viscosity / spec",
+                      ...(showFilter ? ["Filter PN"] : []),
+                      ...(showInterval ? ["Service interval"] : []),
+                      ...(showNotes ? ["Notes"] : []),
+                    ].map((h) => (
                       <th
                         key={h}
                         style={{
@@ -389,9 +405,9 @@ export async function FluidTopicPage({
                         </th>
                         <td className="tnum" style={{ whiteSpace: "nowrap" }}>{cap}</td>
                         <td>{spec}</td>
-                        <td className="tnum" style={{ whiteSpace: "nowrap" }}>{r.filter_part_no ?? "—"}</td>
-                        <td className="tnum" style={{ whiteSpace: "nowrap" }}>{interval}</td>
-                        <td className="alt">{r.notes ?? "—"}</td>
+                        {showFilter && <td className="tnum" style={{ whiteSpace: "nowrap" }}>{r.filter_part_no ?? "—"}</td>}
+                        {showInterval && <td className="tnum" style={{ whiteSpace: "nowrap" }}>{interval}</td>}
+                        {showNotes && <td className="alt">{r.notes ?? "—"}</td>}
                       </tr>
                     );
                   })}

@@ -124,6 +124,12 @@ export default async function Page({ params }: { params: Promise<Params> }) {
   );
   const sources = citations.sources;
   const rev = reviewDate(sources);
+  // Hide the Filter-PN / Drain-interval columns when no rendered row populates
+  // them (many EU gens keep intervals in the maintenance schedule, not here).
+  const showFilterPN = rendered.some((o) => o.filter_part_no);
+  const showDrain = rendered.some(
+    (o) => o.drain_interval_mi || o.drain_interval_km || o.drain_interval_months,
+  );
 
   // Cross-vehicle engine matches — herstructureringsplan §4 "Same N55B30A engine?
   // Zie ook BMW 5 Series F10 535i oil capacity". For every engine_id present on
@@ -330,7 +336,7 @@ export default async function Page({ params }: { params: Promise<Params> }) {
               <table className="spec-table">
                 <thead style={{ background: "var(--bg-alt)" }}>
                   <tr>
-                    {["Engine", "Capacity (w/ filter)", "Viscosity", "Spec", "Filter PN", "Drain interval"].map((h) => (
+                    {["Engine", "Capacity (w/ filter)", "Viscosity", "Spec", ...(showFilterPN ? ["Filter PN"] : []), ...(showDrain ? ["Drain interval"] : [])].map((h) => (
                       <th
                         key={h}
                         style={{
@@ -371,8 +377,8 @@ export default async function Page({ params }: { params: Promise<Params> }) {
                         <td className="tnum" style={{ whiteSpace: "nowrap" }}><strong>{cap}</strong></td>
                         <td style={{ whiteSpace: "nowrap" }}>{o.viscosity ?? "—"}</td>
                         <td>{o.spec_standard ?? "—"}</td>
-                        <td className="tnum" style={{ whiteSpace: "nowrap" }}>{o.filter_part_no ?? "—"}</td>
-                        <td className="tnum" style={{ whiteSpace: "nowrap" }}>{interval}</td>
+                        {showFilterPN && <td className="tnum" style={{ whiteSpace: "nowrap" }}>{o.filter_part_no ?? "—"}</td>}
+                        {showDrain && <td className="tnum" style={{ whiteSpace: "nowrap" }}>{interval}</td>}
                       </tr>
                     );
                   })}

@@ -8,8 +8,8 @@ type Params = { brand: string; generation: string };
 
 const config: FluidTopicConfig = {
   slug: "differential-fluid",
-  label: "Differential & AWD fluid",
-  h1: "Differential, transfer-case & AWD fluid",
+  label: "Driveline fluid",
+  h1: "Driveline fluid",
   fluidTypes: [
     "front_differential",
     "rear_differential",
@@ -68,7 +68,7 @@ export async function generateStaticParams(): Promise<Params[]> {
      JOIN makes mk ON mk.id = m.make_id
      WHERE g.is_active = 1
        AND EXISTS (SELECT 1 FROM fluid_specs WHERE generation_id = g.id
-                   AND fluid_type IN ('front_differential','rear_differential','transfer_case','haldex_oil','gear_reducer_front','gear_reducer_rear'))`,
+                   AND fluid_type IN ('front_differential','rear_differential','differential_front','differential_rear','transfer_case','haldex_oil','haldex','gear_reducer_front','gear_reducer_rear','reduction_gear','reduction_gear_front','reduction_gear_rear'))`,
   );
 }
 
@@ -79,7 +79,7 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   const yrs = yearRange(base.gen.start_year, base.gen.end_year);
   const heroPath = await getGenerationHero(base.gen.id);
   return pageMetadata({
-    title: `${base.make.name} ${base.gen.display_name} ${yrs} — Differential & transfer-case fluid`,
+    title: `${base.make.name} ${base.gen.display_name} ${yrs} — Driveline & differential fluid`,
     description: `OEM-spec gear oil grade and capacity for the front diff, rear diff, transfer case, Haldex/AWD coupling and reduction gearboxes on the ${base.gen.display_name} (${base.make.name}, ${yrs}).`,
     path: `/${base.make.slug}/${base.gen.slug}/differential-fluid`,
     heroPath,

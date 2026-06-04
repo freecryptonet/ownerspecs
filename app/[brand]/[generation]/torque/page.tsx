@@ -149,6 +149,9 @@ export default async function Page({ params }: { params: Promise<Params> }) {
   );
   const sources = citations.sources;
   const rev = reviewDate(sources);
+  // Hide the Thread-lock / Notes columns when no rendered row populates them.
+  const showThreadLock = rendered.some((t) => t.thread_lock);
+  const showTorqueNotes = rendered.some((t) => t.notes);
 
   // Cross-vehicle engine matches — herstructureringsplan §4. Engine-scoped
   // fasteners (spark plug, oil drain, head bolt) carry the same torque value
@@ -333,7 +336,7 @@ export default async function Page({ params }: { params: Promise<Params> }) {
               <table className="spec-table">
                 <thead style={{ background: "var(--bg-alt)" }}>
                   <tr>
-                    {["Fastener", "Engine", "N·m", "ft·lb", "Thread lock", "Notes"].map((h) => (
+                    {["Fastener", "Engine", "N·m", "ft·lb", ...(showThreadLock ? ["Thread lock"] : []), ...(showTorqueNotes ? ["Notes"] : [])].map((h) => (
                       <th
                         key={h}
                         style={{
@@ -364,8 +367,8 @@ export default async function Page({ params }: { params: Promise<Params> }) {
                       </td>
                       <td className="tnum"><strong>{t.torque_nm} N·m</strong></td>
                       <td className="tnum">{t.torque_ftlb} ft·lb</td>
-                      <td>{t.thread_lock ?? "—"}</td>
-                      <td className="alt">{t.notes ?? "—"}</td>
+                      {showThreadLock && <td>{t.thread_lock ?? "—"}</td>}
+                      {showTorqueNotes && <td className="alt">{t.notes ?? "—"}</td>}
                     </tr>
                   ))}
                 </tbody>
