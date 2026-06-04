@@ -49,7 +49,7 @@ export async function generateMetadata({
   const heroPath = await getGenerationHero(base.gen.id);
   return pageMetadata({
     title: `${base.make.name} ${base.gen.display_name} ${yrs} — Maintenance schedule`,
-    description: `Full maintenance schedule for the ${base.gen.display_name} (${base.make.name}, ${yrs}), normal and severe-duty intervals. Every service from 7,500 to 150,000 miles, cross-verified.`,
+    description: `Full maintenance schedule for the ${base.gen.display_name} (${base.make.name}, ${yrs}) — engine oil, filters, brake fluid, spark plugs, timing belt and coolant intervals in km and miles, cross-verified.`,
     path: `/${base.make.slug}/${base.gen.slug}/maintenance-schedule`,
     heroPath,
   });
@@ -119,12 +119,23 @@ export default async function Page({ params }: { params: Promise<Params> }) {
     crossByEngine.get(c.engine_code)!.push(c);
   }
 
-  // Build column headers from union of normal-duty mileages
+  // Native unit: EU gens store round km (÷5000) with non-round mile conversions;
+  // US gens store round miles (÷2500). Pick whichever is "rounder" so the
+  // by-distance matrix uses harmonious milestones (15k/30k/45k… not 12k/19k/25k).
+  const mileageRows = services.filter((s) => s.km_normal != null || s.miles_normal != null);
+  const kmRound = mileageRows.filter((s) => s.km_normal != null && s.km_normal % 5000 === 0).length;
+  const milesRound = mileageRows.filter((s) => s.miles_normal != null && s.miles_normal % 2500 === 0).length;
+  const unit: "km" | "mi" = kmRound > milesRound ? "km" : "mi";
+  const distNormal = (s: ServiceRow) => (unit === "km" ? s.km_normal : s.miles_normal);
+  const distOther = (s: ServiceRow) => (unit === "km" ? s.miles_normal : s.km_normal);
+  const distCap = unit === "km" ? 250000 : 150000;
+
+  // Build column headers from the native-unit normal-duty intervals
   const milestones = Array.from(
     new Set(
       services
-        .map((s) => s.miles_normal)
-        .filter((m): m is number => m !== null && m <= 120000),
+        .map(distNormal)
+        .filter((m): m is number => m !== null && m <= distCap),
     ),
   ).sort((a, b) => a - b);
 
@@ -132,17 +143,24 @@ export default async function Page({ params }: { params: Promise<Params> }) {
   const plugSvc = services.find((s) => s.service === "spark_plugs");
   const brakeSvc = services.find((s) => s.service === "brake_fluid_flush");
 
+  const distPhrase = (s: ServiceRow) => {
+    const dn = distNormal(s);
+    const other = distOther(s);
+    if (dn == null) return s.months ? `${s.months} months` : "";
+    return `${dn.toLocaleString()} ${unit}${other ? ` (${other.toLocaleString()} ${unit === "km" ? "mi" : "km"})` : ""}${s.months ? ` / ${s.months} months` : ""}`;
+  };
+
   const faqs: Array<{ q: string; a: string }> = [];
-  if (oilSvc?.miles_normal) {
+  if (oilSvc && (distNormal(oilSvc) != null || oilSvc.months)) {
     faqs.push({
       q: `How often should the ${make.name} ${gen.display_name} get an oil change?`,
-      a: `The ${make.name} ${gen.display_name} (${yrs}) needs an engine oil + filter change every ${oilSvc.miles_normal.toLocaleString()} miles (${oilSvc.km_normal?.toLocaleString() ?? "—"} km) under normal duty${oilSvc.miles_severe ? `, or every ${oilSvc.miles_severe.toLocaleString()} miles under severe duty` : ""}.`,
+      a: `The ${make.name} ${gen.display_name} (${yrs}) needs an engine oil + filter change every ${distPhrase(oilSvc)} under normal duty.${oilSvc.notes ? ` ${oilSvc.notes}` : ""}`,
     });
   }
-  if (plugSvc?.miles_normal) {
+  if (plugSvc && distNormal(plugSvc) != null) {
     faqs.push({
       q: `When do the spark plugs need replacement on the ${make.name} ${gen.display_name}?`,
-      a: `Spark plug replacement is due at ${plugSvc.miles_normal.toLocaleString()} miles (${plugSvc.km_normal?.toLocaleString() ?? "—"} km) on the ${make.name} ${gen.display_name} (${yrs}).${plugSvc.notes ? ` ${plugSvc.notes}` : ""}`,
+      a: `Spark plug replacement is due at ${distPhrase(plugSvc)} on the ${make.name} ${gen.display_name} (${yrs}).${plugSvc.notes ? ` ${plugSvc.notes}` : ""}`,
     });
   }
   if (brakeSvc?.months) {
@@ -154,7 +172,7 @@ export default async function Page({ params }: { params: Promise<Params> }) {
   if (services.length > 0) {
     faqs.push({
       q: `What's in the maintenance schedule for the ${make.name} ${gen.display_name}?`,
-      a: `The official maintenance schedule for the ${make.name} ${gen.display_name} (${yrs}) covers ${services.length} services across mileage and time intervals, including oil, tire rotation, brake inspection, filter changes, transmission fluid, spark plugs and coolant. Severe-duty intervals are halved.`,
+      a: `The official maintenance schedule for the ${make.name} ${gen.display_name} (${yrs}) covers ${services.length} services across distance and time intervals — engine oil & filter, air and cabin filters, brake fluid, spark plugs or fuel filter, timing/drive belt and coolant. Intervals are given in ${unit === "km" ? "kilometres" : "miles"} and months.`,
     });
   }
 
@@ -238,15 +256,17 @@ export default async function Page({ params }: { params: Promise<Params> }) {
       <main className="shell">
         <section style={{ paddingTop: "var(--s-5)" }}>
           <h2 className="section-h">
-            By-mileage table
+            Service schedule
             <span className="count">
-              {services.length} services across {milestones.length} milestones
+              {services.length} services · intervals in {unit === "km" ? "km" : "miles"}
             </span>
           </h2>
+          <div className="table-scroll">
           <table className="maint-table">
             <thead>
               <tr>
                 <th>Service</th>
+                <th style={{ textAlign: "left", whiteSpace: "nowrap" }}>Interval</th>
                 {milestones.map((m) => (
                   <th key={m} className="miles">
                     {m >= 1000 ? `${m / 1000}k` : m}
@@ -256,8 +276,11 @@ export default async function Page({ params }: { params: Promise<Params> }) {
             </thead>
             <tbody>
               {services
-                .filter((s) => s.miles_normal != null)
-                .map((s) => (
+                .filter((s) => distNormal(s) != null)
+                .map((s) => {
+                  const dn = distNormal(s)!;
+                  const other = distOther(s);
+                  return (
                   <tr key={s.id}>
                     <td className="svc">
                       {serviceLabel(s.service)}
@@ -270,8 +293,13 @@ export default async function Page({ params }: { params: Promise<Params> }) {
                         </span>
                       )}
                     </td>
+                    <td style={{ whiteSpace: "nowrap", fontFamily: "var(--font-mono)", fontSize: 12 }}>
+                      {dn.toLocaleString()} {unit}
+                      {other ? ` / ${other.toLocaleString()} ${unit === "km" ? "mi" : "km"}` : ""}
+                      {s.months ? ` · ${s.months} mo` : ""}
+                    </td>
                     {milestones.map((m) => {
-                      const due = !!s.miles_normal && m % s.miles_normal === 0;
+                      const due = m % dn === 0;
                       return (
                         <td key={m} className="dot">
                           {due && <span className="filled" />}
@@ -279,9 +307,11 @@ export default async function Page({ params }: { params: Promise<Params> }) {
                       );
                     })}
                   </tr>
-                ))}
+                  );
+                })}
             </tbody>
           </table>
+          </div>
 
           <div
             style={{
