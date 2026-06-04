@@ -103,6 +103,10 @@ type Trim = {
   range_epa_km: number | null;
   range_wltp_km: number | null;
   dc_charge_kw: number | null;
+  ac_charge_kw: string | null;
+  charge_10_80_min: number | null;
+  consumption_wh_km: number | null;
+  plug_type: string | null;
   curb_weight_kg: number | null;
   max_weight_kg: number | null;
   trailer_braked_kg: number | null;
@@ -231,6 +235,7 @@ async function getGenerationData(brand: string, generation: string) {
             t.zero_100_kmh_s, t.top_speed_kmh, t.fuel_combined_l_100km,
             t.co2_g_km,
             t.battery_kwh_usable, t.battery_kwh_total, t.range_epa_km, t.range_wltp_km, t.dc_charge_kw,
+            t.ac_charge_kw, t.charge_10_80_min, t.consumption_wh_km, t.plug_type,
             t.curb_weight_kg,
             t.max_weight_kg, t.trailer_braked_kg, t.trailer_unbraked_kg,
             t.drive_wheel, t.tire_size, t.rim_size,
@@ -245,9 +250,14 @@ async function getGenerationData(brand: string, generation: string) {
   );
 
   // EV gens swap the Fuel/CO₂/Oil comparison columns for Range/Battery/DC kW.
-  const genIsEV = trims.some(
-    (t) => t.battery_kwh_usable != null || t.range_epa_km != null || t.range_wltp_km != null,
-  );
+  // Only swap when EVERY trim is electric — a mixed ICE+EV gen keeps the ICE
+  // columns (so ICE trims aren't blanked) and surfaces its electric variants in
+  // a dedicated section instead.
+  const trimIsEV = (t: Trim) =>
+    t.battery_kwh_usable != null || t.battery_kwh_total != null || t.range_epa_km != null || t.range_wltp_km != null;
+  const evTrims = trims.filter(trimIsEV);
+  const genIsEV = trims.length > 0 && evTrims.length === trims.length;
+  const hasMixedEV = evTrims.length > 0 && !genIsEV;
 
   const fluids = await query<FluidSpec>(
     `SELECT f.id, f.fluid_type, f.engine_id,
@@ -372,6 +382,8 @@ async function getGenerationData(brand: string, generation: string) {
     model,
     gen,
     genIsEV,
+    hasMixedEV,
+    evTrims,
     markets,
     engines,
     trims,
@@ -505,6 +517,8 @@ export default async function Page({ params }: { params: Promise<Params> }) {
     model,
     gen,
     genIsEV,
+    hasMixedEV,
+    evTrims,
     markets,
     engines,
     trims,
@@ -1109,6 +1123,42 @@ export default async function Page({ params }: { params: Promise<Params> }) {
             </div>
           </section>
         ) : null}
+
+        {/* ELECTRIC VARIANT(S) — surfaced separately on mixed ICE+EV gens so the
+            main trim table keeps its Fuel/CO₂/Oil columns for the combustion trims. */}
+        {hasMixedEV && (
+          <section>
+            <h2 className="section-h">
+              Electric variant{evTrims.length > 1 ? "s" : ""}
+              <span className="count">{evTrims.length}</span>
+            </h2>
+            <div className="table-scroll">
+              <table className="spec-table">
+                <thead style={{ background: "var(--bg-alt)" }}>
+                  <tr>
+                    {["Variant", "Power", "Battery", "Range (WLTP)", "Consumption", "DC charge", "AC charge", "Plug"].map((h) => (
+                      <th key={h} style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", color: "var(--ink-soft)", textAlign: "left", padding: "8px 12px" }}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {evTrims.map((t) => (
+                    <tr key={t.id}>
+                      <th><a href={`/${make.slug}/${gen.slug}/${t.slug}`} style={{ color: "var(--accent)" }}>{t.name}</a></th>
+                      <td>{t.hp != null ? `${t.hp} hp` : "—"}</td>
+                      <td>{(t.battery_kwh_usable ?? t.battery_kwh_total) ? `${t.battery_kwh_usable ?? t.battery_kwh_total} kWh${t.battery_kwh_usable && t.battery_kwh_total ? ` of ${t.battery_kwh_total}` : ""}` : "—"}</td>
+                      <td>{(t.range_wltp_km ?? t.range_epa_km) ? `${t.range_wltp_km ?? t.range_epa_km} km${t.range_epa_km ? " (EPA)" : ""}` : "—"}</td>
+                      <td>{t.consumption_wh_km != null ? `${t.consumption_wh_km} Wh/km` : "—"}</td>
+                      <td>{t.dc_charge_kw != null ? `${t.dc_charge_kw} kW${t.charge_10_80_min != null ? ` · ${t.charge_10_80_min} min 0–80%` : ""}` : "—"}</td>
+                      <td>{t.ac_charge_kw != null ? `${t.ac_charge_kw} kW` : "—"}</td>
+                      <td>{t.plug_type ?? "—"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        )}
 
         {/* AVAILABLE ENGINES — catalogue listing (no spec values; trim
             pages own those). Each row links to the gen-spanning engine
