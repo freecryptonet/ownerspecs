@@ -1,0 +1,703 @@
+{
+  "kia-rio-yb": {
+    "n": 2000,
+    "fields": {
+      "technische_max_massa_voertuig": {
+        "verdict": "publish",
+        "reasons": [],
+        "signals": {
+          "fill_rate": 1.0,
+          "agreement": 0.866,
+          "range_ok": 1.0,
+          "coc_match": true
+        }
+      },
+      "maximum_trekken_massa_geremd": {
+        "verdict": "publish",
+        "reasons": [],
+        "signals": {
+          "fill_rate": 0.9985,
+          "agreement": 0.8617926890335503,
+          "range_ok": 1.0,
+          "coc_match": true
+        }
+      },
+      "maximum_massa_trekken_ongeremd": {
+        "verdict": "publish",
+        "reasons": [],
+        "signals": {
+          "fill_rate": 0.998,
+          "agreement": 1.0,
+          "range_ok": 1.0,
+          "coc_match": true
+        }
+      },
+      "maximum_massa_samenstelling": {
+        "verdict": "publish",
+        "reasons": [],
+        "signals": {
+          "fill_rate": 0.9995,
+          "agreement": 0.8609304652326163,
+          "range_ok": 0.9994997498749375,
+          "coc_match": true
+        }
+      },
+      "massa_ledig_voertuig": {
+        "verdict": "corroborate",
+        "reasons": [
+          "low_agreement"
+        ],
+        "signals": {
+          "fill_rate": 1.0,
+          "agreement": 0.459,
+          "range_ok": 1.0
+        }
+      },
+      "massa_rijklaar": {
+        "verdict": "corroborate",
+        "reasons": [
+          "low_agreement"
+        ],
+        "signals": {
+          "fill_rate": 1.0,
+          "agreement": 0.459,
+          "range_ok": 1.0,
+          "coc_match": true
+        }
+      },
+      "inrichting": {
+        "verdict": "publish",
+        "reasons": [],
+        "signals": {
+          "fill_rate": 1.0,
+          "agreement": 0.9205,
+          "expected_missing": []
+        }
+      }
+    }
+  },
+  "vw-golf-7": {
+    "n": 2000,
+    "fields": {
+      "massa_rijklaar": {
+        "verdict": "corroborate",
+        "reasons": [
+          "low_agreement"
+        ],
+        "signals": {
+          "fill_rate": 1.0,
+          "agreement": 0.0975,
+          "range_ok": 1.0
+        }
+      },
+      "inrichting": {
+        "verdict": "reject",
+        "reasons": [
+          "expected_values_missing"
+        ],
+        "signals": {
+          "fill_rate": 1.0,
+          "agreement": 0.987,
+          "expected_missing": [
+            "hatchback"
+          ]
+        }
+      }
+    }
+  },
+  "peugeot-3008-mk1": {
+    "n": 2000,
+    "fields": {
+      "massa_ledig_voertuig": {
+        "verdict": "corroborate",
+        "reasons": [
+          "low_agreement"
+        ],
+        "signals": {
+          "fill_rate": 1.0,
+          "agreement": 0.424,
+          "range_ok": 1.0
+        }
+      },
+      "technische_max_massa_voertuig": {
+        "verdict": "corroborate",
+        "reasons": [
+          "low_agreement"
+        ],
+        "signals": {
+          "fill_rate": 0.9995,
+          "agreement": 0.7208604302151076,
+          "range_ok": 1.0
+        }
+      },
+      "maximum_trekken_massa_geremd": {
+        "verdict": "publish",
+        "reasons": [],
+        "signals": {
+          "fill_rate": 0.9995,
+          "agreement": 0.9249624812406203,
+          "range_ok": 1.0
+        }
+      },
+      "inrichting": {
+        "verdict": "reject",
+        "reasons": [
+          "low_agreement",
+          "expected_values_missing"
+        ],
+        "signals": {
+          "fill_rate": 1.0,
+          "agreement": 0.559,
+          "expected_missing": [
+            "suv"
+          ]
+        }
+      },
+      "massa_rijklaar": {
+        "verdict": "corroborate",
+        "reasons": [
+          "low_agreement"
+        ],
+        "signals": {
+          "fill_rate": 0.9995,
+          "agreement": 0.4242121060530265,
+          "range_ok": 1.0
+        }
+      }
+    }
+  },
+  "tesla-model-3": {
+    "n": 2000,
+    "fields": {
+      "massa_ledig_voertuig": {
+        "verdict": "corroborate",
+        "reasons": [
+          "low_agreement"
+        ],
+        "signals": {
+          "fill_rate": 1.0,
+          "agreement": 0.397,
+          "range_ok": 1.0
+        }
+      },
+      "technische_max_massa_voertuig": {
+        "verdict": "corroborate",
+        "reasons": [
+          "low_agreement"
+        ],
+        "signals": {
+          "fill_rate": 0.9995,
+          "agreement": 0.39869934967483744,
+          "range_ok": 1.0
+        }
+      },
+      "maximum_trekken_massa_geremd": {
+        "verdict": "corroborate",
+        "reasons": [
+          "low_fill"
+        ],
+        "signals": {
+          "fill_rate": 0.2525,
+          "agreement": 0.9267326732673268,
+          "range_ok": 1.0
+        }
+      },
+      "inrichting": {
+        "verdict": "publish",
+        "reasons": [],
+        "signals": {
+          "fill_rate": 1.0,
+          "agreement": 0.9985,
+          "expected_missing": []
+        }
+      },
+      "massa_rijklaar": {
+        "verdict": "corroborate",
+        "reasons": [
+          "low_agreement"
+        ],
+        "signals": {
+          "fill_rate": 0.9995,
+          "agreement": 0.39719859929964985,
+          "range_ok": 1.0
+        }
+      }
+    }
+  },
+  "citroen-c4-picasso": {
+    "n": 2000,
+    "fields": {
+      "massa_ledig_voertuig": {
+        "verdict": "corroborate",
+        "reasons": [
+          "low_agreement"
+        ],
+        "signals": {
+          "fill_rate": 1.0,
+          "agreement": 0.124,
+          "range_ok": 0.9805
+        }
+      },
+      "technische_max_massa_voertuig": {
+        "verdict": "corroborate",
+        "reasons": [
+          "low_agreement"
+        ],
+        "signals": {
+          "fill_rate": 1.0,
+          "agreement": 0.124,
+          "range_ok": 1.0
+        }
+      },
+      "maximum_trekken_massa_geremd": {
+        "verdict": "corroborate",
+        "reasons": [
+          "low_agreement"
+        ],
+        "signals": {
+          "fill_rate": 1.0,
+          "agreement": 0.492,
+          "range_ok": 1.0
+        }
+      },
+      "inrichting": {
+        "verdict": "corroborate",
+        "reasons": [
+          "low_agreement"
+        ],
+        "signals": {
+          "fill_rate": 1.0,
+          "agreement": 0.5205,
+          "expected_missing": []
+        }
+      },
+      "massa_rijklaar": {
+        "verdict": "corroborate",
+        "reasons": [
+          "low_agreement"
+        ],
+        "signals": {
+          "fill_rate": 1.0,
+          "agreement": 0.124,
+          "range_ok": 1.0
+        }
+      }
+    }
+  },
+  "ford-mustang": {
+    "n": 537,
+    "fields": {
+      "massa_ledig_voertuig": {
+        "verdict": "corroborate",
+        "reasons": [
+          "low_agreement"
+        ],
+        "signals": {
+          "fill_rate": 1.0,
+          "agreement": 0.07635009310986965,
+          "range_ok": 1.0
+        }
+      },
+      "technische_max_massa_voertuig": {
+        "verdict": "corroborate",
+        "reasons": [
+          "low_agreement"
+        ],
+        "signals": {
+          "fill_rate": 0.994413407821229,
+          "agreement": 0.29775280898876405,
+          "range_ok": 0.99812734082397
+        }
+      },
+      "maximum_trekken_massa_geremd": {
+        "verdict": "corroborate",
+        "reasons": [
+          "low_fill"
+        ],
+        "signals": {
+          "fill_rate": 0.00931098696461825,
+          "agreement": 0.8,
+          "range_ok": 1.0
+        }
+      },
+      "inrichting": {
+        "verdict": "corroborate",
+        "reasons": [
+          "low_agreement"
+        ],
+        "signals": {
+          "fill_rate": 1.0,
+          "agreement": 0.7262569832402235,
+          "expected_missing": []
+        }
+      },
+      "massa_rijklaar": {
+        "verdict": "corroborate",
+        "reasons": [
+          "low_agreement"
+        ],
+        "signals": {
+          "fill_rate": 0.9925512104283054,
+          "agreement": 0.07692307692307693,
+          "range_ok": 1.0
+        }
+      }
+    }
+  },
+  "vw-polo": {
+    "n": 2000,
+    "fields": {
+      "massa_ledig_voertuig": {
+        "verdict": "corroborate",
+        "reasons": [
+          "low_agreement"
+        ],
+        "signals": {
+          "fill_rate": 1.0,
+          "agreement": 0.17,
+          "range_ok": 1.0
+        }
+      },
+      "technische_max_massa_voertuig": {
+        "verdict": "corroborate",
+        "reasons": [
+          "low_agreement"
+        ],
+        "signals": {
+          "fill_rate": 1.0,
+          "agreement": 0.252,
+          "range_ok": 1.0
+        }
+      },
+      "maximum_trekken_massa_geremd": {
+        "verdict": "corroborate",
+        "reasons": [
+          "low_agreement"
+        ],
+        "signals": {
+          "fill_rate": 0.9975,
+          "agreement": 0.518796992481203,
+          "range_ok": 1.0
+        }
+      },
+      "inrichting": {
+        "verdict": "publish",
+        "reasons": [],
+        "signals": {
+          "fill_rate": 1.0,
+          "agreement": 1.0,
+          "expected_missing": []
+        }
+      },
+      "massa_rijklaar": {
+        "verdict": "corroborate",
+        "reasons": [
+          "low_agreement"
+        ],
+        "signals": {
+          "fill_rate": 1.0,
+          "agreement": 0.17,
+          "range_ok": 1.0
+        }
+      }
+    }
+  },
+  "opel-corsa-e": {
+    "n": 2000,
+    "fields": {
+      "massa_ledig_voertuig": {
+        "verdict": "corroborate",
+        "reasons": [
+          "low_agreement"
+        ],
+        "signals": {
+          "fill_rate": 1.0,
+          "agreement": 0.321,
+          "range_ok": 1.0
+        }
+      },
+      "technische_max_massa_voertuig": {
+        "verdict": "corroborate",
+        "reasons": [
+          "low_agreement"
+        ],
+        "signals": {
+          "fill_rate": 1.0,
+          "agreement": 0.211,
+          "range_ok": 1.0
+        }
+      },
+      "maximum_trekken_massa_geremd": {
+        "verdict": "corroborate",
+        "reasons": [
+          "low_agreement"
+        ],
+        "signals": {
+          "fill_rate": 0.9125,
+          "agreement": 0.46684931506849314,
+          "range_ok": 1.0
+        }
+      },
+      "inrichting": {
+        "verdict": "corroborate",
+        "reasons": [
+          "low_agreement"
+        ],
+        "signals": {
+          "fill_rate": 1.0,
+          "agreement": 0.7905,
+          "expected_missing": []
+        }
+      },
+      "massa_rijklaar": {
+        "verdict": "corroborate",
+        "reasons": [
+          "low_agreement"
+        ],
+        "signals": {
+          "fill_rate": 1.0,
+          "agreement": 0.321,
+          "range_ok": 1.0
+        }
+      }
+    }
+  },
+  "renault-clio": {
+    "n": 2000,
+    "fields": {
+      "massa_ledig_voertuig": {
+        "verdict": "corroborate",
+        "reasons": [
+          "low_agreement"
+        ],
+        "signals": {
+          "fill_rate": 1.0,
+          "agreement": 0.1875,
+          "range_ok": 1.0
+        }
+      },
+      "technische_max_massa_voertuig": {
+        "verdict": "corroborate",
+        "reasons": [
+          "low_agreement"
+        ],
+        "signals": {
+          "fill_rate": 1.0,
+          "agreement": 0.2245,
+          "range_ok": 1.0
+        }
+      },
+      "maximum_trekken_massa_geremd": {
+        "verdict": "publish",
+        "reasons": [],
+        "signals": {
+          "fill_rate": 0.9935,
+          "agreement": 0.8505284348263714,
+          "range_ok": 1.0
+        }
+      },
+      "inrichting": {
+        "verdict": "corroborate",
+        "reasons": [
+          "low_agreement"
+        ],
+        "signals": {
+          "fill_rate": 1.0,
+          "agreement": 0.7035,
+          "expected_missing": []
+        }
+      },
+      "massa_rijklaar": {
+        "verdict": "corroborate",
+        "reasons": [
+          "low_agreement"
+        ],
+        "signals": {
+          "fill_rate": 1.0,
+          "agreement": 0.1875,
+          "range_ok": 1.0
+        }
+      }
+    }
+  },
+  "toyota-yaris": {
+    "n": 2000,
+    "fields": {
+      "massa_ledig_voertuig": {
+        "verdict": "corroborate",
+        "reasons": [
+          "low_agreement"
+        ],
+        "signals": {
+          "fill_rate": 1.0,
+          "agreement": 0.1855,
+          "range_ok": 1.0
+        }
+      },
+      "technische_max_massa_voertuig": {
+        "verdict": "corroborate",
+        "reasons": [
+          "low_agreement"
+        ],
+        "signals": {
+          "fill_rate": 0.9995,
+          "agreement": 0.3996998499249625,
+          "range_ok": 1.0
+        }
+      },
+      "maximum_trekken_massa_geremd": {
+        "verdict": "corroborate",
+        "reasons": [
+          "low_agreement"
+        ],
+        "signals": {
+          "fill_rate": 0.6,
+          "agreement": 0.43,
+          "range_ok": 1.0
+        }
+      },
+      "inrichting": {
+        "verdict": "reject",
+        "reasons": [
+          "expected_values_missing"
+        ],
+        "signals": {
+          "fill_rate": 1.0,
+          "agreement": 0.9945,
+          "expected_missing": [
+            "hatchback"
+          ]
+        }
+      },
+      "massa_rijklaar": {
+        "verdict": "corroborate",
+        "reasons": [
+          "low_agreement"
+        ],
+        "signals": {
+          "fill_rate": 0.9995,
+          "agreement": 0.1855927963981991,
+          "range_ok": 1.0
+        }
+      }
+    }
+  },
+  "kia-picanto": {
+    "n": 2000,
+    "fields": {
+      "massa_ledig_voertuig": {
+        "verdict": "corroborate",
+        "reasons": [
+          "low_agreement"
+        ],
+        "signals": {
+          "fill_rate": 1.0,
+          "agreement": 0.367,
+          "range_ok": 1.0
+        }
+      },
+      "technische_max_massa_voertuig": {
+        "verdict": "corroborate",
+        "reasons": [
+          "low_agreement"
+        ],
+        "signals": {
+          "fill_rate": 1.0,
+          "agreement": 0.3355,
+          "range_ok": 1.0
+        }
+      },
+      "maximum_trekken_massa_geremd": {
+        "verdict": "publish",
+        "reasons": [],
+        "signals": {
+          "fill_rate": 0.578,
+          "agreement": 0.9463667820069204,
+          "range_ok": 1.0
+        }
+      },
+      "inrichting": {
+        "verdict": "reject",
+        "reasons": [
+          "expected_values_missing"
+        ],
+        "signals": {
+          "fill_rate": 1.0,
+          "agreement": 0.992,
+          "expected_missing": [
+            "hatchback"
+          ]
+        }
+      },
+      "massa_rijklaar": {
+        "verdict": "corroborate",
+        "reasons": [
+          "low_agreement"
+        ],
+        "signals": {
+          "fill_rate": 1.0,
+          "agreement": 0.367,
+          "range_ok": 1.0
+        }
+      }
+    }
+  },
+  "ford-fiesta": {
+    "n": 2000,
+    "fields": {
+      "massa_ledig_voertuig": {
+        "verdict": "corroborate",
+        "reasons": [
+          "low_agreement"
+        ],
+        "signals": {
+          "fill_rate": 1.0,
+          "agreement": 0.3325,
+          "range_ok": 1.0
+        }
+      },
+      "technische_max_massa_voertuig": {
+        "verdict": "corroborate",
+        "reasons": [
+          "low_agreement"
+        ],
+        "signals": {
+          "fill_rate": 1.0,
+          "agreement": 0.3135,
+          "range_ok": 1.0
+        }
+      },
+      "maximum_trekken_massa_geremd": {
+        "verdict": "corroborate",
+        "reasons": [
+          "low_agreement"
+        ],
+        "signals": {
+          "fill_rate": 0.919,
+          "agreement": 0.28944504896626766,
+          "range_ok": 0.999455930359086
+        }
+      },
+      "inrichting": {
+        "verdict": "publish",
+        "reasons": [],
+        "signals": {
+          "fill_rate": 1.0,
+          "agreement": 1.0,
+          "expected_missing": []
+        }
+      },
+      "massa_rijklaar": {
+        "verdict": "corroborate",
+        "reasons": [
+          "low_agreement"
+        ],
+        "signals": {
+          "fill_rate": 1.0,
+          "agreement": 0.3325,
+          "range_ok": 1.0
+        }
+      }
+    }
+  }
+}

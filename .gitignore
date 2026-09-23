@@ -53,3 +53,7 @@ manuals/
 
 # VIN-specific Certificate of Conformity (CoC) scans — personal vehicle docs, never commit
 /EEG/
+
+# Python
+__pycache__/
+*.pyc
