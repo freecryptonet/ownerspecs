@@ -28,3 +28,32 @@ def modal_agreement(values):
         return (None, 0.0, 0)
     val, cnt = Counter(present).most_common(1)[0]
     return (val, cnt / len(present), len(present))
+
+
+def _as_float(value):
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def range_conformance(rows, field, lo, hi):
+    """Fraction of present, numeric `field` values within [lo, hi]. None if no numerics.
+    Catches physically impossible values (e.g. a 50 kg car mass)."""
+    nums = [_as_float(r.get(field)) for r in rows if is_present(r.get(field))]
+    nums = [n for n in nums if n is not None]
+    if not nums:
+        return None
+    return sum(1 for n in nums if lo <= n <= hi) / len(nums)
+
+
+def expected_presence(rows, field, must_include, min_share=0.01):
+    """Return the `must_include` values whose observed share among present values is
+    below `min_share`. Catches internally-consistent mis-coding that agreement misses —
+    e.g. a Golf cohort with ~0% 'hatchback' because RDW mis-codes body as 'stationwagen'."""
+    present = [str(r.get(field)).strip() for r in rows if is_present(r.get(field))]
+    total = len(present)
+    if total == 0:
+        return list(must_include)
+    counts = Counter(present)
+    return [v for v in must_include if counts.get(v, 0) / total < min_share]
