@@ -1,7 +1,7 @@
--- ⚠️⚠️  DO NOT APPLY YET — awaits Plan 2 (RDW-lane productionization).  ⚠️⚠️
--- NOT applied to the prod DB as of 2026-09-23. Do NOT run this against `ownerspecs`
--- until the RDW/CoC ingest is ready; a final CoC gap-check (Tim's next batch) may still
--- adjust it. Any "run all new *.sql" deploy step MUST skip this file until then.
+-- ✅ APPLIED to the prod DB `ownerspecs` on 2026-09-23 (backup: /tmp/os_backup_2026-09-23.sql on VPS).
+-- Do NOT re-run (the ALTER ... ADD COLUMN steps will error on a second run). CoC-specific
+-- tables (vehicle_types / tyre_/mass_homologations) may still get an ADDITIVE follow-up (580)
+-- if Tim's next CoC batch reveals a gap — the applied base is stable and additive.
 --
 -- ownerspecs.com · document-first schema · migration 579 · 2026-09-23
 -- Implements CLEAN_START_PLAN_2026-09-04 §4 day-1 invariants + panel-reviewed
