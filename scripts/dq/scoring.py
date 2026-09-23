@@ -57,3 +57,23 @@ def expected_presence(rows, field, must_include, min_share=0.01):
         return list(must_include)
     counts = Counter(present)
     return [v for v in must_include if counts.get(v, 0) / total < min_share]
+
+
+def coc_match(rdw_value, coc_value, tol=0):
+    """True if RDW value matches the held-CoC gold value. Numeric compare within `tol`
+    when both parse as numbers; else case-insensitive text equality. None if either absent."""
+    if not is_present(rdw_value) or coc_value is None or not is_present(coc_value):
+        return None
+    a, b = _as_float(rdw_value), _as_float(coc_value)
+    if a is not None and b is not None:
+        return abs(a - b) <= tol
+    return str(rdw_value).strip().lower() == str(coc_value).strip().lower()
+
+
+def within_cross_range(value, lo, hi):
+    """True if `value` falls within a trusted external cohort range [lo, hi]
+    (e.g. kentekenfeiten content/modellen min/max). None if value or bounds absent."""
+    n = _as_float(value)
+    if n is None or lo is None or hi is None:
+        return None
+    return lo <= n <= hi

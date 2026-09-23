@@ -1,4 +1,4 @@
-from scripts.dq.scoring import is_present, fill_rate, modal_agreement, range_conformance, expected_presence
+from scripts.dq.scoring import is_present, fill_rate, modal_agreement, range_conformance, expected_presence, coc_match, within_cross_range
 
 
 def test_is_present():
@@ -36,3 +36,18 @@ def test_expected_presence_flags_the_body_bug():
     # when hatchback is well represented, nothing is flagged
     rows2 = [{"body": "stationwagen"}] * 60 + [{"body": "hatchback"}] * 40
     assert expected_presence(rows2, "body", must_include=["hatchback"], min_share=0.02) == []
+
+
+def test_coc_match():
+    assert coc_match("1160", 1160) is True          # RDW string vs CoC int
+    assert coc_match("1155", 1160, tol=10) is True   # within tolerance
+    assert coc_match("900", 1110) is False
+    assert coc_match(None, 1110) is None
+    assert coc_match("AB", "AB") is True             # text equality fallback
+
+
+def test_within_cross_range():
+    assert within_cross_range("1600", 1500, 1700) is True
+    assert within_cross_range("1900", 1500, 1700) is False
+    assert within_cross_range(None, 1500, 1700) is None
+    assert within_cross_range("1600", None, None) is None
