@@ -26,7 +26,7 @@ def score_cohort(rows, spec):
     for field, cfg in spec["fields"].items():
         signals = {"fill_rate": fill_rate(rows, field)}
         values = [r.get(field) for r in rows]
-        _, agreement, _ = modal_agreement(values)
+        modal_val, agreement, _ = modal_agreement(values)
         signals["agreement"] = agreement if agreement else None
         if "lo" in cfg and "hi" in cfg:
             signals["range_ok"] = range_conformance(rows, field, cfg["lo"], cfg["hi"])
@@ -34,8 +34,18 @@ def score_cohort(rows, spec):
             signals["expected_missing"] = expected_presence(
                 rows, field, cfg["expected_body"], cfg.get("min_share", 0.01))
         if "coc" in cfg:
-            modal_val, _, _ = modal_agreement(values)
-            signals["coc_match"] = coc_match(modal_val, cfg["coc"], cfg.get("tol", 5))
+            # TVV-scoped gold check: compare the CoC value against the modal of ONLY the rows
+            # belonging to the CoC's exact TVV (variant+uitvoering), not the whole-cohort modal —
+            # otherwise the dominant variant's value false-mismatches a CoC issued for a rarer TVV.
+            coc_tvv = cfg.get("coc_tvv")
+            if coc_tvv:
+                tvv_rows = [r for r in rows
+                            if r.get("variant") == coc_tvv[0] and r.get("uitvoering") == coc_tvv[1]]
+                tvv_modal, _, _ = modal_agreement([r.get(field) for r in tvv_rows])
+                signals["coc_match"] = (coc_match(tvv_modal, cfg["coc"], cfg.get("tol", 5))
+                                        if tvv_modal is not None else None)
+            else:
+                signals["coc_match"] = coc_match(modal_val, cfg["coc"], cfg.get("tol", 5))
         if "cross_lo" in cfg and "cross_hi" in cfg:
             modal_val, _, _ = modal_agreement(values)
             signals["cross_ok"] = within_cross_range(modal_val, cfg["cross_lo"], cfg["cross_hi"])
