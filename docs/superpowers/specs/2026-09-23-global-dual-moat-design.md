@@ -30,6 +30,20 @@ The document-first schema (`db/migrations/579_document_first_schema.sql`, panel-
 
 So the clean-start's "wipe contaminated data" step becomes **"repopulate via document-first"**: Moat A from OEM manuals, Moat B from RDW/CoC. Both enforce `source_document_id NOT NULL` (no inferred facts).
 
+## 3a. Architecture integration (panel-validated against the built app, 2026-09-23)
+
+The document-first model retrofits onto the existing Next.js app with **no new URL tiers**:
+
+- **Grain (hybrid):** `trims` stays trade-name / powertrain **scaffolding** (the hub "Pick your trim" table + Tier-3 URLs); `vehicle_types` (TVV) is the **document-verified data grain**. Link via **`trims.vehicle_type_id` (nullable FK)** — added to mig 579. RDW mass facts match a trim cluster on `baseName|hp|engine_code`; the range surfaces in the hub column + detail on `/towing`. Do NOT demote `trims` (breaks the catalog).
+- **Render homes (no new top-level routes):** RDW masses/towing/axle-load/kogeldruk → enhance the existing **`/towing`** topic; CoC tyre-homologation §35/§52 → a homologation section on the existing **`/tires`** topic. Moat-tiles stay Tier-2.
+- **Market deltas:** no per-market pages — render NL/DE/BE as market-scoped rows or an "NL/DE/BE" column on `/towing`+`/tires`, default NL with others collapsed; the existing market pills act as filters.
+- **Citations:** extend `buildCitationIndex`'s allow-list (currently 13 legacy tables) to include `documents` + `spec_facts` + `tyre_homologations` + `mass_homologations`, so every dual-moat value emits its `[n]` + sources entry.
+- **"No citation → no page" enforcement = the existing render-gate/`notFound` pattern** (a page renders only with ≥3 cited datapoints), **NOT a parallel `noindex`.** (Corrects the earlier round — the site uses render-gate everywhere; only `/search` uses noindex, so a noindex rule would be inconsistent.)
+- **Auto-data `trims`:** keep, but label explicitly as **"catalog (indicative, uncited)"**; `VerifyBadge` + `[n]` are reserved for document-sourced facts. E-E-A-T via separation, not via gaps.
+- **SSG build impact (blind spot):** aggregating tens of thousands of TVVs at build time via `spec_facts` will slow SSG → **materialize cluster aggregates (mass ranges) in MySQL** ahead of the build.
+- **Publish CI checks:** block publish/deploy unless the 40 kg mass-span veto passes AND the `trim ↔ vehicle_type` cluster map is 1:1 AND the page has ≥3 cited datapoints.
+- **Editorial / provenance workflow (blind spot):** a document authoring/curation path (add a document, link facts, record provenance) is still unspecified — required before scaling CoC + OEM-manual ingest.
+
 ## 4. Data sources & pipelines
 
 ### Moat A — OEM manuals / FSM (global, incl. US)
@@ -72,4 +86,4 @@ A reusable data-quality harness, triangulating **4 signals** (CoC-gold · extern
 - Bootstrap identity from the kentekenfeiten curatie seed + port `euTypeApproval.ts` (done) once schema applied.
 - Instrument the monetized gate metric (ad RPM + wedge clicks).
 - Legal check on US OEM manual usage posture before scaling Moat A.
-- Decompose into implementation plans (writing-plans): (1) data-quality harness + gov-source landscape; (2) RDW lane productionization + clustering; (3) CoC continuous-ingest pipeline; (4) Moat A OEM-manual extraction; (5) render layer + publish-rule/noindex.
+- Decompose into implementation plans (writing-plans): (1) data-quality harness + gov-source landscape [written]; (2) RDW lane productionization + clustering + **materialized cluster aggregates**; (3) CoC continuous-ingest pipeline + **document editorial/provenance workflow**; (4) Moat A OEM-manual extraction; (5) render layer — extend `buildCitationIndex`, `trims.vehicle_type_id` mapping, enhance `/towing`+`/tires`, market-delta columns, **render-gate enforcement (not noindex)**, publish CI checks (40 kg veto + 1:1 cluster map + ≥3 cited).

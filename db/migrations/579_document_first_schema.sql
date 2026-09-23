@@ -359,4 +359,12 @@ ALTER TABLE images
   ADD KEY ix_images_document (document_id),
   ADD CONSTRAINT fk_images_document FOREIGN KEY (document_id) REFERENCES documents(id) ON DELETE SET NULL;
 
+-- Hybrid grain (panel 2026-09-23): trims stay trade-name/powertrain scaffolding (hub table +
+-- Tier-3 URLs); vehicle_types is the document-verified grain. This nullable link lets a catalog
+-- trim resolve to its TVV so document-verified mass/tyre facts surface on the existing trim/hub UI.
+ALTER TABLE trims
+  ADD COLUMN vehicle_type_id INT UNSIGNED NULL AFTER generation_id,
+  ADD KEY ix_trims_vehicle_type (vehicle_type_id),
+  ADD CONSTRAINT fk_trims_vehicle_type FOREIGN KEY (vehicle_type_id) REFERENCES vehicle_types(id) ON DELETE SET NULL;
+
 SET FOREIGN_KEY_CHECKS = 1;
