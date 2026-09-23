@@ -9,14 +9,18 @@ dominant TVV's modal value can differ from a rarer TVV's. `expected_body` lists 
 to offer in reality (the external reality anchor). `cross_ranges` are trusted external min/max
 (kentekenfeiten cohorts) for the cross-source signal. Extend as CoCs arrive.
 
-IMPORTANT (2026-09-23 correction, verified 100% over 8,000 rows): `massa_rijklaar` is
-RDW-COMPUTED (massa_ledig_voertuig + 100 kg, a flat NL registration convention), NOT a
-manufacturer CoC value. It carries NO `coc` key anywhere in this sample — it is audited for
-fill/range only, and the report classifies it as RDW-derived, not document-verified. The
-document-verifiable mass fields (RDW stores these verbatim from the type approval, confirmed
-byte-for-byte against a held CoC for the Rio's exact TVV) are massa_ledig_voertuig,
-technische_max_massa_voertuig (CoC §16.1), maximum_trekken_massa_geremd (§18 braked),
-maximum_massa_trekken_ongeremd (§18 unbraked), and maximum_massa_samenstelling (§16.4 train).
+CORRECTED 2026-09-23 (supersedes the prior note in this docstring — do not re-invert):
+`massa_rijklaar` = the EU type-approval / CoC §13 "mass in running order" (kerb + 75 kg driver +
+90% fuel). It IS the DOCUMENT-verified value (Kia Rio: RDW 1160 = CoC §13 1160, exact) and
+carries the CoC-gold check below. `massa_ledig_voertuig` = RDW-DERIVED
+(`massa_rijklaar - 100 kg`, a flat Dutch admin convention), NOT a manufacturer/CoC value, NOT a
+true kerb — it is audited for fill/range only and carries NO `coc` key anywhere in this sample.
+Verified exactly (100 kg delta) over 8,000 rows including EVs, where it is even more fictional
+(kerb - 25, since an EV has no fuel). The document-verifiable mass fields (RDW stores these
+verbatim from the type approval, confirmed byte-for-byte against a held CoC for the Rio's exact
+TVV) are massa_rijklaar (CoC §13), technische_max_massa_voertuig (CoC §16.1),
+maximum_trekken_massa_geremd (§18 braked), maximum_massa_trekken_ongeremd (§18 unbraked), and
+maximum_massa_samenstelling (§16.4 train).
 """
 
 SAMPLE = [
@@ -26,7 +30,7 @@ SAMPLE = [
         "fields": {
             # Document-verifiable — held CoC gold, TVV B5P11/M61BZ1. Confirmed live against
             # RDW: technische_max=1620, geremd=1110, ongeremd=450, samenstelling=2730 —
-            # all four match the CoC exactly for this TVV.
+            # all four match the CoC exactly for this TVV (massa_rijklaar=1160 CoC-checked below).
             "technische_max_massa_voertuig": {"lo": 900, "hi": 2500, "coc": 1620,
                                                "coc_tvv": ("B5P11", "M61BZ1")},
             "maximum_trekken_massa_geremd": {"lo": 0, "hi": 2500, "coc": 1110,
@@ -35,11 +39,13 @@ SAMPLE = [
                                                 "coc_tvv": ("B5P11", "M61BZ1")},
             "maximum_massa_samenstelling": {"lo": 1500, "hi": 4000, "coc": 2730,
                                              "coc_tvv": ("B5P11", "M61BZ1")},
-            # Document base — no CoC-published value to gold-check against, range only.
+            # RDW-derived (rijklaar-100, NL admin convention) — kept deliberately WITHOUT a
+            # `coc` key; it is not a manufacturer/CoC value. Range/fill only.
             "massa_ledig_voertuig": {"lo": 700, "hi": 2000},
-            # RDW-derived (ledig+100 NL convention) — kept deliberately WITHOUT a `coc` key
-            # so the report can show it failing a coc-style expectation; range/fill only.
-            "massa_rijklaar": {"lo": 700, "hi": 2000},
+            # Document-verifiable — CoC §13 "mass in running order" (kerb + 75 kg driver +
+            # 90% fuel). Held CoC gold, TVV B5P11/M61BZ1 — RDW 1160 = CoC 1160, exact.
+            "massa_rijklaar": {"lo": 700, "hi": 2000, "coc": 1160,
+                                "coc_tvv": ("B5P11", "M61BZ1")},
             "inrichting": {"expected_body": ["hatchback"], "min_share": 0.02},
         },
     },

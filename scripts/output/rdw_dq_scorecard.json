@@ -61,7 +61,8 @@
         "signals": {
           "fill_rate": 1.0,
           "agreement": 0.459,
-          "range_ok": 1.0
+          "range_ok": 1.0,
+          "coc_match": true
         }
       },
       "inrichting": {
@@ -85,7 +86,7 @@
         ],
         "signals": {
           "fill_rate": 1.0,
-          "agreement": 0.121,
+          "agreement": 0.0975,
           "range_ok": 1.0
         }
       },
@@ -96,7 +97,7 @@
         ],
         "signals": {
           "fill_rate": 1.0,
-          "agreement": 0.982,
+          "agreement": 0.987,
           "expected_missing": [
             "hatchback"
           ]
@@ -175,7 +176,7 @@
         ],
         "signals": {
           "fill_rate": 1.0,
-          "agreement": 0.4125,
+          "agreement": 0.397,
           "range_ok": 1.0
         }
       },
@@ -186,7 +187,7 @@
         ],
         "signals": {
           "fill_rate": 0.9995,
-          "agreement": 0.4132066033016508,
+          "agreement": 0.39869934967483744,
           "range_ok": 1.0
         }
       },
@@ -196,8 +197,8 @@
           "low_fill"
         ],
         "signals": {
-          "fill_rate": 0.2505,
-          "agreement": 0.8842315369261478,
+          "fill_rate": 0.2525,
+          "agreement": 0.9267326732673268,
           "range_ok": 1.0
         }
       },
@@ -206,7 +207,7 @@
         "reasons": [],
         "signals": {
           "fill_rate": 1.0,
-          "agreement": 0.9995,
+          "agreement": 0.9985,
           "expected_missing": []
         }
       },
@@ -217,7 +218,7 @@
         ],
         "signals": {
           "fill_rate": 0.9995,
-          "agreement": 0.41270635317658827,
+          "agreement": 0.39719859929964985,
           "range_ok": 1.0
         }
       }
@@ -234,7 +235,7 @@
         "signals": {
           "fill_rate": 1.0,
           "agreement": 0.124,
-          "range_ok": 0.9785
+          "range_ok": 0.9805
         }
       },
       "technische_max_massa_voertuig": {
@@ -255,7 +256,7 @@
         ],
         "signals": {
           "fill_rate": 1.0,
-          "agreement": 0.4905,
+          "agreement": 0.492,
           "range_ok": 1.0
         }
       },
@@ -266,7 +267,7 @@
         ],
         "signals": {
           "fill_rate": 1.0,
-          "agreement": 0.51,
+          "agreement": 0.5205,
           "expected_missing": []
         }
       },
@@ -471,7 +472,7 @@
         ],
         "signals": {
           "fill_rate": 1.0,
-          "agreement": 0.1945,
+          "agreement": 0.1875,
           "range_ok": 1.0
         }
       },
@@ -482,7 +483,7 @@
         ],
         "signals": {
           "fill_rate": 1.0,
-          "agreement": 0.2315,
+          "agreement": 0.2245,
           "range_ok": 1.0
         }
       },
@@ -490,8 +491,8 @@
         "verdict": "publish",
         "reasons": [],
         "signals": {
-          "fill_rate": 0.994,
-          "agreement": 0.8420523138832998,
+          "fill_rate": 0.9935,
+          "agreement": 0.8505284348263714,
           "range_ok": 1.0
         }
       },
@@ -502,7 +503,7 @@
         ],
         "signals": {
           "fill_rate": 1.0,
-          "agreement": 0.717,
+          "agreement": 0.7035,
           "expected_missing": []
         }
       },
@@ -513,7 +514,7 @@
         ],
         "signals": {
           "fill_rate": 1.0,
-          "agreement": 0.1945,
+          "agreement": 0.1875,
           "range_ok": 1.0
         }
       }
@@ -529,7 +530,7 @@
         ],
         "signals": {
           "fill_rate": 1.0,
-          "agreement": 0.1905,
+          "agreement": 0.1855,
           "range_ok": 1.0
         }
       },
@@ -540,7 +541,7 @@
         ],
         "signals": {
           "fill_rate": 0.9995,
-          "agreement": 0.3871935967983992,
+          "agreement": 0.3996998499249625,
           "range_ok": 1.0
         }
       },
@@ -550,8 +551,8 @@
           "low_agreement"
         ],
         "signals": {
-          "fill_rate": 0.6115,
-          "agreement": 0.4243663123466885,
+          "fill_rate": 0.6,
+          "agreement": 0.43,
           "range_ok": 1.0
         }
       },
@@ -562,7 +563,7 @@
         ],
         "signals": {
           "fill_rate": 1.0,
-          "agreement": 0.994,
+          "agreement": 0.9945,
           "expected_missing": [
             "hatchback"
           ]
@@ -575,7 +576,7 @@
         ],
         "signals": {
           "fill_rate": 0.9995,
-          "agreement": 0.1905952976488244,
+          "agreement": 0.1855927963981991,
           "range_ok": 1.0
         }
       }
@@ -591,7 +592,7 @@
         ],
         "signals": {
           "fill_rate": 1.0,
-          "agreement": 0.3765,
+          "agreement": 0.367,
           "range_ok": 1.0
         }
       },
@@ -602,7 +603,7 @@
         ],
         "signals": {
           "fill_rate": 1.0,
-          "agreement": 0.3595,
+          "agreement": 0.3355,
           "range_ok": 1.0
         }
       },
@@ -610,8 +611,8 @@
         "verdict": "publish",
         "reasons": [],
         "signals": {
-          "fill_rate": 0.618,
-          "agreement": 0.948220064724919,
+          "fill_rate": 0.578,
+          "agreement": 0.9463667820069204,
           "range_ok": 1.0
         }
       },
@@ -622,7 +623,7 @@
         ],
         "signals": {
           "fill_rate": 1.0,
-          "agreement": 0.9885,
+          "agreement": 0.992,
           "expected_missing": [
             "hatchback"
           ]
@@ -635,7 +636,7 @@
         ],
         "signals": {
           "fill_rate": 1.0,
-          "agreement": 0.3765,
+          "agreement": 0.367,
           "range_ok": 1.0
         }
       }
@@ -651,7 +652,7 @@
         ],
         "signals": {
           "fill_rate": 1.0,
-          "agreement": 0.3465,
+          "agreement": 0.3325,
           "range_ok": 1.0
         }
       },
@@ -662,7 +663,7 @@
         ],
         "signals": {
           "fill_rate": 1.0,
-          "agreement": 0.326,
+          "agreement": 0.3135,
           "range_ok": 1.0
         }
       },
@@ -672,9 +673,9 @@
           "low_agreement"
         ],
         "signals": {
-          "fill_rate": 0.942,
-          "agreement": 0.27441613588110403,
-          "range_ok": 1.0
+          "fill_rate": 0.919,
+          "agreement": 0.28944504896626766,
+          "range_ok": 0.999455930359086
         }
       },
       "inrichting": {
@@ -693,7 +694,7 @@
         ],
         "signals": {
           "fill_rate": 1.0,
-          "agreement": 0.3465,
+          "agreement": 0.3325,
           "range_ok": 1.0
         }
       }
