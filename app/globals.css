@@ -354,6 +354,32 @@ section { padding: var(--s-7) 0; }
 }
 .verify-badge .meta { color: var(--accent-deep); font-weight: 400; font-family: "IBM Plex Mono", monospace; font-size: 11px; }
 
+/* Per-datapoint provenance pill (distinct from .verify-badge, which
+   summarizes the whole page). See components/ProvenanceBadge.tsx. */
+.provenance-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  border-radius: 3px;
+  line-height: 1.4;
+}
+.provenance-verified {
+  color: var(--accent-deep);
+  background: var(--accent-bg);
+  border: 1px solid var(--accent);
+}
+.provenance-legacy {
+  color: var(--ink-soft);
+  background: var(--bg-alt);
+  border: 1px solid var(--rule);
+}
+
 /* =============================================================
    INFOBOX (Wikipedia-style hero)
    ============================================================= */
