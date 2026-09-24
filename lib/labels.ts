@@ -278,3 +278,37 @@ export const brakeTypeLabels: Record<string, string> = {
   drum: "Drum",
 };
 export const brakeTypeLabel = (t: string) => brakeTypeLabels[t] ?? humanize(t);
+
+// ───────────────────────── mass_homologations.mass_kind ────────────────────
+// Vocabulary + presentation policy from reference_rdw_field_semantics.md
+// (weight-presentation policy, panel-unanimous 2026-09-23). `category`
+// controls where a value CAN render: 'headline' = the answer-card number;
+// 'supporting' = the per-kind table row; 'tax_only' = NEVER the weight
+// block or any towing/payload calculator — a separate "NL registration /
+// road-tax" box only. Unknown kinds default to 'supporting', never
+// 'headline' or silently 'tax_only', so an unseen kind degrades safely
+// instead of either overclaiming or vanishing.
+
+export const massKindLabels: Record<string, string> = {
+  running_order: "Mass in running order (EU type-approval)",
+  max_laden_permissible: "Permissible maximum laden mass",
+  max_laden_technical: "Technically permissible maximum laden mass",
+  max_combination: "Maximum mass of combination (vehicle + trailer)",
+  tow_braked: "Towing capacity — braked trailer",
+  tow_unbraked: "Towing capacity — unbraked trailer",
+  max_axle: "Maximum axle load",
+  // Defensive — not present in current data, see plan Ground Truth. If RDW-derived
+  // "leeggewicht"-equivalent facts are ever ingested into this table, they land here.
+  actual_mass: "Leeggewicht — RDW-derived (NL admin convention; not a manufacturer kerb)",
+};
+
+export const massKindLabel = (k: string) => massKindLabels[k] ?? humanize(k);
+
+const MASS_KIND_HEADLINE = new Set(["running_order"]);
+const MASS_KIND_TAX_ONLY = new Set(["actual_mass"]);
+
+export function massKindCategory(k: string): "headline" | "supporting" | "tax_only" {
+  if (MASS_KIND_TAX_ONLY.has(k)) return "tax_only";
+  if (MASS_KIND_HEADLINE.has(k)) return "headline";
+  return "supporting";
+}
