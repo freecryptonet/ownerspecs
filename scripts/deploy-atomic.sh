@@ -33,7 +33,12 @@ mkdir -p "$REL_DIR"
 # --- 1. build env (NEXT_DISTDIR points at the NEW real release dir) --------------------
 set -a; source .env.local; set +a
 export USE_SPEC_FACTS="$FLAG"
-export NEXT_DISTDIR="$NEW_REL"
+# NEXT_DISTDIR must be RELATIVE to the project root: Next resolves distDir via
+# path.join(projectDir, distDir), so an ABSOLUTE value gets concatenated AFTER the project
+# dir (-> /home/deploy/ownerspecs/home/deploy/ownerspecs/.next-releases/...), producing a
+# doubly-nested build with no $NEW_REL/server/app. The relative form resolves to exactly
+# $NEW_REL because we cd'd to $ROOT above. $NEW_REL stays absolute for the script's fs ops.
+export NEXT_DISTDIR=".next-releases/$TS"
 export NODE_OPTIONS="--max-old-space-size=3072"
 
 # --- 2. build out-of-place (live symlink/.next keeps serving) --------------------------
