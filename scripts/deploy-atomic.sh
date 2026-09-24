@@ -107,9 +107,16 @@ check() {
   ok=0
 }
 echo "healthcheck:"
-check "/"
-check "/kia/rio-yb-hatchback-2018-2023/towing"     # slice-1 deep SSG route
-check "/honda/civic-sedan-x-2016-2021"             # control gen hub (unrelated to the change)
+# Base pages that MUST render in every build state (verified live: all 200 today).
+check "/"                                                  # homepage (force-dynamic/SSR)
+check "/honda/civic-sedan-x-2016-2021"                     # control gen hub
+check "/honda/civic-sedan-x-2016-2021/oil-capacity"        # control topic page WITH data
+# Slice-1 target: Rio /towing renders ONLY when the flag is ON (flag-OFF it correctly 404s —
+# the Rio gen has zero legacy towing data, so notFound() is expected). Checking it flag-OFF
+# would cause a FALSE rollback. So assert 200 there only for the flag-ON deploy.
+if [ "$FLAG" = "true" ]; then
+  check "/kia/rio-yb-hatchback-2018-2023/towing"           # slice-1 deep SSG route (verified masses)
+fi
 
 if [ "$ok" = "1" ]; then
   echo "=== DEPLOY OK — all healthchecks 200. release=$TS ==="
