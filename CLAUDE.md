@@ -1,5 +1,12 @@
 # ownerspecs.com — Claude operating notes
 
+> **Shared first-hand car media + manuals live in `F:\projects\_carmedia\`** (cross-project store; see
+> `F:\projects\CLAUDE.md` hub). Pull spec-relevant shots (engine_bay, tyre_placard, fluid_cap, bulb,
+> fuse_box, torque_plate, id_plate) from `_carmedia\library\by_tag\` + `by_car\`; drop new shoots in
+> `_carmedia\_inbox\`. **Backlog:** 10 imported shoots are marked `ownerspecs → todo` — run
+> `python F:\projects\_carmedia\scripts\status.py` to see them; mine each, then flip its `_meta.json`
+> `ownerspecs` flag to `done`. Copy only the processed WebP you publish into this repo (no raw binaries).
+
 For strategy + design rationale, read `PLAN.md`. This file is for **operating** the project.
 
 ## What it is
@@ -104,6 +111,9 @@ ssh -i ~/.ssh/autodtcs_key root@72.62.154.119 'sudo -u deploy pm2 restart os'
 
 ## Data conventions
 
+- **`USE_SPEC_FACTS` flag token is exactly `"1"`, not `"true"`** — `lib/specFacts.isSpecFactsEnabled()` strict-equals "1", read at BUILD time (SSG). The live build runs flag ON; the deploy script normalizes 1/true/on/yes→"1". Gates the document-first (mig 579) render lanes (`spec_facts`/`mass_homologations`/`tyre_homologations`, qa_state='approved').
+- **`generations.display_name` = model+body+generation with NO brand** (render prepends `make.name`; e.g. `Civic Sedan (X)`, never `Honda Civic…`). A brand-prefixed value renders doubled ("Kia Kia Rio…"). The deploy data-gate FAILS any brand-prefixed display_name (mig 580 de-branded 150 rows).
+- **Hero infobox: `.ib-photo .frame` placeholder (dark gradient + "OEM PRESS PHOTO PLACEHOLDER" label) is scoped to `:not(:has(img))`** so it never overlays a real photo — don't unscope it. Heroes are OPPORTUNISTIC (add a Wikimedia CC hero, license-verified + provenance row, when touching a gen); recipe in project memory `reference_wikimedia_hero_recipe`.
 - **Data grain rules locked in `STRUCTURE.md`.** Engine-scoped fluid types (`engine_oil`, `coolant`, `transmission_*`) MUST have `engine_id` on multi-engine gens; NULL rows on multi-engine gens get suppressed at render. Canonical migration template: `db/migrations/089_civic_x_sedan_full_moat.sql`.
 - **Aggregator source IDs (use these for the 2nd-source citation — don't create duplicates):** 593=NHTSA vPIC · 603=BMW · 604=Mercedes · 605=Toyota/Lexus · 606=Honda · 607=Hyundai/Kia/Genesis · 608=Mazda/Subaru · 609=VW Group · 610=GM · 611=Stellantis/FCA · 613=Volvo. Each gen also has a primary OEM Service Manual source — `SELECT id, citation FROM sources WHERE is_public=1 AND citation LIKE '%<Model>%Service%'`.
 - **URL pattern**: `/[brand]/[generation]` for the generation hub (e.g. `/honda/civic-sedan-x-2016-2021`); `/[brand]/[generation]/[topic]` for deep moat pages
@@ -164,7 +174,17 @@ ssh -i ~/.ssh/autodtcs_key root@72.62.154.119 'sudo -u deploy pm2 restart os'
 - `@media (max-width: 720px)` hides `.nav-primary` + `.search-bar` in the site header (no hamburger yet). Don't try to un-hide — needs a proper hamburger build.
 - Test mobile via Playwright `browser_resize 375 812` + a horizontal-overflow probe: `document.documentElement.scrollWidth > innerWidth`.
 
-## Deploy after a code change (canonical incantation)
+## Canonical deploy: `scripts/deploy-atomic.sh` (zero-downtime — SUPERSEDES the manual incantation below)
+
+Run ON the VPS as deploy, from /home/deploy/ownerspecs:
+```bash
+USE_SPEC_FACTS=1 bash scripts/deploy-atomic.sh   # flag ON   (=0 for OFF)
+```
+Builds OUT-OF-PLACE into `.next-releases/<ts>`, flips the `.next` symlink atomically, healthchecks with auto-rollback → **no whole-site 500 window**, and a failed build leaves live untouched. It self-gates: source type-check (`tsc -p tsconfig.build.json`) + a display_name data-audit before building. Still `scp`/tar changed code to the VPS FIRST (build reads the VPS filesystem). **Never pipe the deploy through `| tail`** — the pipe returns tail's exit 0 and masks a real failure; capture to a file + `echo $?`. `scripts/preflight-symlink.sh` validates the symlink/pm2 mechanics without a rebuild.
+
+- **`next.config.ts` `typescript.ignoreBuildErrors:true` and the `distDir` env-gate are INTENTIONAL** (atomic deploy) — don't "fix" them. Next's generated route validator mis-resolves paths under the nested-release+symlink layout; real type-checking runs via the source-only `tsc -p tsconfig.build.json` gate in the deploy script. `NEXT_DISTDIR` must be RELATIVE (Next `path.join`s it onto projectDir). `eslint` is not a valid NextConfig key in 16.2.6.
+
+## Deploy after a code change (manual fallback incantation)
 
 ```bash
 scp -i ~/.ssh/autodtcs_key <local-file> root@72.62.154.119:/tmp/<x>
