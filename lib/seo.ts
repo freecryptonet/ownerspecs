@@ -162,6 +162,22 @@ export function datasetJsonLd(opts: {
   };
 }
 
+/** Minimal schema.org Vehicle fragment carrying the verified EU type-approval
+ *  mass (mass in running order). Emitted ONLY for the headline (`running_order`)
+ *  verified value, and only when the dual-read helper found approved facts —
+ *  see docs/superpowers/plans/2026-09-24-render-layer-dual-moat.md Task 10.
+ *  No other page currently emits a `weight` property (grepped clean 2026-09-24),
+ *  so there is no cross-page schema drift to reconcile. */
+export function vehicleMassJsonLd(opts: { path: string; massKg: number; reviewDate: string }) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Vehicle",
+    url: `${SITE}${opts.path}`,
+    weight: { "@type": "QuantitativeValue", value: opts.massKg, unitCode: "KGM" },
+    dateModified: opts.reviewDate,
+  };
+}
+
 /** A TechArticle schema for a single topic page (oil-capacity, etc.). */
 export function techArticleJsonLd(opts: {
   title: string;
