@@ -12,6 +12,8 @@
  * BUILD time, not per-request — see plan Global Constraints.
  */
 
+import { query } from "@/lib/db";
+
 export const MASS_SPAN_VETO_KG = 40;
 
 export type MassFactRow = {
@@ -73,4 +75,18 @@ export function hasEnoughVerifiedData(summaries: Array<{ kind: string; n: number
  *  flip production. */
 export function isSpecFactsEnabled(): boolean {
   return process.env.USE_SPEC_FACTS === "1";
+}
+
+/** Approved, cited masses for one generation. Market defaults to whatever
+ *  is in the table for now (slice 1 is single-market NL/RDW data) —
+ *  a market_id filter param is deferred to slice 2+ when a gen has
+ *  multiple markets' worth of approved facts. */
+export async function getVerifiedMasses(generationId: number): Promise<MassFactRow[]> {
+  return query<MassFactRow>(
+    `SELECT id, vehicle_type_id, mass_kind, value_kg, source_document_id
+     FROM mass_homologations
+     WHERE generation_id = ? AND qa_state = 'approved'
+     ORDER BY vehicle_type_id, mass_kind`,
+    [generationId],
+  );
 }
