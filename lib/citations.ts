@@ -89,13 +89,18 @@ export function mergeAndNumberSources(
   };
 }
 
-// ── DB-facing shell (unchanged legacy behavior; Task 6 adds the document lane) ──
+// ── DB-facing shell ──
 
 const LEGACY_TABLES = [
   "trims", "fluid_specs", "torque_specs", "electrical_specs", "bulbs", "fuses",
   "parts", "service_intervals", "tire_pressures", "procedures", "brake_specs",
   "alignment_specs",
 ] as const;
+
+/** Document-first tables (mig 579) that cite `documents.id` directly via
+ *  `source_document_id` — no `spec_sources` join table involved for this
+ *  lane. Only `qa_state = 'approved'` rows are ever fetched. */
+const DOCUMENT_TABLES = ["mass_homologations", "spec_facts", "tyre_homologations"] as const;
 
 export async function buildCitationIndex(
   generationId: number,
@@ -127,6 +132,40 @@ export async function buildCitationIndex(
   const rawLinks: RawLink[] = legacyLinks.map((l) => ({
     table: l.spec_table, id: l.spec_id, sourceSpace: "legacy" as const, sourceId: l.source_id,
   }));
+
+  // ── document lane — direct FK, no join table, approved rows only ──
+  const documentRows = await query<{ table_name: string; id: number; source_document_id: number }>(
+    `SELECT 'mass_homologations' AS table_name, id, source_document_id
+       FROM mass_homologations WHERE generation_id = ? AND qa_state = 'approved'
+     UNION ALL
+     SELECT 'spec_facts' AS table_name, id, source_document_id
+       FROM spec_facts WHERE generation_id = ? AND qa_state = 'approved'
+     UNION ALL
+     SELECT 'tyre_homologations' AS table_name, id, source_document_id
+       FROM tyre_homologations WHERE generation_id = ? AND qa_state = 'approved'`,
+    [generationId, generationId, generationId],
+  );
+  const docIds = Array.from(new Set(documentRows.map((r) => r.source_document_id)));
+  const documents = docIds.length
+    ? await query<{ id: number; doc_type: string; citation: string; original_url: string | null; public_link: 0 | 1; retrieved_at: string; notes: string | null }>(
+        `SELECT id, doc_type, citation, original_url, public_link, retrieved_at, notes
+         FROM documents WHERE id IN (${docIds.map(() => "?").join(",")})`,
+        docIds,
+      )
+    : [];
+
+  rawSources.push(
+    ...documents.map((d) => ({
+      id: d.id, type: d.doc_type, citation: d.citation, url: d.original_url,
+      public_link: d.public_link, retrieved_at: d.retrieved_at, notes: d.notes,
+      sourceSpace: "document" as const,
+    })),
+  );
+  rawLinks.push(
+    ...documentRows.map((r) => ({
+      table: r.table_name, id: r.id, sourceSpace: "document" as const, sourceId: r.source_document_id,
+    })),
+  );
 
   return mergeAndNumberSources(rawSources, rawLinks, renderedRows);
 }

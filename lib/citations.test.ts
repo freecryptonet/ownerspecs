@@ -52,3 +52,21 @@ describe("mergeAndNumberSources — legacy + document ID-space collision (the ne
     expect(idx.citationsFor("mass_homologations", 20)).toEqual([2]);
   });
 });
+
+describe("mergeAndNumberSources — mass_homologations lane end-to-end shape", () => {
+  it("renders one shared document citation across multiple mass_homologations rows", () => {
+    const doc: RawSource = { id: 1, type: "rdw_open", citation: "RDW Open Data (CC0)",
+      url: null, public_link: 1, retrieved_at: "2026-09-01T00:00:00.000Z", notes: null, sourceSpace: "document" };
+    const links: RawLink[] = [
+      { table: "mass_homologations", id: 1, sourceSpace: "document", sourceId: 1 },
+      { table: "mass_homologations", id: 9, sourceSpace: "document", sourceId: 1 },
+      { table: "mass_homologations", id: 17, sourceSpace: "document", sourceId: 1 },
+    ];
+    const idx = mergeAndNumberSources([doc], links, [
+      { table: "mass_homologations", id: 1 }, { table: "mass_homologations", id: 9 }, { table: "mass_homologations", id: 17 },
+    ]);
+    expect(idx.sources).toHaveLength(1); // one document, cited by all three rows
+    expect(idx.citationsFor("mass_homologations", 1)).toEqual([1]);
+    expect(idx.citationsFor("mass_homologations", 17)).toEqual([1]);
+  });
+});
