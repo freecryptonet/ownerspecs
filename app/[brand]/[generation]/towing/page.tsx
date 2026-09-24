@@ -5,17 +5,25 @@ import {
   getGenerationBase,
   getGenerationHero,
   getAllGenerationParams,
-  getSourcesFor,
   yearRange,
   reviewDate,
 } from "@/lib/generation";
+import { buildCitationIndex } from "@/lib/citations";
+import {
+  isSpecFactsEnabled,
+  getVerifiedMasses,
+  summarizeAllMassKinds,
+  hasEnoughVerifiedData,
+} from "@/lib/specFacts";
+import { massKindLabel, massKindCategory } from "@/lib/labels";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { GenerationTabs } from "@/components/GenerationTabs";
 import { VerifyBadge } from "@/components/VerifyBadge";
 import { SourcesBlock } from "@/components/SourcesBlock";
+import { ProvenanceBadge } from "@/components/ProvenanceBadge";
 import { kgDual } from "@/lib/units";
-import { pageMetadata, faqJsonLd } from "@/lib/seo";
+import { pageMetadata, faqJsonLd, vehicleMassJsonLd } from "@/lib/seo";
 
 type Params = { brand: string; generation: string };
 
@@ -68,9 +76,36 @@ export default async function Page({ params }: { params: Promise<Params> }) {
     [gen.id],
   );
 
-  if (trims.length === 0) notFound();
+  // ── document-first dual-read (mig 579, behind USE_SPEC_FACTS) ──
+  // Legacy `trims`-based render above is untouched. When the flag is on,
+  // verified EU type-approval masses are fetched and rendered ALONGSIDE
+  // (not instead of) the legacy table — see requirements §"verified wins
+  // per field, legacy stays as a labelled fallback".
+  const specFactsOn = isSpecFactsEnabled();
+  const massRows = specFactsOn ? await getVerifiedMasses(gen.id) : [];
+  const massSummaries = summarizeAllMassKinds(massRows);
+  const hasVerifiedMasses = specFactsOn && hasEnoughVerifiedData(massSummaries);
 
-  const sources = await getSourcesFor(gen.id, "trims");
+  if (!hasVerifiedMasses) {
+    console.info(
+      `[towing] suppressing verified-masses section for gen ${gen.id}: specFactsOn=${specFactsOn} datapoints=${massSummaries.length}`,
+    );
+  }
+
+  // CHANGED gate — was `if (trims.length === 0) notFound();`. A gen with no
+  // marketed-trim breakdown but verified type-approval masses still renders.
+  if (trims.length === 0 && !hasVerifiedMasses) notFound();
+
+  const renderedRows: Array<{ table: string; id: number }> = [
+    ...trims.map((t) => ({ table: "trims", id: t.id })),
+    ...(hasVerifiedMasses
+      ? massRows
+          .filter((r) => massSummaries.some((s) => s.rowIds.includes(r.id)))
+          .map((r) => ({ table: "mass_homologations", id: r.id }))
+      : []),
+  ];
+  const citations = await buildCitationIndex(gen.id, renderedRows);
+  const sources = citations.sources; // drop-in replacement for the old getSourcesFor result
   const yrs = yearRange(gen.start_year, gen.end_year);
 
   const maxBraked = trims
@@ -97,6 +132,15 @@ export default async function Page({ params }: { params: Promise<Params> }) {
     q: "What is GVWR and how does it relate to payload?",
     a: "GVWR (Gross Vehicle Weight Rating) is the maximum total weight of the vehicle including passengers, cargo, fuel, and the tongue load of any trailer. Payload = GVWR − curb weight. Towing capacity is a separate manufacturer rating, but the GVWR limit still applies once you load the tongue.",
   });
+  if (hasVerifiedMasses) {
+    const headline = massSummaries.find((s) => massKindCategory(s.kind) === "headline");
+    if (headline) {
+      faqs.push({
+        q: `What is the EU type-approval mass of the ${make.name} ${gen.display_name}?`,
+        a: `Mass in running order (EU type-approval, CoC §13) is ${headline.isRange ? `between ${headline.min} and ${headline.max} kg depending on homologated variant` : `${headline.min} kg`}, verified directly against RDW open registration data.`,
+      });
+    }
+  }
   const faqLd = faqJsonLd(faqs);
 
   return (
@@ -131,7 +175,72 @@ export default async function Page({ params }: { params: Promise<Params> }) {
 
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd) }} />
 
+        {hasVerifiedMasses && massSummaries.find((s) => massKindCategory(s.kind) === "headline") && (
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{
+              __html: JSON.stringify(
+                vehicleMassJsonLd({
+                  path: `/${make.slug}/${gen.slug}/towing`,
+                  massKg: Math.round(
+                    (massSummaries.find((s) => massKindCategory(s.kind) === "headline")!.min +
+                      massSummaries.find((s) => massKindCategory(s.kind) === "headline")!.max) /
+                      2,
+                  ),
+                  reviewDate: reviewDate(sources),
+                }),
+              ),
+            }}
+          />
+        )}
+
         <main className="shell">
+          {hasVerifiedMasses && (
+            <section style={{ marginTop: "var(--s-5)" }}>
+              <h2 className="section-h">
+                Verified · EU type-approval masses
+                <span className="count">{massSummaries.length} datapoints</span>
+              </h2>
+              <div className="table-scroll">
+                <table className="spec-table">
+                  <thead>
+                    <tr>
+                      <th>Mass</th>
+                      <th>Value</th>
+                      <th>Provenance</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {massSummaries
+                      .filter((s) => massKindCategory(s.kind) !== "tax_only") // guardrail: tax_only kinds never render in this table
+                      .map((s) => (
+                        <tr key={s.kind}>
+                          <th>{massKindLabel(s.kind)}</th>
+                          <td>
+                            {s.isRange
+                              ? `${s.min.toLocaleString()}–${s.max.toLocaleString()} kg (varies by homologated variant)`
+                              : `${Math.round((s.min + s.max) / 2).toLocaleString()} kg`}
+                          </td>
+                          <td>
+                            <ProvenanceBadge
+                              kind="verified"
+                              citationNums={citations.citationsFor("mass_homologations", s.rowIds[0])}
+                            />
+                          </td>
+                        </tr>
+                      ))}
+                  </tbody>
+                </table>
+              </div>
+              {trims.length === 0 && (
+                <p className="soft" style={{ marginTop: 8, fontSize: 13 }}>
+                  No marketed-trim breakdown is catalogued yet for this generation — figures above are
+                  EU type-approval values verified directly against RDW registration data, independent of trim.
+                </p>
+              )}
+            </section>
+          )}
+
           {(maxBraked > 0 || maxUnbraked > 0) && (
             <section>
               <h2 className="section-h">Headline capacity (across all trims)</h2>
@@ -162,37 +271,50 @@ export default async function Page({ params }: { params: Promise<Params> }) {
             </section>
           )}
 
-          <section style={{ marginTop: "var(--s-7)" }}>
-            <h2 className="section-h">
-              Per-trim ratings <span className="count">{trims.length} trims</span>
-            </h2>
-            <div className="table-scroll">
-              <table className="spec-table">
-                <thead>
-                  <tr>
-                    <th>Trim</th>
-                    <th>Curb weight</th>
-                    <th>GVWR</th>
-                    <th>Trailer (braked)</th>
-                    <th>Trailer (unbraked)</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {trims.map((t) => (
-                    <tr key={t.id}>
-                      <th>
-                        <strong style={{ color: "var(--ink)" }}>{t.name}</strong>
-                      </th>
-                      <td>{t.curb_weight_kg ? kgDual(t.curb_weight_kg) : "—"}</td>
-                      <td>{t.max_weight_kg ? kgDual(t.max_weight_kg) : "—"}</td>
-                      <td>{t.trailer_braked_kg ? kgDual(t.trailer_braked_kg) : "—"}</td>
-                      <td>{t.trailer_unbraked_kg ? kgDual(t.trailer_unbraked_kg) : "—"}</td>
+          {trims.length > 0 && (
+            <section style={{ marginTop: "var(--s-7)" }}>
+              <h2 className="section-h">
+                Per-trim ratings <span className="count">{trims.length} trims</span>
+              </h2>
+              {hasVerifiedMasses && (
+                <span className="soft" style={{ fontSize: 12, display: "block", marginTop: -4, marginBottom: 8 }}>
+                  Catalogue data — legacy, not yet cross-checked against a primary document
+                </span>
+              )}
+              <div className="table-scroll">
+                <table className="spec-table">
+                  <thead>
+                    <tr>
+                      <th>Trim</th>
+                      <th>Curb weight</th>
+                      <th>GVWR</th>
+                      <th>Trailer (braked)</th>
+                      <th>Trailer (unbraked)</th>
+                      {hasVerifiedMasses && <th>Provenance</th>}
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </section>
+                  </thead>
+                  <tbody>
+                    {trims.map((t) => (
+                      <tr key={t.id}>
+                        <th>
+                          <strong style={{ color: "var(--ink)" }}>{t.name}</strong>
+                        </th>
+                        <td>{t.curb_weight_kg ? kgDual(t.curb_weight_kg) : "—"}</td>
+                        <td>{t.max_weight_kg ? kgDual(t.max_weight_kg) : "—"}</td>
+                        <td>{t.trailer_braked_kg ? kgDual(t.trailer_braked_kg) : "—"}</td>
+                        <td>{t.trailer_unbraked_kg ? kgDual(t.trailer_unbraked_kg) : "—"}</td>
+                        {hasVerifiedMasses && (
+                          <td>
+                            <ProvenanceBadge kind="legacy" />
+                          </td>
+                        )}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          )}
 
           <section className="faq-block" style={{ marginTop: "var(--s-7)" }}>
             <h2 className="section-h">Frequently asked</h2>
