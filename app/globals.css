@@ -398,11 +398,16 @@ section { padding: var(--s-7) 0; }
 }
 .ib-photo .frame {
   aspect-ratio: 4 / 3;
-  background: linear-gradient(135deg, #20263A, #2D3550);
   position: relative;
 }
+/* Placeholder styling applies ONLY when the frame holds no real <img>. A real hero must not get
+   the dark gradient or the "OEM PRESS PHOTO PLACEHOLDER" label (which was also factually wrong on
+   our Wikimedia photos). :has() scopes this to the empty state and covers every render site. */
+.ib-photo .frame:not(:has(img)) {
+  background: linear-gradient(135deg, #20263A, #2D3550);
+}
 .ib-photo .frame svg { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0.65; }
-.ib-photo .frame::after {
+.ib-photo .frame:not(:has(img))::after {
   content: "OEM PRESS PHOTO PLACEHOLDER";
   position: absolute; bottom: 6px; right: 8px;
   font-family: "IBM Plex Mono", monospace;
