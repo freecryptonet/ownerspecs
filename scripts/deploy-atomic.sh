@@ -58,6 +58,23 @@ if ! npx --no-install tsc --noEmit -p tsconfig.build.json > /tmp/deploy_tsc.log 
 fi
 echo "type check OK"
 
+# --- 1c. DATA gate: no brand-prefixed display_name may ship (mig 580 class) -------------
+# generations.display_name is model+body+gen with NO brand (the render layer prepends make.name),
+# so a hand-written migration or scraper that stores "Kia Rio IV (YB)" renders "Kia Kia Rio IV (YB)".
+# Fail LOUDLY here — this covers ALL ingest paths (scraper AND hand-written migrations, the real
+# recurrence vector) with no silent write-time mutation; a genuine brand-in-name exception must be
+# resolved by a human, not auto-stripped by a trigger. Panel-chosen approach (option D).
+echo "checking for brand-prefixed display_names ..."
+BADDN="$(mariadb -N -h "${DB_HOST:-127.0.0.1}" -P "${DB_PORT:-3306}" -u"$DB_USER" -p"$DB_PASSWORD" "${DB_NAME:-ownerspecs}" \
+  -e "SELECT COUNT(*) FROM generations g JOIN models mo ON g.model_id=mo.id JOIN makes m ON mo.make_id=m.id WHERE g.display_name LIKE CONCAT(m.name, ' %');" 2>/tmp/deploy_dncheck.err || true)"
+if ! printf '%s' "$BADDN" | grep -qE '^[0-9]+$'; then
+  echo "DATA CHECK ERROR — display_name audit did not return a number (DB creds/CLI?). Aborting, live untouched:"; cat /tmp/deploy_dncheck.err 2>/dev/null; exit 1
+fi
+if [ "$BADDN" != "0" ]; then
+  echo "DATA CHECK FAILED — $BADDN generation(s) have a brand-prefixed display_name (mig 580 class). Fix at the source before deploy. Aborting, live .next UNTOUCHED."; exit 1
+fi
+echo "display_name check OK"
+
 # --- 2. build out-of-place (live symlink/.next keeps serving) --------------------------
 rm -rf "$NEW_REL"
 echo "building into $NEW_REL ..."
