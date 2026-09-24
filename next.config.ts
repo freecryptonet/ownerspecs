@@ -141,6 +141,10 @@ const ENGINE_SLUG_REDIRECTS: Array<[string, string]> = [
 ];
 
 const nextConfig: NextConfig = {
+  // Env-gated build output dir so a deploy can build OUT-OF-PLACE (into .next_new) while the
+  // live process keeps serving .next; the atomic-swap deploy then renames it in. Default ".next"
+  // — no behavior change unless NEXT_DISTDIR is set (only the deploy script sets it, at build time).
+  distDir: process.env.NEXT_DISTDIR || ".next",
   async redirects() {
     const out: Array<{ source: string; destination: string; permanent: true }> = [];
     for (const s of GEN_SPLITS) {
