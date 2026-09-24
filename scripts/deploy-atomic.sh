@@ -9,8 +9,10 @@
 # dir does not break the running process's already-open file handles on Linux).
 #
 # RUN ON THE VPS as the deploy user, from /home/deploy/ownerspecs:
-#   USE_SPEC_FACTS=false bash scripts/deploy-atomic.sh
-#   USE_SPEC_FACTS=true  bash scripts/deploy-atomic.sh
+#   USE_SPEC_FACTS=0 bash scripts/deploy-atomic.sh   # flag OFF (also: false/off)
+#   USE_SPEC_FACTS=1 bash scripts/deploy-atomic.sh   # flag ON  (also: true/on)
+# The app reads the flag via lib/specFacts.isSpecFactsEnabled(), which strict-equals "1".
+# We normalize any accepted alias to exactly "1"/"0" below so the token can't drift.
 #
 # Requires next.config.ts: distDir: process.env.NEXT_DISTDIR || ".next"
 set -euo pipefail
@@ -24,7 +26,12 @@ cd "$ROOT"
 exec 9>"$ROOT/.deploy.lock"
 if ! flock -n 9; then echo "ABORT: another deploy holds the lock. Never build concurrently."; exit 1; fi
 
-FLAG="${USE_SPEC_FACTS:-false}"
+# Normalize to the exact token the app expects ("1"), accepting friendly aliases so a
+# `USE_SPEC_FACTS=true` invocation can't silently no-op (that exact mismatch shipped a 404).
+case "$(printf '%s' "${USE_SPEC_FACTS:-0}" | tr '[:upper:]' '[:lower:]')" in
+  1|true|on|yes) FLAG=1 ;;
+  *)             FLAG=0 ;;
+esac
 TS="$(date -u +%Y%m%d-%H%M%S)"
 NEW_REL="$REL_DIR/$TS"
 echo "=== deploy-atomic USE_SPEC_FACTS=$FLAG  release=$TS  $(date -u +%FT%TZ) ==="
@@ -129,7 +136,7 @@ check "/honda/civic-sedan-x-2016-2021/oil-capacity"        # control topic page 
 # Slice-1 target: Rio /towing renders ONLY when the flag is ON (flag-OFF it correctly 404s —
 # the Rio gen has zero legacy towing data, so notFound() is expected). Checking it flag-OFF
 # would cause a FALSE rollback. So assert 200 there only for the flag-ON deploy.
-if [ "$FLAG" = "true" ]; then
+if [ "$FLAG" = "1" ]; then
   check "/kia/rio-yb-hatchback-2018-2023/towing"           # slice-1 deep SSG route (verified masses)
 fi
 
