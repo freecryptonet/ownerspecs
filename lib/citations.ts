@@ -24,62 +24,30 @@ export type CitationIndex = {
 
 export type RenderedRow = { table: string; id: number };
 
-export async function buildCitationIndex(
-  generationId: number,
+/** A fetched source row tagged with which ID space it came from — `sources.id`
+ *  and `documents.id` are independent auto-increment spaces that WILL collide
+ *  (both start at 1) if merged by raw id. Every consumer of this module must
+ *  tag rows before merging. */
+export type RawSource = SourceRow & { sourceSpace: "legacy" | "document" };
+export type RawLink = { table: string; id: number; sourceSpace: "legacy" | "document"; sourceId: number };
+
+/**
+ * Pure: given already-fetched sources + links (+ optional page-rendered-row
+ * filter), produce the final numbered CitationIndex. Extracted from the
+ * original buildCitationIndex inline logic (2026-05) so it is unit-tested;
+ * behavior for legacy-only inputs is unchanged (see citations.test.ts
+ * regression-baseline cases).
+ */
+export function mergeAndNumberSources(
+  rawSources: RawSource[],
+  rawLinks: RawLink[],
   renderedRows?: RenderedRow[],
-): Promise<CitationIndex> {
-  // Step 1 — all public sources linked to any spec row in this gen.
-  const sources = await query<SourceRow>(
-    `SELECT DISTINCT s.id, s.type, s.citation, s.url, s.public_link, s.retrieved_at, s.notes
-     FROM sources s
-     JOIN spec_sources ss ON ss.source_id = s.id
-     WHERE s.is_public = 1 AND (
-        (ss.spec_table = 'trims'             AND ss.spec_id IN (SELECT id FROM trims              WHERE generation_id = ?)) OR
-        (ss.spec_table = 'fluid_specs'       AND ss.spec_id IN (SELECT id FROM fluid_specs        WHERE generation_id = ?)) OR
-        (ss.spec_table = 'torque_specs'      AND ss.spec_id IN (SELECT id FROM torque_specs       WHERE generation_id = ?)) OR
-        (ss.spec_table = 'electrical_specs'  AND ss.spec_id IN (SELECT id FROM electrical_specs   WHERE generation_id = ?)) OR
-        (ss.spec_table = 'bulbs'             AND ss.spec_id IN (SELECT id FROM bulbs              WHERE generation_id = ?)) OR
-        (ss.spec_table = 'fuses'             AND ss.spec_id IN (SELECT id FROM fuses              WHERE generation_id = ?)) OR
-        (ss.spec_table = 'parts'             AND ss.spec_id IN (SELECT id FROM parts              WHERE generation_id = ?)) OR
-        (ss.spec_table = 'service_intervals' AND ss.spec_id IN (SELECT id FROM service_intervals  WHERE generation_id = ?)) OR
-        (ss.spec_table = 'tire_pressures'    AND ss.spec_id IN (SELECT id FROM tire_pressures     WHERE generation_id = ?)) OR
-        (ss.spec_table = 'procedures'        AND ss.spec_id IN (SELECT id FROM procedures         WHERE generation_id = ?)) OR
-        (ss.spec_table = 'brake_specs'       AND ss.spec_id IN (SELECT id FROM brake_specs        WHERE generation_id = ?)) OR
-        (ss.spec_table = 'alignment_specs'   AND ss.spec_id IN (SELECT id FROM alignment_specs    WHERE generation_id = ?)) OR
-        (ss.spec_table = 'generations'       AND ss.spec_id = ?)
-     )
-     ORDER BY s.id`,
-    Array(13).fill(generationId),
-  );
+): CitationIndex {
+  const key = (s: { sourceSpace: "legacy" | "document"; id: number }) => `${s.sourceSpace}:${s.id}`;
 
-  const positionById = new Map<number, number>();
-  sources.forEach((s, i) => positionById.set(s.id, i + 1));
+  const positionByKey = new Map<string, number>();
+  rawSources.forEach((s, i) => positionByKey.set(key(s), i + 1));
 
-  // Step 2 — gen-scope public spec_sources links.
-  const links = await query<{ spec_table: string; spec_id: number; source_id: number }>(
-    `SELECT ss.spec_table, ss.spec_id, ss.source_id
-     FROM spec_sources ss
-     JOIN sources s ON s.id = ss.source_id AND s.is_public = 1
-     WHERE
-        (ss.spec_table = 'trims'             AND ss.spec_id IN (SELECT id FROM trims              WHERE generation_id = ?)) OR
-        (ss.spec_table = 'fluid_specs'       AND ss.spec_id IN (SELECT id FROM fluid_specs        WHERE generation_id = ?)) OR
-        (ss.spec_table = 'torque_specs'      AND ss.spec_id IN (SELECT id FROM torque_specs       WHERE generation_id = ?)) OR
-        (ss.spec_table = 'electrical_specs'  AND ss.spec_id IN (SELECT id FROM electrical_specs   WHERE generation_id = ?)) OR
-        (ss.spec_table = 'bulbs'             AND ss.spec_id IN (SELECT id FROM bulbs              WHERE generation_id = ?)) OR
-        (ss.spec_table = 'fuses'             AND ss.spec_id IN (SELECT id FROM fuses              WHERE generation_id = ?)) OR
-        (ss.spec_table = 'parts'             AND ss.spec_id IN (SELECT id FROM parts              WHERE generation_id = ?)) OR
-        (ss.spec_table = 'service_intervals' AND ss.spec_id IN (SELECT id FROM service_intervals  WHERE generation_id = ?)) OR
-        (ss.spec_table = 'tire_pressures'    AND ss.spec_id IN (SELECT id FROM tire_pressures     WHERE generation_id = ?)) OR
-        (ss.spec_table = 'procedures'        AND ss.spec_id IN (SELECT id FROM procedures         WHERE generation_id = ?)) OR
-        (ss.spec_table = 'brake_specs'       AND ss.spec_id IN (SELECT id FROM brake_specs        WHERE generation_id = ?)) OR
-        (ss.spec_table = 'alignment_specs'   AND ss.spec_id IN (SELECT id FROM alignment_specs    WHERE generation_id = ?)) OR
-        (ss.spec_table = 'generations'       AND ss.spec_id = ?)`,
-    Array(13).fill(generationId),
-  );
-
-  // Restrict to (table, id) tuples the page renders citations for.
-  // Without this filter a source linked to a suppressed row would leak
-  // into the sources block, leaving an entry no [N] footnote references.
   let isRendered: (table: string, id: number) => boolean;
   if (renderedRows) {
     const renderedKeys = new Set(renderedRows.map((r) => `${r.table}:${r.id}`));
@@ -89,26 +57,24 @@ export async function buildCitationIndex(
   }
 
   const byRow = new Map<string, number[]>();
-  for (const l of links) {
-    if (!isRendered(l.spec_table, l.spec_id)) continue;
-    const pos = positionById.get(l.source_id);
+  for (const l of rawLinks) {
+    if (!isRendered(l.table, l.id)) continue;
+    const pos = positionByKey.get(`${l.sourceSpace}:${l.sourceId}`);
     if (pos == null) continue;
-    const key = `${l.spec_table}:${l.spec_id}`;
-    const arr = byRow.get(key) ?? [];
+    const rowKey = `${l.table}:${l.id}`;
+    const arr = byRow.get(rowKey) ?? [];
     if (!arr.includes(pos)) arr.push(pos);
-    byRow.set(key, arr);
+    byRow.set(rowKey, arr);
   }
   for (const arr of byRow.values()) arr.sort((a, b) => a - b);
 
-  // Only include sources with at least one citation in the rendered set.
   const citedPositions = new Set<number>();
   for (const arr of byRow.values()) for (const n of arr) citedPositions.add(n);
-  const visibleSources = sources.filter((_, i) => citedPositions.has(i + 1));
+  const visibleSources = rawSources.filter((_, i) => citedPositions.has(i + 1));
 
-  // Renumber so the visible list is 1..N contiguous.
   const oldToNew = new Map<number, number>();
   visibleSources.forEach((s, i) => {
-    const oldPos = positionById.get(s.id)!;
+    const oldPos = positionByKey.get(key(s))!;
     oldToNew.set(oldPos, i + 1);
   });
   const renumberedByRow = new Map<string, number[]>();
@@ -118,7 +84,49 @@ export async function buildCitationIndex(
   }
 
   return {
-    sources: visibleSources,
+    sources: visibleSources.map(({ sourceSpace, ...s }) => s),
     citationsFor: (table, id) => renumberedByRow.get(`${table}:${id}`) ?? [],
   };
+}
+
+// ── DB-facing shell (unchanged legacy behavior; Task 6 adds the document lane) ──
+
+const LEGACY_TABLES = [
+  "trims", "fluid_specs", "torque_specs", "electrical_specs", "bulbs", "fuses",
+  "parts", "service_intervals", "tire_pressures", "procedures", "brake_specs",
+  "alignment_specs",
+] as const;
+
+export async function buildCitationIndex(
+  generationId: number,
+  renderedRows?: RenderedRow[],
+): Promise<CitationIndex> {
+  const legacySources = await query<SourceRow>(
+    `SELECT DISTINCT s.id, s.type, s.citation, s.url, s.public_link, s.retrieved_at, s.notes
+     FROM sources s
+     JOIN spec_sources ss ON ss.source_id = s.id
+     WHERE s.is_public = 1 AND (
+        ${LEGACY_TABLES.map((t) => `(ss.spec_table = '${t}' AND ss.spec_id IN (SELECT id FROM ${t} WHERE generation_id = ?))`).join(" OR ")}
+        OR (ss.spec_table = 'generations' AND ss.spec_id = ?)
+     )
+     ORDER BY s.id`,
+    Array(LEGACY_TABLES.length + 1).fill(generationId),
+  );
+
+  const legacyLinks = await query<{ spec_table: string; spec_id: number; source_id: number }>(
+    `SELECT ss.spec_table, ss.spec_id, ss.source_id
+     FROM spec_sources ss
+     JOIN sources s ON s.id = ss.source_id AND s.is_public = 1
+     WHERE
+        ${LEGACY_TABLES.map((t) => `(ss.spec_table = '${t}' AND ss.spec_id IN (SELECT id FROM ${t} WHERE generation_id = ?))`).join(" OR ")}
+        OR (ss.spec_table = 'generations' AND ss.spec_id = ?)`,
+    Array(LEGACY_TABLES.length + 1).fill(generationId),
+  );
+
+  const rawSources: RawSource[] = legacySources.map((s) => ({ ...s, sourceSpace: "legacy" as const }));
+  const rawLinks: RawLink[] = legacyLinks.map((l) => ({
+    table: l.spec_table, id: l.spec_id, sourceSpace: "legacy" as const, sourceId: l.source_id,
+  }));
+
+  return mergeAndNumberSources(rawSources, rawLinks, renderedRows);
 }
