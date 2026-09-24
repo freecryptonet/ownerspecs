@@ -145,6 +145,15 @@ const nextConfig: NextConfig = {
   // live process keeps serving .next; the atomic-swap deploy then renames it in. Default ".next"
   // — no behavior change unless NEXT_DISTDIR is set (only the deploy script sets it, at build time).
   distDir: process.env.NEXT_DISTDIR || ".next",
+  // The atomic symlink-swap deploy builds into a nested release dir and points `.next` at it via
+  // a symlink. Next's GENERATED route validator (.next/types/validator.ts) writes module imports
+  // relative to the real (nested) build path (`../../../app/...`); tsc then also sees that file via
+  // the shallower `.next/types` symlink view and the relative import escapes above the project root
+  // → "Cannot find module". That is an artifact of the layout, not a real type error, so we disable
+  // Next's build-time checks here. scripts/deploy-atomic.sh runs a SOURCE-ONLY `tsc -p
+  // tsconfig.build.json` gate before every build, so real type/lint safety is preserved (and now
+  // enforced automatically on each deploy rather than by a manual pre-build step).
+  typescript: { ignoreBuildErrors: true },
   async redirects() {
     const out: Array<{ source: string; destination: string; permanent: true }> = [];
     for (const s of GEN_SPLITS) {

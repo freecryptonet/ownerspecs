@@ -41,6 +41,16 @@ export USE_SPEC_FACTS="$FLAG"
 export NEXT_DISTDIR=".next-releases/$TS"
 export NODE_OPTIONS="--max-old-space-size=3072"
 
+# --- 1b. SOURCE-ONLY type check (the real safety gate) ---------------------------------
+# Next's build-time TS check is disabled (next.config typescript.ignoreBuildErrors) because its
+# generated route validator mis-resolves module paths under the nested-release + .next-symlink
+# layout. tsconfig.build.json excludes all generated .next output and checks our source only.
+echo "type-checking source (tsconfig.build.json) ..."
+if ! npx --no-install tsc --noEmit -p tsconfig.build.json > /tmp/deploy_tsc.log 2>&1; then
+  echo "TYPE CHECK FAILED — aborting deploy, live .next UNTOUCHED. Last lines:"; tail -30 /tmp/deploy_tsc.log; exit 1
+fi
+echo "type check OK"
+
 # --- 2. build out-of-place (live symlink/.next keeps serving) --------------------------
 rm -rf "$NEW_REL"
 echo "building into $NEW_REL ..."

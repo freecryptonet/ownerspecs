@@ -1,0 +1,10 @@
+{
+  "//": "Source-only type-check used by scripts/deploy-atomic.sh as the deploy safety gate.",
+  "//2": "The atomic symlink-swap layout makes Next's GENERATED route validator (.next/types/*.ts)",
+  "//3": "resolve module paths at the wrong depth (release dir is nested; .next is a symlink to it),",
+  "//4": "so we exclude all generated .next output here and rely on Next's own build for route types",
+  "//5": "(with typescript.ignoreBuildErrors, since that generated check is the thing that mis-resolves).",
+  "extends": "./tsconfig.json",
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "**/*.mts"],
+  "exclude": ["node_modules", ".next", ".next-releases", ".next-rel-*", "scripts", "scrapers"]
+}
